@@ -37,10 +37,10 @@ const WelcomeBanner = ({
       {...props}
     >
       <div className="home-welcome-text">
-        <div className="home-welcome-join">Join the discussion</div>
+        <div className="home-welcome-join">Improve Raleigh</div>
         <div className="home-welcome-subtext">
-          Discuit is a place where <span>{usersCount}</span> people get together to find cool stuff
-          and discuss things.
+          Edit Raleigh is where <span>{usersCount}</span> residents propose, discuss, and improve
+          their city.
         </div>
       </div>
       <div className="home-welcome-buttons">

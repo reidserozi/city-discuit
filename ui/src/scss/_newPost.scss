@@ -351,9 +351,15 @@
         }
     }
     .new-page-help,
-    .new-page-user-group {
+    .new-page-user-group,
+    .page-new-location {
         margin-top: var(--gap);
         margin-left: 4px;
+    }
+    .page-new-location {
+        button {
+            margin-right: var(--gap);
+        }
     }
     .new-page-sidebar {
         @include mixins.mobile {

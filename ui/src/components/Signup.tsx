@@ -13,6 +13,7 @@ import { ButtonClose } from './Button';
 import { Form, FormField } from './Form';
 import Input, { InputPassword, InputWithCount } from './Input';
 import Modal from './Modal';
+import type { Neighborhood } from '../serverTypes';
 
 const errors = [
   'Username cannot be empty.',
@@ -31,6 +32,8 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
 
   const [username, handleUsernameChange] = useInputUsername(usernameMaxLength);
   const [usernameError, setUsernameError] = useState<string | null>(null);
+
+  const [displayName, setDisplayName] = useState('');
   const checkUsernameExists = useCallback(async () => {
     if (username === '') return true;
     try {
@@ -68,6 +71,27 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     setRepeatPasswordError(null);
   }, [repeatPassword]);
 
+  const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState('');
+  const [neighborhoodError, setNeighborhoodError] = useState<string | null>(null);
+
+  const [neighborhoodCode, setNeighborhoodCode] = useState('');
+  const [neighborhoodCodeError, setNeighborhoodCodeError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchNeighborhoods = async () => {
+      try {
+        const res = await mfetch('/api/neighborhoods');
+        if (!res.ok) throw new Error('Failed to fetch neighborhoods');
+        const data = await res.json();
+        setNeighborhoods(data || []);
+      } catch (error) {
+        dispatch(snackAlertError(error));
+      }
+    };
+    fetchNeighborhoods();
+  }, [dispatch]);
+
   const CAPTCHA_ENABLED = import.meta.env.VITE_CAPTCHASITEKEY ? true : false;
   const captchaRef = useRef<ReCAPTCHA>(null);
   const handleCaptchaVerify = (token: string | null) => {
@@ -75,18 +99,20 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
       dispatch(snackAlertError(new Error('Empty captcha token')));
       return;
     }
-    signInUser(username, email, password, token);
+    signInUser(username, email, password, selectedNeighborhood, displayName, token);
   };
   const signInUser = async (
     username: string,
     email: string,
     password: string,
+    neighborhoodID: string,
+    displayName: string,
     captchaToken?: string
   ) => {
     try {
       const res = await mfetch('/api/_signup', {
         method: 'POST',
-        body: JSON.stringify({ username, email, password, captchaToken }),
+        body: JSON.stringify({ username, email, password, neighborhoodID, displayName, captchaToken }),
       });
       if (!res.ok) throw new APIError(res.status, await res.json());
       window.location.reload();
@@ -130,11 +156,28 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         setEmailError(errors[3]);
       }
     }
+    if (!selectedNeighborhood) {
+      errFound = true;
+      setNeighborhoodError('Please select a neighborhood');
+    }
+    if (neighborhoodCode) {
+      const selectedNhood = neighborhoods.find((n) => n.id === selectedNeighborhood);
+      if (selectedNhood && selectedNhood.code && selectedNhood.code !== neighborhoodCode) {
+        errFound = true;
+        setNeighborhoodCodeError('Incorrect neighborhood code');
+      }
+    } else {
+      const selectedNhood = neighborhoods.find((n) => n.id === selectedNeighborhood);
+      if (selectedNhood && selectedNhood.code) {
+        errFound = true;
+        setNeighborhoodCodeError('Neighborhood code is required for this neighborhood');
+      }
+    }
     if (errFound) {
       return;
     }
     if (!CAPTCHA_ENABLED) {
-      signInUser(username, email, password);
+      signInUser(username, email, password, selectedNeighborhood, displayName);
       return;
     }
     if (!captchaRef.current) {
@@ -209,6 +252,53 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
                 }}
                 autoComplete="new-password"
                 disabled={signupsDisabled}
+              />
+            </FormField>
+            <FormField label="Display name (optional)" description="A more personal name to show on your profile">
+              <Input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="e.g. Jane Doe"
+                disabled={signupsDisabled}
+              />
+            </FormField>
+            <FormField
+              label="Neighborhood"
+              description="Select the neighborhood you are associated with"
+              error={neighborhoodError || undefined}
+            >
+              <select
+                value={selectedNeighborhood}
+                onChange={(e) => {
+                  setSelectedNeighborhood(e.target.value);
+                  setNeighborhoodError(null);
+                }}
+                disabled={signupsDisabled || neighborhoods.length === 0}
+                style={{ width: '100%', padding: '0.5rem' }}
+              >
+                <option value="">-- Select a neighborhood --</option>
+                {neighborhoods.map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.name}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <FormField
+              label="Neighborhood Code"
+              description="Enter the physical code for your neighborhood if one is required"
+              error={neighborhoodCodeError || undefined}
+            >
+              <Input
+                type="text"
+                value={neighborhoodCode}
+                onChange={(e) => {
+                  setNeighborhoodCode(e.target.value);
+                  setNeighborhoodCodeError(null);
+                }}
+                placeholder="e.g. 9442 (optional)"
+                disabled={signupsDisabled || !selectedNeighborhood}
+                maxLength={10}
               />
             </FormField>
             {CAPTCHA_ENABLED && (

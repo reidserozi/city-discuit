@@ -19,6 +19,11 @@ const Comment = ({
         <Link className="comment-username" to={`/@${comment.username}`}>
           {`@${comment.username}`}
         </Link>
+        {comment.author?.neighborhood && (
+          <span style={{ marginLeft: '0.5rem', opacity: 0.8, fontSize: '0.9em' }}>
+            📍 {comment.author.neighborhood.name}
+          </span>
+        )}
         <span>commented on</span>
         <Link
           className="comment-post-title"

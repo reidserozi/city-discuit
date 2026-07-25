@@ -500,16 +500,23 @@ const User = () => {
                 editable={user.id === viewer?.id}
                 onEdit={() => setProfilePicModalOpen(true)}
               />
-              <h1
-                className={
-                  'user-card-username' +
-                  (hasSupporterBadge ? ' is-supporter' : '') +
-                  (user.deleted ? ' is-red' : '')
-                }
-              >
-                @{username}
-                {user.isAdmin && <span className="user-card-is-admin">Admin</span>}
-              </h1>
+              <div className="user-card-top-left-text">
+                <h1
+                  className={
+                    'user-card-username' +
+                    (hasSupporterBadge ? ' is-supporter' : '') +
+                    (user.deleted ? ' is-red' : '')
+                  }
+                >
+                  @{username}
+                  {user.isAdmin && <span className="user-card-is-admin">Admin</span>}
+                </h1>
+                {user.displayName && (
+                  <div className="user-card-displayname">
+                    {user.displayName}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="user-card-points">{`${user.points.toLocaleString()} ${stringCount(
               user.points,
@@ -522,6 +529,11 @@ const User = () => {
               <ShowMoreBox showButton maxHeight="120px" childrenHash={user.aboutMe || ''}>
                 <MarkdownBody>{user.aboutMe}</MarkdownBody>
               </ShowMoreBox>
+            </div>
+          )}
+          {user.neighborhood && (
+            <div className="user-card-neighborhood" style={{ marginTop: '0.25rem', opacity: 0.8 }}>
+              📍 Neighborhood: <strong>{user.neighborhood.name}</strong>
             </div>
           )}
           <div className="user-card-badges is-m">{renderBadgesList()}</div>

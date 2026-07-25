@@ -25,6 +25,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AllCommunities from './pages/AllCommunities';
 import AppLoading from './pages/AppLoading';
 import Community from './pages/Community';
+import ForgotPassword from './pages/ForgotPassword';
 import Guidelines from './pages/Guidelines';
 import Home from './pages/Home';
 import { List, Lists } from './pages/Lists';
@@ -37,10 +38,12 @@ import NotFound from './pages/NotFound';
 import Offline from './pages/Offline';
 import Post from './pages/Post';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import ResetPassword from './pages/ResetPassword';
 import Settings from './pages/Settings';
 import { getDevicePreference } from './pages/Settings/devicePrefs';
 import Terms from './pages/Terms';
 import User from './pages/User';
+import VerifyEmail from './pages/VerifyEmail';
 import PushNotifications from './PushNotifications';
 import {
   createCommunityModalOpened,
@@ -293,6 +296,15 @@ const AppSwitch = () => {
         </ProtectedRoute>
         <Route exact path="/login">
           <Login />
+        </Route>
+        <Route exact path="/forgot-password">
+          <ForgotPassword />
+        </Route>
+        <Route exact path="/reset-password">
+          <ResetPassword />
+        </Route>
+        <Route exact path="/verify-email">
+          <VerifyEmail />
         </Route>
         <Route exact path={['/', '/subscriptions', '/all', '/moderating']}>
           <Home />

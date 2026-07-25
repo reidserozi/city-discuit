@@ -377,6 +377,11 @@ const Comment = ({
         <div className="post-comment-body">
           <div className="post-comment-body-head">
             {renderAuthorUsername()}
+            {comment.author?.neighborhood && (
+              <span className="post-comment-head-item" style={{ marginLeft: '0.5rem', opacity: 0.8 }}>
+                From 📍 Neighborhood: {comment.author.neighborhood.name}
+              </span>
+            )}
             {isOP && (
               <div className="post-comment-head-item post-comment-is-op" title="Original poster">
                 OP
@@ -549,6 +554,11 @@ const Comment = ({
       <div className="post-comment-body">
         <div className="post-comment-body-head">
           {renderAuthorUsername()}
+          {comment.author?.neighborhood && (
+            <span className="post-comment-head-item" style={{ marginLeft: '0.5rem', opacity: 0.8 }}>
+              From 📍 Neighborhood: {comment.author.neighborhood.name}
+            </span>
+          )}
           {isOP && (
             <div className="post-comment-head-item post-comment-is-op" title="Original poster">
               OP

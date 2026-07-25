@@ -12,9 +12,9 @@ import { FormField, FormSection } from '../../components/Form';
 import ImageEditModal from '../../components/ImageEditModal';
 import Input, { Checkbox } from '../../components/Input';
 import CommunityLink from '../../components/PostCard/CommunityLink';
-import { isDeviceStandalone, mfetchjson, selectImageCopyURL, validEmail } from '../../helper';
+import { APIError, isDeviceStandalone, mfetch, mfetchjson, selectImageCopyURL, validEmail } from '../../helper';
 import { useIsChanged } from '../../hooks';
-import { Mute, Mutes, MuteType } from '../../serverTypes';
+import { Mute, Mutes, MuteType, Neighborhood } from '../../serverTypes';
 import {
   MainState,
   mutesAdded,
@@ -29,16 +29,36 @@ import {
 import { RootState } from '../../store';
 import ChangePassword from './ChangePassword';
 import DeleteAccount from './DeleteAccount';
+import TwoFactorAuth from './TwoFactorAuth';
 import { getDevicePreference, setDevicePreference } from './devicePrefs';
 
 const Settings = () => {
   const dispatch = useDispatch();
   const user = (useSelector<RootState>((state) => state.main.user) as MainState['user'])!;
   const loggedIn = user !== null;
+  const stytchEnabled = useSelector<RootState>((state) => state.main.stytchEnabled) as MainState['stytchEnabled'];
 
   const mutes = useSelector<RootState>((state) => state.main.mutes) as MainState['mutes'];
   const [aboutMe, setAboutMe] = useState(user.aboutMe || '');
+  const [displayName, setDisplayName] = useState(user.displayName || '');
   const [email, setEmail] = useState(user.email || '');
+  const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState(user.neighborhoodId || '');
+  const [sendingVerificationEmail, setSendingVerificationEmail] = useState(false);
+
+  useEffect(() => {
+    const fetchNeighborhoods = async () => {
+      try {
+        const res = await mfetch('/api/neighborhoods');
+        if (!res.ok) throw new Error('Failed to fetch neighborhoods');
+        const data = await res.json();
+        setNeighborhoods(data || []);
+      } catch (error) {
+        console.error('Failed to load neighborhoods:', error);
+      }
+    };
+    fetchNeighborhoods();
+  }, []);
 
   const [notifsSettings, _setNotifsSettings] = useState({
     upvoteNotifs: !user.upvoteNotificationsOff,
@@ -85,6 +105,7 @@ const Settings = () => {
 
   const [changed, resetChanged] = useIsChanged([
     aboutMe /*, email*/,
+    displayName,
     notifsSettings,
     homeFeed,
     rememberFeedSort,
@@ -95,6 +116,7 @@ const Settings = () => {
     infiniteScrollingDisabed,
     requireAltText,
     topNavbarAutohideDisabled,
+    selectedNeighborhood,
   ]);
 
   const applicationServerKey = useSelector<RootState>(
@@ -159,6 +181,7 @@ const Settings = () => {
         method: 'POST',
         body: JSON.stringify({
           aboutMe,
+          displayName: displayName || null,
           upvoteNotificationsOff: !notifsSettings.upvoteNotifs,
           replyNotificationsOff: !notifsSettings.replyNotifs,
           homeFeed,
@@ -167,6 +190,7 @@ const Settings = () => {
           email,
           hideUserProfilePictures: !showUserProfilePictures,
           requireAltText,
+          neighborhoodId: selectedNeighborhood || null,
         }),
       });
       dispatch(userLoggedIn(ruser));
@@ -175,6 +199,30 @@ const Settings = () => {
       dispatch(settingsChanged());
     } catch (error) {
       dispatch(snackAlertError(error));
+    }
+  };
+
+  const handleResendVerificationEmail = async () => {
+    setSendingVerificationEmail(true);
+    try {
+      const res = await mfetch('/api/_email_verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (res.ok) {
+        dispatch(snackAlert('Verification email sent. Please check your inbox.'));
+      } else {
+        const json = await res.json();
+        throw new APIError(res.status, json);
+      }
+    } catch (error) {
+      dispatch(snackAlertError(error));
+    } finally {
+      setSendingVerificationEmail(false);
     }
   };
 
@@ -332,7 +380,33 @@ const Settings = () => {
             <Input value={user.username || ''} disabled />
           </FormField>
           <FormField label="Email">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ flex: 1 }} />
+              {stytchEnabled && email && !user.emailConfirmedAt && (
+                <button
+                  type="button"
+                  className="button button-outline"
+                  onClick={handleResendVerificationEmail}
+                  disabled={sendingVerificationEmail}
+                  style={{ whiteSpace: 'nowrap', padding: '0.5rem 1rem' }}
+                  title="Send verification email to this address"
+                >
+                  {sendingVerificationEmail ? 'Sending...' : 'Verify'}
+                </button>
+              )}
+              {stytchEnabled && email && user.emailConfirmedAt && (
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-brand)', whiteSpace: 'nowrap' }}>
+                  ✓ Verified
+                </div>
+              )}
+            </div>
+          </FormField>
+          <FormField label="Display name" description="Optional - a more personal name to show on your profile">
+            <Input
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="e.g. Jane Doe"
+            />
           </FormField>
           <FormField label="About me">
             <textarea
@@ -342,9 +416,28 @@ const Settings = () => {
               onChange={(e) => setAboutMe(e.target.value)}
             />
           </FormField>
+          <FormField label="Neighborhood">
+            <select
+              value={selectedNeighborhood}
+              onChange={(e) => setSelectedNeighborhood(e.target.value)}
+              style={{ width: '100%', padding: '0.5rem' }}
+            >
+              <option value="">-- No neighborhood --</option>
+              {neighborhoods.map((n) => (
+                <option key={n.id} value={n.id}>
+                  {n.name}
+                </option>
+              ))}
+            </select>
+          </FormField>
           <FormField>
             <ChangePassword />
           </FormField>
+          {stytchEnabled && (
+            <FormField>
+              <TwoFactorAuth />
+            </FormField>
+          )}
           <FormField>
             <DeleteAccount user={user} />
           </FormField>

@@ -44,6 +44,7 @@ import { SVGExternalLink } from '../../SVGs';
 import CommunityCard from './CommunityCard';
 import PostImage from './PostImage';
 import PostVotesBar from './PostVotesBar';
+import MapDisplay from '../../components/MapDisplay';
 
 const Post = () => {
   const { id, commentId, communityName } = useParams<{ [key: string]: string }>(); // id is post.publicId
@@ -621,6 +622,13 @@ const Post = () => {
             <CommunityCard community={community} />
           ) : (
             <CommunitySkeleton />
+          )}
+          {post.latitude && post.longitude && (
+            <MapDisplay
+              latitude={post.latitude}
+              longitude={post.longitude}
+              locationName={post.locationName || undefined}
+            />
           )}
           <MiniFooter />
         </div>

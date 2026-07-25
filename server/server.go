@@ -27,6 +27,7 @@ import (
 	"github.com/discuitnet/discuit/internal/images"
 	"github.com/discuitnet/discuit/internal/ratelimits"
 	"github.com/discuitnet/discuit/internal/sessions"
+	"github.com/discuitnet/discuit/internal/stytchclient"
 	"github.com/discuitnet/discuit/internal/uid"
 	"github.com/discuitnet/discuit/internal/utils"
 	"github.com/gomodule/redigo/redis"
@@ -60,6 +61,9 @@ type Server struct {
 	sessions *sessions.RedisStore
 
 	ipblocks *ipblocks.Blocker
+
+	// Stytch authentication client (nil if not configured).
+	stytch *stytchclient.Client
 
 	// react serve
 	reactPath  string
@@ -105,13 +109,23 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 		core.EnablePushNotifications(keys, conf.WebPushSubscriberEmail)
 	}
 
+	if conf.StytchProjectID != "" && conf.StytchSecret != "" {
+		s.stytch = stytchclient.New(conf.StytchProjectID, conf.StytchSecret, conf.StytchEnvironment)
+	}
+
 	s.openLoggers()
 
 	// API routes.
 	r.Handle("/api/_initial", s.withHandler(s.initial)).Methods("GET")
 	r.Handle("/api/_login", s.withHandler(s.login)).Methods("POST")
+	r.Handle("/api/_login/mfa", s.withHandler(s.loginMFA)).Methods("POST")
 	r.Handle("/api/_signup", s.withHandler(s.signup)).Methods("POST")
 	r.Handle("/api/_user", s.withHandler(s.getLoggedInUser)).Methods("GET")
+	r.Handle("/api/_password_reset", s.withHandler(s.passwordResetStart)).Methods("POST")
+	r.Handle("/api/_password_reset/confirm", s.withHandler(s.passwordResetConfirm)).Methods("POST")
+	r.Handle("/api/_email_verification", s.withHandler(s.emailVerificationStart)).Methods("POST")
+	r.Handle("/api/_email_verification/confirm", s.withHandler(s.emailVerificationConfirm)).Methods("POST")
+	r.Handle("/api/_mfa", s.withHandler(s.handleMFA)).Methods("POST", "DELETE")
 
 	r.Handle("/api/users/{username}", s.withHandler(s.getUser)).Methods("GET")
 	r.Handle("/api/users/{username}", s.withHandler(s.deleteUser)).Methods("DELETE")
@@ -134,6 +148,11 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	r.Handle("/api/mutes/users/{mutedUserID}", s.withHandler(s.deleteUserMute)).Methods("DELETE")
 	r.Handle("/api/mutes/communities/{mutedCommunityID}", s.withHandler(s.deleteCommunityMute)).Methods("DELETE")
 	r.Handle("/api/mutes/{muteID}", s.withHandler(s.deleteMute)).Methods("DELETE")
+
+	r.Handle("/api/neighborhoods", s.withHandler(s.getNeighborhoods)).Methods("GET")
+	r.Handle("/api/admin/neighborhoods", s.withHandler(s.createNeighborhood)).Methods("POST")
+	r.Handle("/api/admin/neighborhoods/{id}", s.withHandler(s.updateNeighborhood)).Methods("PUT")
+	r.Handle("/api/admin/neighborhoods/{id}", s.withHandler(s.deleteNeighborhood)).Methods("DELETE")
 
 	r.Handle("/api/posts", s.withHandler(s.feed)).Methods("GET")
 	r.Handle("/api/posts", s.withHandler(s.addPost)).Methods("POST")

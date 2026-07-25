@@ -14,6 +14,7 @@ import (
 	"github.com/discuitnet/discuit/internal/hcaptcha"
 	"github.com/discuitnet/discuit/internal/httperr"
 	"github.com/discuitnet/discuit/internal/httputil"
+	msql "github.com/discuitnet/discuit/internal/sql"
 	"github.com/discuitnet/discuit/internal/uid"
 	"github.com/gorilla/mux"
 )
@@ -124,6 +125,7 @@ func (s *Server) initial(w *responseWriter, r *request) error {
 	var err error
 	response := struct {
 		SignupsDisabled bool                `json:"signupsDisabled"`
+		StytchEnabled   bool                `json:"stytchEnabled"`
 		ReportReasons   []core.ReportReason `json:"reportReasons"`
 		User            *core.User          `json:"user"`
 		Lists           []*core.List        `json:"lists"`
@@ -142,6 +144,7 @@ func (s *Server) initial(w *responseWriter, r *request) error {
 		VAPIDPublicKey:           s.webPushVAPIDKeys.Public,
 		ImagePostSubmitReqPoints: s.config.MediaUploadRequiredPoints,
 		LinkPostSubmitReqPoints:  s.config.MediaUploadRequiredPoints,
+		StytchEnabled:            s.stytch != nil,
 	}
 
 	response.Mutes.CommunityMutes = []*core.Mute{}
@@ -249,6 +252,19 @@ func (s *Server) login(w *responseWriter, r *request) error {
 		return err
 	}
 
+	// If user has MFA enabled, require TOTP code
+	if user.MFAEnabled {
+		pendingToken, err := s.createPendingMFALogin(user.ID.String())
+		if err != nil {
+			return err
+		}
+		return w.writeJSON(map[string]interface{}{
+			"mfaRequired":  true,
+			"pendingToken": pendingToken,
+		})
+	}
+
+	// No MFA required, login immediately
 	if err = s.loginUser(user, r.ses, w, r.req); err != nil {
 		return err
 	}
@@ -278,6 +294,8 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 	email := values["email"]
 	password := values["password"]
 	captchaToken := values["captchaToken"]
+	neighborhoodID := values["neighborhoodID"]
+	displayName := values["displayName"]
 
 	// Verify captcha.
 	if s.config.CaptchaSecret != "" {
@@ -285,6 +303,13 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 			return httperr.NewForbidden("captcha_verify_fail_1", "Captha verification failed.")
 		} else if !ok {
 			return httperr.NewForbidden("captcha_verify_fail_2", "Captha verification failed.")
+		}
+	}
+
+	// Verify neighborhood exists if provided
+	if neighborhoodID != "" {
+		if _, err := core.GetNeighborhoodByID(r.ctx, s.db, neighborhoodID); err != nil {
+			return httperr.NewBadRequest("invalid_neighborhood", "Neighborhood not found")
 		}
 	}
 
@@ -296,13 +321,16 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 		return err
 	}
 
-	user, err := core.RegisterUser(r.ctx, s.db, username, email, password, httputil.GetIP(r.req))
+	user, err := core.RegisterUser(r.ctx, s.db, username, email, password, "", neighborhoodID, displayName)
 	if err != nil {
 		return err
 	}
 
 	// Try logging in user.
 	s.loginUser(user, r.ses, w, r.req)
+
+	// Send verification email if Stytch is configured
+	s.sendEmailVerificationBestEffort(user)
 
 	w.WriteHeader(http.StatusCreated)
 	return w.writeJSON(user)
@@ -498,12 +526,29 @@ func (s *Server) updateUserSettings(w *responseWriter, r *request) error {
 	query := r.urlQueryParams()
 	switch query.Get("action") {
 	case "updateProfile":
+		// Capture old email before unmarshaling to detect changes
+		oldEmail := user.EmailPublic
+
 		if err = r.unmarshalJSONBody(&user); err != nil {
 			return err
 		}
 
+		// Detect email change and clear confirmation if changed
+		if (oldEmail == nil && user.EmailPublic != nil) ||
+		   (oldEmail != nil && user.EmailPublic != nil && *oldEmail != *user.EmailPublic) ||
+		   (oldEmail != nil && user.EmailPublic == nil) {
+			// Email changed, clear confirmation
+			user.EmailConfirmedAt = msql.NewNullTime(nil)
+		}
+
 		if err = user.Update(r.ctx, s.db); err != nil {
 			return err
+		}
+
+		// Send new verification email if email was changed and Stytch is configured
+		if (oldEmail == nil && user.EmailPublic != nil) ||
+		   (oldEmail != nil && user.EmailPublic != nil && *oldEmail != *user.EmailPublic) {
+			s.sendEmailVerificationBestEffort(user)
 		}
 	case "changePassword":
 		values, err := r.unmarshalJSONBodyToStringsMap(true)

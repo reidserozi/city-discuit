@@ -30,6 +30,7 @@ export interface NotificationsResponse {
 
 export interface InitialValues {
   signupsDisabled: boolean;
+  stytchEnabled: boolean;
   reportReasons: ReportReason[] | null;
   user: User | null;
   lists: List[];
@@ -45,6 +46,7 @@ export interface InitialValues {
 export interface MainState {
   user: User | null; // If null, user is not logged in.
   vapidPublicKey: string | null; // The applicationServerKey for the Web Push API.
+  stytchEnabled: boolean; // Whether Stytch auth features are configured.
   appInstallButton: {
     show: boolean;
     deferredPrompt: unknown;
@@ -98,6 +100,7 @@ const initialNotifications = {
 const initialState: MainState = {
   user: null,
   vapidPublicKey: null,
+  stytchEnabled: false,
   appInstallButton: {
     show: false,
     deferredPrompt: undefined,
@@ -154,6 +157,7 @@ export default function mainReducer(
         vapidPublicKey: payload.vapidPublicKey,
         noUsers: payload.noUsers,
         signupsDisabled: payload.signupsDisabled,
+        stytchEnabled: payload.stytchEnabled,
         imagePostSubmitReqPoints: payload.imagePostSubmitReqPoints,
         linkPostSubmitReqPoints: payload.linkPostSubmitReqPoints,
       };

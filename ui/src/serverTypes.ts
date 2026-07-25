@@ -1,6 +1,15 @@
+export interface Neighborhood {
+  id: string;
+  name: string;
+  description: string;
+  code: string;
+  createdAt: string; // A datetime.
+}
+
 export interface User {
   id: string;
   username: string;
+  displayName?: string | null;
   email: string | null;
   emailConfirmedAt: string | null; // A datetime.
   aboutMe: string | null;
@@ -21,12 +30,15 @@ export interface User {
   embedsOff: boolean;
   hideUserProfilePictures: boolean;
   requireAltText: boolean;
+  mfaEnabled: boolean;
   bannedAt: string | null; // A datetime.
   isBanned: boolean;
   notificationsNewCount: number;
   moddingList: Community[] | null;
   createdIP: string | null;
   lastSeenIP: string | null;
+  neighborhoodId?: string; // Neighborhood ID if user belongs to one
+  neighborhood?: Neighborhood; // Full neighborhood object if loaded
 }
 
 export type UserGroup = 'normal' | 'admins' | 'mods';
@@ -133,6 +145,9 @@ export interface Post {
   deletedAs?: UserGroup;
   deletedContent: boolean;
   deletedContentAs?: UserGroup;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationName?: string | null;
   noComments: number;
   comments?: Comment[] | null;
   commentsNext?: string | null;
