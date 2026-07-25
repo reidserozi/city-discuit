@@ -29,6 +29,7 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const dispatch = useDispatch();
 
   const signupsDisabled = useSelector<RootState>((state) => state.main.signupsDisabled) as boolean;
+  const stytchEnabled = useSelector<RootState>((state) => state.main.stytchEnabled) as boolean;
 
   const [username, handleUsernameChange] = useInputUsername(usernameMaxLength);
   const [usernameError, setUsernameError] = useState<string | null>(null);
@@ -150,7 +151,15 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
       errFound = true;
       setRepeatPasswordError(errors[6]);
     }
-    if (email) {
+    if (stytchEnabled) {
+      if (!email) {
+        errFound = true;
+        setEmailError('Email is required.');
+      } else if (!validEmail(email)) {
+        errFound = true;
+        setEmailError(errors[3]);
+      }
+    } else if (email) {
       if (!validEmail(email)) {
         errFound = true;
         setEmailError(errors[3]);
@@ -225,8 +234,12 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
               />
             </FormField>
             <FormField
-              label="Email (optional)"
-              description="Without an email address, there's no way to recover your account if you lose your password."
+              label={stytchEnabled ? 'Email' : 'Email (optional)'}
+              description={
+                stytchEnabled
+                  ? 'An email address is required to log in securely.'
+                  : "Without an email address, there's no way to recover your account if you lose your password."
+              }
               error={emailError || undefined}
             >
               <Input

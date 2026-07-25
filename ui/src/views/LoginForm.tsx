@@ -11,13 +11,20 @@ const LoginForm = ({ isModal = false }: { isModal?: boolean }) => {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [mfaCode, setMfaCode] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [pendingToken, setPendingToken] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     setLoginError(null);
-  }, [username, password, mfaCode]);
+  }, [username, password, otpCode]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   const handleLoginSubmit: React.FormEventHandler = async (event) => {
     event.preventDefault();
@@ -41,13 +48,14 @@ const LoginForm = ({ isModal = false }: { isModal?: boolean }) => {
       });
       if (res.ok) {
         const json = await res.json();
-        // Check if MFA is required
-        if (json.mfaRequired) {
+        // Check if OTP is required
+        if (json.otpRequired) {
           setPendingToken(json.pendingToken);
-          setMfaCode('');
+          setOtpCode('');
           setLoginError(null);
+          setResendCooldown(0);
         } else {
-          // No MFA, direct login
+          // No OTP, direct login
           dispatch(userLoggedIn(json));
           window.location.reload();
         }
@@ -70,19 +78,19 @@ const LoginForm = ({ isModal = false }: { isModal?: boolean }) => {
     }
   };
 
-  const handleMfaSubmit: React.FormEventHandler = async (event) => {
+  const handleOtpSubmit: React.FormEventHandler = async (event) => {
     event.preventDefault();
-    if (!pendingToken || !mfaCode.trim()) {
+    if (!pendingToken || !otpCode.trim()) {
       setLoginError('Please enter your 6-digit code.');
       return;
     }
     try {
-      const res = await mfetch('/api/_login/mfa', {
+      const res = await mfetch('/api/_login/otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
         },
-        body: JSON.stringify({ pendingToken, code: mfaCode.trim() }),
+        body: JSON.stringify({ pendingToken, code: otpCode.trim() }),
       });
       if (res.ok) {
         const json = await res.json();
@@ -91,11 +99,11 @@ const LoginForm = ({ isModal = false }: { isModal?: boolean }) => {
       } else {
         if (res.status === 400) {
           const json = await res.json();
-          setLoginError(json.message || 'Invalid MFA code. Please try again.');
+          setLoginError(json.message || 'Invalid OTP code. Please try again.');
         } else if (res.status === 410) {
-          setLoginError('MFA code expired. Please log in again.');
+          setLoginError('OTP code expired. Please log in again.');
           setPendingToken(null);
-          setMfaCode('');
+          setOtpCode('');
         } else {
           throw new APIError(res.status, await res.json());
         }
@@ -105,13 +113,38 @@ const LoginForm = ({ isModal = false }: { isModal?: boolean }) => {
     }
   };
 
+  const handleResendOtp: React.MouseEventHandler = async (event) => {
+    event.preventDefault();
+    if (!pendingToken || resendCooldown > 0) return;
+
+    try {
+      const res = await mfetch('/api/_login/otp/resend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({ pendingToken }),
+      });
+      if (res.ok) {
+        setLoginError(null);
+        setOtpCode('');
+        setResendCooldown(30);
+      } else {
+        const json = await res.json();
+        setLoginError(json.message || 'Failed to resend code. Please try again.');
+      }
+    } catch (error) {
+      dispatch(snackAlertError(error));
+    }
+  };
+
   const usernameRef = useRef<HTMLInputElement>(null);
-  const mfaCodeRef = useRef<HTMLInputElement>(null);
+  const otpCodeRef = useRef<HTMLInputElement>(null);
   const { pathname } = useLocation();
   useEffect(() => {
     if (pathname === '/login') {
       if (pendingToken) {
-        mfaCodeRef.current?.focus();
+        otpCodeRef.current?.focus();
       } else {
         usernameRef.current?.focus();
       }
@@ -126,27 +159,28 @@ const LoginForm = ({ isModal = false }: { isModal?: boolean }) => {
 
   const handleBackToLogin = () => {
     setPendingToken(null);
-    setMfaCode('');
+    setOtpCode('');
     setLoginError(null);
+    setResendCooldown(0);
   };
 
-  // MFA code entry stage
+  // OTP code entry stage
   if (pendingToken) {
     return (
-      <Form className="login-box modal-card-content" onSubmit={handleMfaSubmit}>
-        <FormField label="Authenticator code">
+      <Form className="login-box modal-card-content" onSubmit={handleOtpSubmit}>
+        <FormField label="Email verification code">
           <Input
-            ref={mfaCodeRef}
+            ref={otpCodeRef}
             type="text"
-            value={mfaCode}
-            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
             maxLength={6}
             autoComplete="off"
             autoFocus
           />
           <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
-            Enter the 6-digit code from your authenticator app.
+            We emailed you a 6-digit code. Enter it below to finish logging in.
           </div>
         </FormField>
         {loginError && (
@@ -160,6 +194,22 @@ const LoginForm = ({ isModal = false }: { isModal?: boolean }) => {
             Back to login
           </button>
         </FormField>
+        <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.85rem' }}>
+          <button
+            type="button"
+            style={{
+              color: resendCooldown > 0 ? '#999' : 'var(--color-link)',
+              textDecoration: 'none',
+              background: 'none',
+              border: 'none',
+              cursor: resendCooldown > 0 ? 'not-allowed' : 'pointer',
+            }}
+            onClick={handleResendOtp}
+            disabled={resendCooldown > 0}
+          >
+            {resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : "Didn't receive it? Resend code"}
+          </button>
+        </div>
       </Form>
     );
   }

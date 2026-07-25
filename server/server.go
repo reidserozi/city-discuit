@@ -118,14 +118,14 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	// API routes.
 	r.Handle("/api/_initial", s.withHandler(s.initial)).Methods("GET")
 	r.Handle("/api/_login", s.withHandler(s.login)).Methods("POST")
-	r.Handle("/api/_login/mfa", s.withHandler(s.loginMFA)).Methods("POST")
+	r.Handle("/api/_login/otp", s.withHandler(s.loginEmailOTP)).Methods("POST")
+	r.Handle("/api/_login/otp/resend", s.withHandler(s.resendEmailOTP)).Methods("POST")
 	r.Handle("/api/_signup", s.withHandler(s.signup)).Methods("POST")
 	r.Handle("/api/_user", s.withHandler(s.getLoggedInUser)).Methods("GET")
 	r.Handle("/api/_password_reset", s.withHandler(s.passwordResetStart)).Methods("POST")
 	r.Handle("/api/_password_reset/confirm", s.withHandler(s.passwordResetConfirm)).Methods("POST")
 	r.Handle("/api/_email_verification", s.withHandler(s.emailVerificationStart)).Methods("POST")
 	r.Handle("/api/_email_verification/confirm", s.withHandler(s.emailVerificationConfirm)).Methods("POST")
-	r.Handle("/api/_mfa", s.withHandler(s.handleMFA)).Methods("POST", "DELETE")
 
 	r.Handle("/api/users/{username}", s.withHandler(s.getUser)).Methods("GET")
 	r.Handle("/api/users/{username}", s.withHandler(s.deleteUser)).Methods("DELETE")

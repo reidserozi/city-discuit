@@ -30,7 +30,6 @@ export interface User {
   embedsOff: boolean;
   hideUserProfilePictures: boolean;
   requireAltText: boolean;
-  mfaEnabled: boolean;
   bannedAt: string | null; // A datetime.
   isBanned: boolean;
   notificationsNewCount: number;
