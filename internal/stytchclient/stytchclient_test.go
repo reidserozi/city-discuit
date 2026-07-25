@@ -85,24 +85,22 @@ func TestAuthenticateMagicLink(t *testing.T) {
 	}
 }
 
-func TestCreateTOTP(t *testing.T) {
+func TestSendEmailOTP(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/v1/totps" {
+		if r.URL.Path != "/v1/otps/email/login_or_create" {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 
-		var req createTOTPReq
+		var req sendEmailOTPReq
 		json.NewDecoder(r.Body).Decode(&req)
-		if req.UserID != "user_123" {
-			t.Errorf("unexpected user_id: %s", req.UserID)
+		if req.Email != "test@example.com" {
+			t.Errorf("unexpected email: %s", req.Email)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"totp_id":        "totp_456",
-			"secret":         "JBSWY3DPEBLW64TMMQ======",
-			"qr_code":        "data:image/png;base64,iVBORw0KGgo=",
-			"recovery_codes": []string{"code1", "code2", "code3"},
+		json.NewEncoder(w).Encode(map[string]string{
+			"method_id": "method_456",
+			"user_id":   "user_123",
 		})
 	}))
 	defer server.Close()
@@ -114,33 +112,27 @@ func TestCreateTOTP(t *testing.T) {
 		httpClient: &http.Client{},
 	}
 
-	totpID, secret, qr, codes, err := client.CreateTOTP(context.Background(), "user_123")
+	methodID, userID, err := client.SendEmailOTP(context.Background(), "test@example.com")
 	if err != nil {
-		t.Fatalf("CreateTOTP error: %v", err)
+		t.Fatalf("SendEmailOTP error: %v", err)
 	}
-	if totpID != "totp_456" {
-		t.Errorf("expected totp_id 'totp_456', got %s", totpID)
+	if methodID != "method_456" {
+		t.Errorf("expected method_id 'method_456', got %s", methodID)
 	}
-	if secret != "JBSWY3DPEBLW64TMMQ======" {
-		t.Errorf("unexpected secret: %s", secret)
-	}
-	if qr != "data:image/png;base64,iVBORw0KGgo=" {
-		t.Errorf("unexpected qr code: %s", qr)
-	}
-	if len(codes) != 3 || codes[0] != "code1" {
-		t.Errorf("unexpected recovery codes: %v", codes)
+	if userID != "user_123" {
+		t.Errorf("expected user_id 'user_123', got %s", userID)
 	}
 }
 
-func TestAuthenticateTOTP(t *testing.T) {
+func TestAuthenticateEmailOTP(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/v1/totps/authenticate" {
+		if r.URL.Path != "/v1/otps/authenticate" {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 
-		var req authenticateTOTPReq
+		var req authenticateEmailOTPReq
 		json.NewDecoder(r.Body).Decode(&req)
-		if req.UserID != "user_123" || req.Code != "123456" {
+		if req.MethodID != "method_456" || req.Code != "123456" {
 			t.Errorf("unexpected request: %+v", req)
 		}
 
@@ -156,69 +148,9 @@ func TestAuthenticateTOTP(t *testing.T) {
 		httpClient: &http.Client{},
 	}
 
-	err := client.AuthenticateTOTP(context.Background(), "user_123", "123456")
+	err := client.AuthenticateEmailOTP(context.Background(), "method_456", "123456")
 	if err != nil {
-		t.Fatalf("AuthenticateTOTP error: %v", err)
-	}
-}
-
-func TestDeleteTOTP(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasPrefix(r.URL.Path, "/v1/totps/") {
-			t.Errorf("unexpected path: %s", r.URL.Path)
-		}
-		if r.Method != "DELETE" {
-			t.Errorf("unexpected method: %s", r.Method)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{})
-	}))
-	defer server.Close()
-
-	client := &Client{
-		projectID:  "proj",
-		secret:     "sec",
-		baseURL:    server.URL,
-		httpClient: &http.Client{},
-	}
-
-	err := client.DeleteTOTP(context.Background(), "user_123", "totp_456")
-	if err != nil {
-		t.Fatalf("DeleteTOTP error: %v", err)
-	}
-}
-
-func TestCreateUser(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/v1/users" {
-			t.Errorf("unexpected path: %s", r.URL.Path)
-		}
-
-		var req createUserReq
-		json.NewDecoder(r.Body).Decode(&req)
-		if req.Email != "test@example.com" {
-			t.Errorf("unexpected email: %s", req.Email)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"user_id": "user_789"})
-	}))
-	defer server.Close()
-
-	client := &Client{
-		projectID:  "proj",
-		secret:     "sec",
-		baseURL:    server.URL,
-		httpClient: &http.Client{},
-	}
-
-	userID, err := client.CreateUser(context.Background(), "test@example.com", "")
-	if err != nil {
-		t.Fatalf("CreateUser error: %v", err)
-	}
-	if userID != "user_789" {
-		t.Errorf("expected user_id 'user_789', got %s", userID)
+		t.Fatalf("AuthenticateEmailOTP error: %v", err)
 	}
 }
 

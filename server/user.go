@@ -252,19 +252,37 @@ func (s *Server) login(w *responseWriter, r *request) error {
 		return err
 	}
 
-	// If user has MFA enabled, require TOTP code
-	if user.MFAEnabled {
-		pendingToken, err := s.createPendingMFALogin(user.ID.String())
+	// If Stytch is configured, require Email OTP for every login
+	if s.stytch != nil {
+		if !user.Email.Valid || user.Email.String == "" {
+			return httperr.NewBadRequest("email_required", "Your account must have an email address to log in. Contact support to add one.")
+		}
+
+		// Send OTP email and create pending login token
+		methodID, stytchUserID, err := s.stytch.SendEmailOTP(r.ctx, user.Email.String)
 		if err != nil {
 			return err
 		}
+
+		// Persist Stytch user ID if not already set
+		if !user.StytchUserID.Valid {
+			if err := user.SetStytchUserID(r.ctx, s.db, stytchUserID); err != nil {
+				return err
+			}
+		}
+
+		pendingToken, err := s.createPendingOTPLogin(user.ID.String(), methodID)
+		if err != nil {
+			return err
+		}
+
 		return w.writeJSON(map[string]interface{}{
-			"mfaRequired":  true,
+			"otpRequired":  true,
 			"pendingToken": pendingToken,
 		})
 	}
 
-	// No MFA required, login immediately
+	// No OTP required (Stytch disabled), login immediately
 	if err = s.loginUser(user, r.ses, w, r.req); err != nil {
 		return err
 	}
@@ -310,6 +328,13 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 	if neighborhoodID != "" {
 		if _, err := core.GetNeighborhoodByID(r.ctx, s.db, neighborhoodID); err != nil {
 			return httperr.NewBadRequest("invalid_neighborhood", "Neighborhood not found")
+		}
+	}
+
+	// Email is required when Stytch is configured (Email OTP on every login)
+	if s.stytch != nil {
+		if email == "" {
+			return httperr.NewBadRequest("email_required", "An email address is required to sign up.")
 		}
 	}
 

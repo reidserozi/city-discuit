@@ -1,10 +1,10 @@
 package server
 
 import (
-	"context"
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"net"
 	"strings"
@@ -16,30 +16,10 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-// getOrCreateStytchUserID lazily provisions a Stytch User and persists the ID.
-// Returns the existing Stytch user ID if already provisioned.
-func (s *Server) getOrCreateStytchUserID(ctx context.Context, user *core.User) (string, error) {
-	if user.StytchUserID.Valid {
-		return user.StytchUserID.String, nil
-	}
-
-	// Create new Stytch user
-	stytchUserID, err := s.stytch.CreateUser(ctx, user.Email.String, user.ID.String())
-	if err != nil {
-		return "", err
-	}
-
-	// Persist the mapping
-	if err := user.SetStytchUserID(ctx, s.db, stytchUserID); err != nil {
-		return "", err
-	}
-
-	return stytchUserID, nil
-}
-
-// createPendingMFALogin generates a short-lived bearer token for MFA code submission.
+// createPendingOTPLogin generates a short-lived bearer token for OTP code submission.
 // Token is stored in Redis with 5-minute TTL and single-use semantics.
-func (s *Server) createPendingMFALogin(userID string) (string, error) {
+// Stores both user ID and method ID (from Stytch) needed to verify the OTP.
+func (s *Server) createPendingOTPLogin(userID, methodID string) (string, error) {
 	// Generate cryptographically secure token
 	tokenBytes := make([]byte, 32)
 	if _, err := rand.Read(tokenBytes); err != nil {
@@ -51,10 +31,21 @@ func (s *Server) createPendingMFALogin(userID string) (string, error) {
 	conn := s.redisPool.Get()
 	defer conn.Close()
 
-	key := "mfa_pending:" + token
+	key := "otp_pending:" + token
+	otpData := struct {
+		UserID   string `json:"user_id"`
+		MethodID string `json:"method_id"`
+	}{
+		UserID:   userID,
+		MethodID: methodID,
+	}
 
-	// Store user ID and attempts as separate keys for easier atomic operations
-	if _, err := conn.Do("SET", key, userID); err != nil {
+	otpDataJSON, err := json.Marshal(otpData)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err := conn.Do("SET", key, string(otpDataJSON)); err != nil {
 		return "", err
 	}
 	if _, err := conn.Do("SET", key+":attempts", 0); err != nil {
@@ -70,8 +61,8 @@ func (s *Server) createPendingMFALogin(userID string) (string, error) {
 	return token, nil
 }
 
-// loginMFA submits a TOTP code to complete MFA login.
-func (s *Server) loginMFA(w *responseWriter, r *request) error {
+// loginEmailOTP submits a 6-digit email OTP code to complete login.
+func (s *Server) loginEmailOTP(w *responseWriter, r *request) error {
 	if s.stytch == nil {
 		return httperr.NewForbidden("feature_disabled", "Stytch is not configured.")
 	}
@@ -82,7 +73,7 @@ func (s *Server) loginMFA(w *responseWriter, r *request) error {
 		clientIP, _, _ = net.SplitHostPort(r.req.RemoteAddr)
 	}
 
-	if err := s.rateLimit(r, "login_mfa_1_"+clientIP, time.Second, 10); err != nil {
+	if err := s.rateLimit(r, "login_otp_1_"+clientIP, time.Second, 10); err != nil {
 		return err
 	}
 
@@ -102,21 +93,30 @@ func (s *Server) loginMFA(w *responseWriter, r *request) error {
 	}
 
 	// Rate limit per pending token
-	if err := s.rateLimit(r, "login_mfa_2_"+body.PendingToken, 5*time.Minute, 6); err != nil {
+	if err := s.rateLimit(r, "login_otp_2_"+body.PendingToken, 5*time.Minute, 6); err != nil {
 		return err
 	}
 
-	// Retrieve pending MFA login from Redis
+	// Retrieve pending OTP login from Redis
 	conn := s.redisPool.Get()
 	defer conn.Close()
 
-	key := "mfa_pending:" + body.PendingToken
-	userIDStr, err := redis.String(conn.Do("GET", key))
+	key := "otp_pending:" + body.PendingToken
+	otpDataStr, err := redis.String(conn.Do("GET", key))
 	if err != nil {
 		if errors.Is(err, redis.ErrNil) {
-			return httperr.NewBadRequest("invalid_token", "Invalid or expired MFA token.")
+			return httperr.NewBadRequest("invalid_token", "Invalid or expired OTP token.")
 		}
 		return err
+	}
+
+	// Parse OTP data
+	var otpData struct {
+		UserID   string `json:"user_id"`
+		MethodID string `json:"method_id"`
+	}
+	if err := json.Unmarshal([]byte(otpDataStr), &otpData); err != nil {
+		return httperr.NewBadRequest("invalid_token", "Malformed OTP token.")
 	}
 
 	// Get current attempt count
@@ -132,7 +132,7 @@ func (s *Server) loginMFA(w *responseWriter, r *request) error {
 	}
 
 	// Look up user by ID
-	userID, err := uid.FromString(userIDStr)
+	userID, err := uid.FromString(otpData.UserID)
 	if err != nil {
 		return httperr.NewBadRequest("invalid_token", "Invalid user ID in token.")
 	}
@@ -145,16 +145,11 @@ func (s *Server) loginMFA(w *responseWriter, r *request) error {
 		return err
 	}
 
-	// Ensure user has Stytch ID
-	if !user.StytchUserID.Valid {
-		return httperr.NewBadRequest("mfa_not_enabled", "User does not have MFA enabled.")
-	}
-
-	// Verify the TOTP code with Stytch
-	if err := s.stytch.AuthenticateTOTP(r.ctx, user.StytchUserID.String, body.Code); err != nil {
+	// Verify the OTP code with Stytch
+	if err := s.stytch.AuthenticateEmailOTP(r.ctx, otpData.MethodID, body.Code); err != nil {
 		// Increment failed attempts
 		conn.Do("INCR", key+":attempts")
-		return httperr.NewBadRequest("invalid_code", "Invalid or expired MFA code.")
+		return httperr.NewBadRequest("invalid_code", "Invalid or expired OTP code.")
 	}
 
 	// Success! Delete the pending token (single-use)
@@ -168,119 +163,103 @@ func (s *Server) loginMFA(w *responseWriter, r *request) error {
 	return w.writeJSON(user)
 }
 
-// handleMFA handles MFA enrollment and disabling.
-// POST: action=enrollStart or action=enrollConfirm
-// DELETE: disables MFA
-func (s *Server) handleMFA(w *responseWriter, r *request) error {
+// resendEmailOTP re-sends the OTP code to the user's email.
+func (s *Server) resendEmailOTP(w *responseWriter, r *request) error {
 	if s.stytch == nil {
 		return httperr.NewForbidden("feature_disabled", "Stytch is not configured.")
 	}
 
-	if !r.loggedIn {
-		return errNotLoggedIn
+	// Rate limit - tightly restrict resends
+	var body struct {
+		PendingToken string `json:"pendingToken"`
 	}
-
-	// Rate limit
-	if err := s.rateLimit(r, "mfa_enroll_1_"+r.viewer.String(), time.Minute, 5); err != nil {
+	if err := r.unmarshalJSONBody(&body); err != nil {
 		return err
 	}
 
-	// Get current user
-	user, err := core.GetUser(r.ctx, s.db, *r.viewer, r.viewer)
+	body.PendingToken = strings.TrimSpace(body.PendingToken)
+	if body.PendingToken == "" {
+		return httperr.NewBadRequest("invalid_request", "pendingToken is required.")
+	}
+
+	if err := s.rateLimit(r, "login_otp_resend_1_"+body.PendingToken, 30*time.Second, 1); err != nil {
+		return err
+	}
+
+	// Retrieve pending OTP login from Redis
+	conn := s.redisPool.Get()
+	defer conn.Close()
+
+	key := "otp_pending:" + body.PendingToken
+	otpDataStr, err := redis.String(conn.Do("GET", key))
+	if err != nil {
+		if errors.Is(err, redis.ErrNil) {
+			return httperr.NewBadRequest("invalid_token", "Invalid or expired OTP token.")
+		}
+		return err
+	}
+
+	// Parse OTP data
+	var otpData struct {
+		UserID   string `json:"user_id"`
+		MethodID string `json:"method_id"`
+	}
+	if err := json.Unmarshal([]byte(otpDataStr), &otpData); err != nil {
+		return httperr.NewBadRequest("invalid_token", "Malformed OTP token.")
+	}
+
+	// Get user to access email
+	userID, err := uid.FromString(otpData.UserID)
+	if err != nil {
+		return httperr.NewBadRequest("invalid_token", "Invalid user ID in token.")
+	}
+
+	user, err := core.GetUser(r.ctx, s.db, userID, nil)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return httperr.NewBadRequest("invalid_token", "User not found.")
+		}
+		return err
+	}
+
+	// Guard on email validity
+	if !user.Email.Valid {
+		return httperr.NewBadRequest("no_email", "User email is not set.")
+	}
+
+	// Re-send OTP - this generates a new methodID
+	newMethodID, _, err := s.stytch.SendEmailOTP(r.ctx, user.Email.String)
 	if err != nil {
 		return err
 	}
 
-	query := r.urlQueryParams()
-	action := query.Get("action")
-
-	switch r.req.Method {
-	case "POST":
-		if action == "enrollStart" {
-			// Start TOTP enrollment
-			stytchUserID, err := s.getOrCreateStytchUserID(r.ctx, user)
-			if err != nil {
-				return err
-			}
-
-			totpID, secret, qrCode, recoveryCodes, err := s.stytch.CreateTOTP(r.ctx, stytchUserID)
-			if err != nil {
-				return err
-			}
-
-			return w.writeJSON(map[string]interface{}{
-				"totpID":        totpID,
-				"secret":        secret,
-				"qrCode":        qrCode,
-				"recoveryCodes": recoveryCodes,
-			})
-		} else if action == "enrollConfirm" {
-			// Confirm TOTP enrollment
-			var body struct {
-				Code string `json:"code"`
-			}
-			if err := r.unmarshalJSONBody(&body); err != nil {
-				return err
-			}
-
-			body.Code = strings.TrimSpace(body.Code)
-			if body.Code == "" {
-				return httperr.NewBadRequest("invalid_code", "Code is required.")
-			}
-
-			stytchUserID, err := s.getOrCreateStytchUserID(r.ctx, user)
-			if err != nil {
-				return err
-			}
-
-			// Verify the code with Stytch
-			if err := s.stytch.AuthenticateTOTP(r.ctx, stytchUserID, body.Code); err != nil {
-				return httperr.NewBadRequest("invalid_code", "Invalid MFA code.")
-			}
-
-			// Enable MFA for user
-			if err := user.SetMFAEnabled(r.ctx, s.db, true); err != nil {
-				return err
-			}
-
-			return w.writeJSON(map[string]bool{"success": true})
-		} else {
-			return httperr.NewBadRequest("invalid_action", "Unknown action.")
-		}
-
-	case "DELETE":
-		// Disable MFA
-		var body struct {
-			Password string `json:"password"`
-		}
-		if err := r.unmarshalJSONBody(&body); err != nil {
-			return err
-		}
-
-		body.Password = strings.TrimSpace(body.Password)
-		if body.Password == "" {
-			return httperr.NewBadRequest("invalid_password", "Password is required to disable MFA.")
-		}
-
-		// Re-verify password (same pattern as ChangePassword)
-		if _, err := core.MatchLoginCredentials(r.ctx, s.db, user.Username, body.Password); err != nil {
-			return err
-		}
-
-		// Get Stytch user ID
-		if !user.StytchUserID.Valid {
-			return httperr.NewBadRequest("mfa_not_enabled", "MFA is not enabled for this user.")
-		}
-
-		// Delete all TOTP devices (we only support one per user in the simple design)
-		// For now, we'll just disable MFA in our DB; Stytch cleanup is optional
-		if err := user.SetMFAEnabled(r.ctx, s.db, false); err != nil {
-			return err
-		}
-
-		return w.writeJSON(map[string]bool{"success": true})
-
-	default:
-		return httperr.NewBadRequest("invalid_method", "Only POST and DELETE are supported.")
+	// Update the pending token with the new method ID
+	newOTPData := struct {
+		UserID   string `json:"user_id"`
+		MethodID string `json:"method_id"`
+	}{
+		UserID:   otpData.UserID,
+		MethodID: newMethodID,
 	}
+
+	newOTPDataJSON, err := json.Marshal(newOTPData)
+	if err != nil {
+		return err
+	}
+
+	if _, err := conn.Do("SET", key, string(newOTPDataJSON)); err != nil {
+		return err
+	}
+	if _, err := conn.Do("SET", key+":attempts", 0); err != nil {
+		return err
+	}
+	if _, err := conn.Do("EXPIRE", key, 300); err != nil { // 5 minutes
+		return err
+	}
+	if _, err := conn.Do("EXPIRE", key+":attempts", 300); err != nil {
+		return err
+	}
+
+	return w.writeJSON(map[string]bool{"success": true})
 }
+

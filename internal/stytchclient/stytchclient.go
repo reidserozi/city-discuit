@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -149,94 +148,43 @@ func (c *Client) AuthenticateMagicLink(ctx context.Context, token string) (stytc
 	return resp.UserID, resp.Email, nil
 }
 
-type createTOTPReq struct {
-	UserID string `json:"user_id"`
+type sendEmailOTPReq struct {
+	Email string `json:"email"`
 }
 
-type createTOTPResp struct {
-	TOTPID          string   `json:"totp_id"`
-	Secret          string   `json:"secret"`
-	QRCode          string   `json:"qr_code"`
-	RecoveryCodes   []string `json:"recovery_codes"`
+type sendEmailOTPResp struct {
+	UserID   string `json:"user_id"`
+	MethodID string `json:"method_id"`
 }
 
-// CreateTOTP creates a new TOTP (time-based one-time password) device for the user.
-func (c *Client) CreateTOTP(ctx context.Context, stytchUserID string) (totpID, secret, qrCodeDataURI string, recoveryCodes []string, err error) {
-	fmt.Printf("DEBUG CreateTOTP: userID=%s\n", stytchUserID)
-	respBody, err := c.do(ctx, "POST", "/v1/totps", createTOTPReq{
-		UserID: stytchUserID,
+// SendEmailOTP sends a 6-digit OTP code via email for login.
+func (c *Client) SendEmailOTP(ctx context.Context, email string) (methodID, stytchUserID string, err error) {
+	respBody, err := c.do(ctx, "POST", "/v1/otps/email/login_or_create", sendEmailOTPReq{
+		Email: email,
 	})
 	if err != nil {
-		fmt.Printf("DEBUG CreateTOTP error: %v\n", err)
-		return "", "", "", nil, err
+		return "", "", err
 	}
 
-	var resp createTOTPResp
+	var resp sendEmailOTPResp
 	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return "", "", "", nil, fmt.Errorf("unmarshal response: %w", err)
+		return "", "", fmt.Errorf("unmarshal response: %w", err)
 	}
 
-	fmt.Printf("DEBUG CreateTOTP success: totpID=%s secret=%s\n", resp.TOTPID, resp.Secret)
-	return resp.TOTPID, resp.Secret, resp.QRCode, resp.RecoveryCodes, nil
+	return resp.MethodID, resp.UserID, nil
 }
 
-type authenticateTOTPReq struct {
-	UserID string `json:"user_id"`
-	Code   string `json:"code"`
+type authenticateEmailOTPReq struct {
+	MethodID string `json:"method_id"`
+	Code     string `json:"code"`
 }
 
-// AuthenticateTOTP verifies a TOTP code for a user.
-func (c *Client) AuthenticateTOTP(ctx context.Context, stytchUserID, code string) error {
-	fmt.Printf("DEBUG AuthenticateTOTP: userID=%s code=%s\n", stytchUserID, code)
-	respBody, err := c.do(ctx, "POST", "/v1/totps/authenticate", authenticateTOTPReq{
-		UserID: stytchUserID,
-		Code:   code,
-	})
-	if err != nil {
-		fmt.Printf("DEBUG AuthenticateTOTP error: %v\n", err)
-		return err
-	}
-	fmt.Printf("DEBUG AuthenticateTOTP success: %s\n", string(respBody))
-	return nil
-}
-
-type deleteTOTPReq struct {
-	UserID string `json:"user_id"`
-	TOTPID string `json:"totp_id"`
-}
-
-// DeleteTOTP removes a TOTP device from a user.
-func (c *Client) DeleteTOTP(ctx context.Context, stytchUserID, totpID string) error {
-	_, err := c.do(ctx, "DELETE", "/v1/totps/"+url.PathEscape(totpID), deleteTOTPReq{
-		UserID: stytchUserID,
-		TOTPID: totpID,
+// AuthenticateEmailOTP verifies a 6-digit OTP code.
+func (c *Client) AuthenticateEmailOTP(ctx context.Context, methodID, code string) error {
+	_, err := c.do(ctx, "POST", "/v1/otps/authenticate", authenticateEmailOTPReq{
+		MethodID: methodID,
+		Code:     code,
 	})
 	return err
 }
 
-type createUserReq struct {
-	Email      string `json:"email,omitempty"`
-	ExternalID string `json:"external_id,omitempty"`
-}
-
-type createUserResp struct {
-	UserID string `json:"user_id"`
-}
-
-// CreateUser provisions a new Stytch user. At least one of email or externalID must be provided.
-func (c *Client) CreateUser(ctx context.Context, email, externalID string) (stytchUserID string, err error) {
-	respBody, err := c.do(ctx, "POST", "/v1/users", createUserReq{
-		Email:      email,
-		ExternalID: externalID,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	var resp createUserResp
-	if err := json.Unmarshal(respBody, &resp); err != nil {
-		return "", fmt.Errorf("unmarshal response: %w", err)
-	}
-
-	return resp.UserID, nil
-}
