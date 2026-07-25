@@ -29,7 +29,6 @@ import {
 import { RootState } from '../../store';
 import ChangePassword from './ChangePassword';
 import DeleteAccount from './DeleteAccount';
-import TwoFactorAuth from './TwoFactorAuth';
 import { getDevicePreference, setDevicePreference } from './devicePrefs';
 
 const Settings = () => {
@@ -433,11 +432,6 @@ const Settings = () => {
           <FormField>
             <ChangePassword />
           </FormField>
-          {stytchEnabled && (
-            <FormField>
-              <TwoFactorAuth />
-            </FormField>
-          )}
           <FormField>
             <DeleteAccount user={user} />
           </FormField>
