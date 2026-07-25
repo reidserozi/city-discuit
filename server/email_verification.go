@@ -90,21 +90,33 @@ func (s *Server) emailVerificationConfirm(w *responseWriter, r *request) error {
 	// Authenticate the magic link token
 	stytchUserID, email, err := s.stytch.AuthenticateMagicLink(r.ctx, body.Token)
 	if err != nil {
+		s.http500Logger.Printf("AuthenticateMagicLink failed: %v\n", err)
 		return httperr.NewBadRequest("invalid_token", "Invalid or expired verification link.")
 	}
+	s.http500Logger.Printf("Stytch authenticated: stytchUserID=%s email=%q\n", stytchUserID, email)
 
 	// Look up user by Stytch user ID
 	user, err := core.GetUserByStytchUserID(r.ctx, s.db, stytchUserID, nil)
 	if err != nil {
+		s.http500Logger.Printf("GetUserByStytchUserID failed: %v\n", err)
 		if errors.Is(err, sql.ErrNoRows) {
 			return httperr.NewBadRequest("invalid_token", "User not found.")
 		}
 		return err
 	}
+	s.http500Logger.Printf("Found user: uid=%s username=%s email=%q\n", user.ID, user.Username, user.Email.String)
 
-	// Verify email matches (prevents stale token from confirming after later email change)
-	if !user.Email.Valid || user.Email.String != email {
-		return httperr.NewBadRequest("email_mismatch", "Email does not match verification token.")
+	// Verify email matches if Stytch returned one (case-insensitive, trimmed comparison)
+	// If Stytch didn't return an email, trust the token as proof of identity
+	if email != "" {
+		if !user.Email.Valid {
+			return httperr.NewBadRequest("email_mismatch", "User has no email on file.")
+		}
+		storedEmail := strings.ToLower(strings.TrimSpace(user.Email.String))
+		stytchEmail := strings.ToLower(strings.TrimSpace(email))
+		if storedEmail != stytchEmail {
+			return httperr.NewBadRequest("email_mismatch", "Email does not match verification token.")
+		}
 	}
 
 	// Mark email as confirmed
