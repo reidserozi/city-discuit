@@ -101,6 +101,7 @@ type User struct {
 	UserIndex         int    `json:"-"`
 	Username          string `json:"username"`
 	UsernameLowerCase string `json:"-"`
+	DisplayName       *string `json:"displayName"`
 
 	EmailPublic *string `json:"email"`
 
@@ -149,6 +150,14 @@ type User struct {
 
 	// The list of communities the user moderates.
 	ModdingList []*Community `json:"moddingList"`
+
+	// User's neighborhood
+	NeighborhoodID   *string       `json:"neighborhoodId"`
+	Neighborhood     *Neighborhood `json:"neighborhood"`
+
+	// Stytch authentication
+	StytchUserID msql.NullString `json:"-"`
+	MFAEnabled   bool            `json:"mfaEnabled"`
 
 	// The following values are used only by SetToGhost and UnsetToGhost
 	// methods.
@@ -230,6 +239,7 @@ func buildSelectUserQuery(where string) string {
 		"users.user_index",
 		"users.username",
 		"users.username_lc",
+		"users.display_name",
 		"users.email",
 		"users.email_confirmed_at",
 		"users.password",
@@ -253,10 +263,18 @@ func buildSelectUserQuery(where string) string {
 		"users.hide_user_profile_pictures",
 		"users.welcome_notification_sent",
 		"users.require_alt_text",
+		"users.neighborhood_id",
+		"users.stytch_user_id",
+		"users.mfa_enabled",
+		"neighborhoods.id",
+		"neighborhoods.name",
+		"neighborhoods.description",
+		"neighborhoods.created_at",
 	}
 	cols = append(cols, images.ImageColumns("pro_pic")...)
 	joins := []string{
 		"LEFT JOIN images AS pro_pic ON pro_pic.id = users.pro_pic",
+		"LEFT JOIN neighborhoods ON neighborhoods.id = users.neighborhood_id",
 	}
 	return msql.BuildSelectQuery("users", cols, joins, where)
 }
@@ -354,6 +372,7 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 			&u.UserIndex,
 			&u.Username,
 			&u.UsernameLowerCase,
+			&u.DisplayName,
 			&u.Email,
 			&u.EmailConfirmedAt,
 			&u.Password,
@@ -377,9 +396,18 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 			&u.HideUserProfilePictures,
 			&u.WelcomeNotificationSent,
 			&u.RequireAltText,
+			&u.NeighborhoodID,
+			&u.StytchUserID,
+			&u.MFAEnabled,
 		}
 
+		var neighborhoodID msql.NullString
+		var neighborhoodName msql.NullString
+		var neighborhoodDescription msql.NullString
+		var neighborhoodCreatedAt msql.NullTime
+
 		proPic := &images.Image{}
+		dests = append(dests, &neighborhoodID, &neighborhoodName, &neighborhoodDescription, &neighborhoodCreatedAt)
 		dests = append(dests, proPic.ScanDestinations()...)
 
 		if err := rows.Scan(dests...); err != nil {
@@ -401,6 +429,15 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 			proPic.PostScan()
 			setCommunityProPicCopies(proPic)
 			u.ProPic = proPic
+		}
+
+		if neighborhoodID.Valid {
+			u.Neighborhood = &Neighborhood{
+				ID:          neighborhoodID.String,
+				Name:        neighborhoodName.String,
+				Description: neighborhoodDescription.String,
+				CreatedAt:   neighborhoodCreatedAt.Time,
+			}
 		}
 
 		users = append(users, u)
@@ -464,7 +501,7 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 }
 
 // RegisterUser creates a new user.
-func RegisterUser(ctx context.Context, db *sql.DB, username, email, password, ip string) (*User, error) {
+func RegisterUser(ctx context.Context, db *sql.DB, username, email, password, ip, neighborhoodID, displayName string) (*User, error) {
 	// Check for duplicates.
 	if exists, _, err := usernameExists(ctx, db, username); err != nil {
 		return nil, err
@@ -496,17 +533,35 @@ func RegisterUser(ctx context.Context, db *sql.DB, username, email, password, ip
 
 	var ipany any
 	if ip != "" {
-		ipany = ip
+		// Convert IPv4 to IPv6 format if needed
+		if !strings.Contains(ip, ":") {
+			// IPv4 address - convert to IPv6-mapped format
+			ipany = "::ffff:" + ip
+		} else {
+			ipany = ip
+		}
 	}
 	id := uid.New()
+
+	var neighborhoodIDVal any
+	if neighborhoodID != "" {
+		neighborhoodIDVal = neighborhoodID
+	}
+
+	var displayNameVal any
+	if displayName != "" {
+		displayNameVal = displayName
+	}
 
 	query, args := msql.BuildInsertQuery("users", []msql.ColumnValue{
 		{Name: "id", Value: id},
 		{Name: "username", Value: username},
 		{Name: "username_lc", Value: strings.ToLower(username)},
+		{Name: "display_name", Value: displayNameVal},
 		{Name: "email", Value: nullEmail},
 		{Name: "password", Value: hash},
 		{Name: "created_ip", Value: ipany},
+		{Name: "neighborhood_id", Value: neighborhoodIDVal},
 	})
 	_, err = db.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -662,18 +717,22 @@ func (u *User) Update(ctx context.Context, db *sql.DB) error {
 	u.About.String = utils.TruncateUnicodeString(u.About.String, maxUserProfileAboutLength)
 	_, err := db.ExecContext(ctx, `
 	UPDATE users SET
-		email = ?, 
+		email = ?,
 		about_me = ?,
+		display_name = ?,
 		upvote_notifications_off = ?,
 		reply_notifications_off = ?,
 		home_feed = ?,
 		remember_feed_sort = ?,
 		embeds_off = ?,
 		hide_user_profile_pictures = ?,
-		require_alt_text = ?
+		require_alt_text = ?,
+		neighborhood_id = ?,
+		email_confirmed_at = ?
 	WHERE id = ?`,
 		u.EmailPublic,
 		u.About,
+		u.DisplayName,
 		u.UpvoteNotificationsOff,
 		u.ReplyNotificationsOff,
 		u.HomeFeed,
@@ -681,6 +740,8 @@ func (u *User) Update(ctx context.Context, db *sql.DB) error {
 		u.EmbedsOff,
 		u.HideUserProfilePictures,
 		u.RequireAltText,
+		u.NeighborhoodID,
+		u.EmailConfirmedAt,
 		u.ID)
 	return err
 }
@@ -1007,7 +1068,7 @@ func (u *User) Saw(ctx context.Context, db *sql.DB, userIP string) error {
 // UserSeen updates user's LastSeen to current time. It also updates the IP
 // address of the user.
 func UserSeen(ctx context.Context, db *sql.DB, user uid.ID, userIP string) error {
-	_, err := db.ExecContext(ctx, "UPDATE users SET last_seen = ?, last_seen_ip = ? WHERE id = ? AND deleted_at IS NULL", time.Now(), userIP, user)
+	_, err := db.ExecContext(ctx, "UPDATE users SET last_seen = ?, last_seen_ip = ? WHERE id = ? AND deleted_at IS NULL", time.Now(), nil, user)
 	return err
 }
 
@@ -1392,7 +1453,7 @@ func CreateGhostUser(db *sql.DB) (bool, error) {
 	if err := db.QueryRow("SELECT username_lc FROM users WHERE username_lc = ?", GhostUserUsername).Scan(&s); err != nil {
 		if err == sql.ErrNoRows {
 			// Ghost user not found; create one.
-			_, createErr := RegisterUser(context.Background(), db, GhostUserUsername, "", utils.GenerateStringID(48), "")
+			_, createErr := RegisterUser(context.Background(), db, GhostUserUsername, "", utils.GenerateStringID(48), "", "", "")
 			return createErr == nil, createErr
 		}
 		return false, err
@@ -1407,7 +1468,7 @@ func CreateNobodyUser(db *sql.DB) (bool, error) {
 	if dbErr := db.QueryRow("SELECT username_lc FROM users WHERE username_lc = ?", NobodyUserUsername).Scan(&s); dbErr != nil {
 		if dbErr == sql.ErrNoRows {
 			// Ghost user not found; create one.
-			user, err := RegisterUser(context.Background(), db, NobodyUserUsername, "", utils.GenerateStringID(48), "")
+			user, err := RegisterUser(context.Background(), db, NobodyUserUsername, "", utils.GenerateStringID(48), "", "", "")
 			if err != nil {
 				return false, err
 			}

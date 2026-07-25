@@ -39,11 +39,21 @@
             .user-card-top-left {
                 display: flex;
                 align-items: center;
-                .user-card-username {
+                .user-card-top-left-text {
+                    display: flex;
+                    flex-direction: column;
                     margin-left: var(--gap);
+                }
+                .user-card-username {
+                    margin: 0;
                     &.is-red {
                         color: var(--color-red);
                     }
+                }
+                .user-card-displayname {
+                    font-size: var(--fs-normal);
+                    opacity: 0.9;
+                    margin-top: 0.25rem;
                 }
             }
             .user-card-username {

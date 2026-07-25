@@ -2,13 +2,16 @@ version: "3"
 
 services:
   discuit:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.arm64
+    image: edit-raleigh:latest
     restart: unless-stopped
     ports:
       - "8080:80"
     environment:
       DISCUIT_ADDR: ":80"
-      DISCUIT_SITE_NAME: "Discuit"
+      DISCUIT_SITE_NAME: "Edit Raleigh"
       DISCUIT_SESSION_COOKIE_NAME: "DSID"
       DISCUIT_REDIS_ADDRESS: "127.0.0.1:6379"
       DISCUIT_FORUM_CREATION_REQ_POINTS: "10"

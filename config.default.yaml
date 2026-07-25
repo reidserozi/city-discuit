@@ -1,5 +1,5 @@
-siteName: Discuit
-siteDescription: A free and open-source community platform.
+siteName: Edit Raleigh
+siteDescription: Propose. Discuss. Improve. Raleigh.
 emailContact:
 twitterURL:
 discordURL:
@@ -34,3 +34,8 @@ disableForumCreation: true
 forumCreationReqPoints: 10
 maxForumsPerUser: 10
 imagesFolderPath: "images"
+
+# Stytch authentication (optional):
+stytchProjectID: project-test-b014f033-dee9-452c-ac73-52da7ab2769f
+stytchSecret: secret-test-G9xVzb0YqVI0eR0XRALpsyWdQ7Mqnas5Adw=
+stytchEnvironment: test

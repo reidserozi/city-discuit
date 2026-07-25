@@ -14,3 +14,4 @@ node_modules
 .mysql
 .redis
 dump.rdb
+.DS_Store

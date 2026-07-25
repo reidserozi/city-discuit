@@ -21,6 +21,7 @@ import AsUser from '../Post/AsUser';
 import CommunityCard from '../Post/CommunityCard';
 import Image from './Image';
 import SelectCommunity from './SelectCommunity';
+import MapPicker from '../../components/MapPicker';
 
 const NewPost = () => {
   const dispatch = useDispatch();
@@ -80,6 +81,10 @@ const NewPost = () => {
   const [link, setLink] = useState('');
   const [images, SetImages] = useState<ServerImage[]>([]);
   const maxNumOfImages = import.meta.env.VITE_MAXIMAGESPERPOST;
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [locationName, setLocationName] = useState<string>('');
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useLoading();
@@ -92,6 +97,11 @@ const NewPost = () => {
           setTitle(post.title);
           setBody(post.body);
           setPost(post);
+          if (post.latitude && post.longitude) {
+            setLatitude(post.latitude);
+            setLongitude(post.longitude);
+            setLocationName(post.locationName || '');
+          }
           if (post.type === 'image') {
             SetImages(post.images);
           } else if (post.type === 'link') {
@@ -183,6 +193,12 @@ const NewPost = () => {
     SetImages((images) => images.filter((image) => image.id !== imageId));
   };
 
+  const handleLocationSelect = (lat: number, lng: number, name: string) => {
+    setLatitude(lat);
+    setLongitude(lng);
+    setLocationName(name);
+  };
+
   // For only when editing a post.
   const returnToWhence = (post: Post) => {
     const state = location.state as { fromPostPage: boolean };
@@ -269,7 +285,14 @@ const NewPost = () => {
       if (isEditPost) {
         newPost = await mfetchjson(`/api/posts/${editPostId}`, {
           method: 'PUT',
-          body: JSON.stringify({ title, body, userGroup }),
+          body: JSON.stringify({
+            title,
+            body,
+            userGroup,
+            latitude: latitude || undefined,
+            longitude: longitude || undefined,
+            locationName: locationName || undefined,
+          }),
         });
       } else {
         const res = await mfetch('/api/posts', {
@@ -290,6 +313,9 @@ const NewPost = () => {
                   })
                 : undefined,
             url: postType === 'link' ? link : undefined,
+            latitude: latitude || undefined,
+            longitude: longitude || undefined,
+            locationName: locationName || undefined,
           }),
         });
         if (!res.ok) {
@@ -611,6 +637,23 @@ const NewPost = () => {
               <AsUser isMod={isUserMod} onChange={(g) => setUserGroup(g)} />
             </div>
           )}
+          <div className="page-new-location">
+            <button
+              className="button-secondary"
+              onClick={() => setShowMapPicker(!showMapPicker)}
+              type="button"
+            >
+              {latitude && longitude ? '📍 Location Added' : '📍 Add Location'}
+            </button>
+            {showMapPicker && (
+              <MapPicker
+                onLocationSelect={handleLocationSelect}
+                initialLat={latitude || undefined}
+                initialLng={longitude || undefined}
+                initialName={locationName}
+              />
+            )}
+          </div>
           <div className="new-page-help">
             {'Use '}
             <Link to="/markdown_guide" target="_blank">

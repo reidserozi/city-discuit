@@ -30,14 +30,17 @@ func (s *Server) addPost(w *responseWriter, r *request) error {
 	}
 
 	req := struct {
-		PostType  core.PostType       `json:"type"`
-		Title     string              `json:"title"`
-		URL       string              `json:"url"`
-		Body      string              `json:"body"`
-		Community string              `json:"community"`
-		UserGroup core.UserGroup      `json:"userGroup"`
-		ImageId   string              `json:"imageId"`
-		Images    []*core.ImageUpload `json:"images"`
+		PostType    core.PostType       `json:"type"`
+		Title       string              `json:"title"`
+		URL         string              `json:"url"`
+		Body        string              `json:"body"`
+		Community   string              `json:"community"`
+		UserGroup   core.UserGroup      `json:"userGroup"`
+		ImageId     string              `json:"imageId"`
+		Images      []*core.ImageUpload `json:"images"`
+		Latitude    *float64            `json:"latitude"`
+		Longitude   *float64            `json:"longitude"`
+		LocationName string             `json:"locationName"`
 	}{
 		PostType:  core.PostTypeText,
 		UserGroup: core.UserGroupNormal,
@@ -69,7 +72,7 @@ func (s *Server) addPost(w *responseWriter, r *request) error {
 	var post *core.Post
 	switch req.PostType {
 	case core.PostTypeText:
-		post, err = core.CreateTextPost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, req.Body)
+		post, err = core.CreateTextPost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, req.Body, req.Latitude, req.Longitude, req.LocationName)
 	case core.PostTypeImage:
 		var images []*core.ImageUpload
 		if req.Images != nil {
@@ -86,9 +89,9 @@ func (s *Server) addPost(w *responseWriter, r *request) error {
 		if len(images) > s.config.MaxImagesPerPost {
 			return httperr.NewBadRequest("too-many-images", "Maximum images count exceeded.")
 		}
-		post, err = core.CreateImagePost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, images)
+		post, err = core.CreateImagePost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, images, req.Latitude, req.Longitude, req.LocationName)
 	case core.PostTypeLink:
-		post, err = core.CreateLinkPost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, req.URL)
+		post, err = core.CreateLinkPost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, req.URL, req.Latitude, req.Longitude, req.LocationName)
 	default:
 		return httperr.NewBadRequest("invalid_post_type", "Invalid post type.")
 	}
@@ -174,6 +177,18 @@ func (s *Server) updatePost(w *responseWriter, r *request) error {
 		if post.Title != tpost.Title {
 			needSaving = true
 			post.Title = tpost.Title
+		}
+		if post.Latitude != tpost.Latitude {
+			needSaving = true
+			post.Latitude = tpost.Latitude
+		}
+		if post.Longitude != tpost.Longitude {
+			needSaving = true
+			post.Longitude = tpost.Longitude
+		}
+		if post.LocationName != tpost.LocationName {
+			needSaving = true
+			post.LocationName = tpost.LocationName
 		}
 
 		if needSaving {

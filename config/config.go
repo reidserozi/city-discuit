@@ -88,6 +88,11 @@ type Config struct {
 
 	WelcomeCommunity string `yaml:"welcomeCommunity"`
 
+	// Stytch authentication (optional).
+	StytchProjectID   string `yaml:"stytchProjectID"`
+	StytchSecret      string `yaml:"stytchSecret"`
+	StytchEnvironment string `yaml:"stytchEnvironment"`
+
 	// This email address is provided to the Web Push services (of the browser
 	// vendors) in case they need to reach out. If this field is empty, push
 	// notifications are not enabled.
@@ -174,6 +179,11 @@ func Parse(path string) (*Config, error) {
 		"DISCUIT_SUBSTACK_URL":    &c.SubstackURL,
 
 		"DISCUIT_USE_HTTP_COOKIES": &c.UseHTTPCookies,
+
+		// Stytch authentication (optional).
+		"DISCUIT_STYTCH_PROJECT_ID":   &c.StytchProjectID,
+		"DISCUIT_STYTCH_SECRET":       &c.StytchSecret,
+		"DISCUIT_STYTCH_ENVIRONMENT":  &c.StytchEnvironment,
 	}
 
 	// Attempt to unmarshal the YAML file if it exists

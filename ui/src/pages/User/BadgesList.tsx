@@ -19,7 +19,7 @@ function BadgesList({ user }: { user: User }) {
     switch (selectedBadge.type) {
       case 'supporter':
         modalTitle = 'Supporter';
-        modalDesc = 'This user is a Patreon supporter, helping to keep Discuit always free of ads.';
+        modalDesc = 'Thank you for your incredible support of Edit Raleigh! Your Patreon sponsorship directly funds the critical technology costs that keep this open-source project running, evolving, and serving the community.';
         break;
       default:
         throw new Error(`unkown badge type '${selectedBadge.type}'`);
