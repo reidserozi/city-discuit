@@ -127,12 +127,19 @@ type authenticateMagicLinkResp struct {
 
 // AuthenticateMagicLink validates a magic link token and returns the user ID and email.
 func (c *Client) AuthenticateMagicLink(ctx context.Context, token string) (stytchUserID, email string, err error) {
+	if len(token) > 20 {
+		fmt.Printf("DEBUG: Authenticating magic link token (first 20 chars): %s...\n", token[:20])
+	} else {
+		fmt.Printf("DEBUG: Authenticating magic link token: %s\n", token)
+	}
 	respBody, err := c.do(ctx, "POST", "/v1/magic_links/authenticate", authenticateMagicLinkReq{
 		Token: token,
 	})
 	if err != nil {
+		fmt.Printf("DEBUG: Stytch rejected token: %v\n", err)
 		return "", "", err
 	}
+	fmt.Printf("DEBUG: Stytch accepted token, response: %s\n", string(respBody))
 
 	var resp authenticateMagicLinkResp
 	if err := json.Unmarshal(respBody, &resp); err != nil {
