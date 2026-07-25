@@ -162,10 +162,12 @@ type createTOTPResp struct {
 
 // CreateTOTP creates a new TOTP (time-based one-time password) device for the user.
 func (c *Client) CreateTOTP(ctx context.Context, stytchUserID string) (totpID, secret, qrCodeDataURI string, recoveryCodes []string, err error) {
+	fmt.Printf("DEBUG CreateTOTP: userID=%s\n", stytchUserID)
 	respBody, err := c.do(ctx, "POST", "/v1/totps", createTOTPReq{
 		UserID: stytchUserID,
 	})
 	if err != nil {
+		fmt.Printf("DEBUG CreateTOTP error: %v\n", err)
 		return "", "", "", nil, err
 	}
 
@@ -174,6 +176,7 @@ func (c *Client) CreateTOTP(ctx context.Context, stytchUserID string) (totpID, s
 		return "", "", "", nil, fmt.Errorf("unmarshal response: %w", err)
 	}
 
+	fmt.Printf("DEBUG CreateTOTP success: totpID=%s secret=%s\n", resp.TOTPID, resp.Secret)
 	return resp.TOTPID, resp.Secret, resp.QRCode, resp.RecoveryCodes, nil
 }
 
@@ -184,11 +187,17 @@ type authenticateTOTPReq struct {
 
 // AuthenticateTOTP verifies a TOTP code for a user.
 func (c *Client) AuthenticateTOTP(ctx context.Context, stytchUserID, code string) error {
-	_, err := c.do(ctx, "POST", "/v1/totps/authenticate", authenticateTOTPReq{
+	fmt.Printf("DEBUG AuthenticateTOTP: userID=%s code=%s\n", stytchUserID, code)
+	respBody, err := c.do(ctx, "POST", "/v1/totps/authenticate", authenticateTOTPReq{
 		UserID: stytchUserID,
 		Code:   code,
 	})
-	return err
+	if err != nil {
+		fmt.Printf("DEBUG AuthenticateTOTP error: %v\n", err)
+		return err
+	}
+	fmt.Printf("DEBUG AuthenticateTOTP success: %s\n", string(respBody))
+	return nil
 }
 
 type deleteTOTPReq struct {
