@@ -41,10 +41,12 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import ResetPassword from './pages/ResetPassword';
 import Settings from './pages/Settings';
 import { getDevicePreference } from './pages/Settings/devicePrefs';
+import SiteClosed from './pages/SiteClosed';
 import Terms from './pages/Terms';
 import User from './pages/User';
 import VerifyEmail from './pages/VerifyEmail';
 import PushNotifications from './PushNotifications';
+import { getSiteStatus } from './siteHours';
 import {
   createCommunityModalOpened,
   initialFieldsSet,
@@ -84,6 +86,12 @@ const App = () => {
       window.removeEventListener('online', listner);
       window.removeEventListener('offline', listner);
     };
+  }, []);
+
+  const [siteStatus, setSiteStatus] = useState(getSiteStatus());
+  useEffect(() => {
+    const interval = setInterval(() => setSiteStatus(getSiteStatus()), 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const [loading, setLoading] = useLoading();
@@ -220,6 +228,10 @@ const App = () => {
     return null;
   } else if (loading === 'loading') {
     return <AppLoading />;
+  }
+
+  if (siteStatus.closed && siteStatus.reason) {
+    return <SiteClosed reason={siteStatus.reason} />;
   }
 
   const deviceStandalone = isDeviceStandalone();
