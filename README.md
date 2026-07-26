@@ -1,4 +1,4 @@
-# Discuit
+# City Discuit
 
 This is the codebase that powers [Discuit](https://discuit.org), which is an
 open-source community platform, an alternative to Reddit.
