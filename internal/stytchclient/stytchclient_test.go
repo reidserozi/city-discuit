@@ -99,8 +99,8 @@ func TestSendEmailOTP(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
-			"method_id": "method_456",
-			"user_id":   "user_123",
+			"email_id": "email_456",
+			"user_id":  "user_123",
 		})
 	}))
 	defer server.Close()
@@ -112,12 +112,12 @@ func TestSendEmailOTP(t *testing.T) {
 		httpClient: &http.Client{},
 	}
 
-	methodID, userID, err := client.SendEmailOTP(context.Background(), "test@example.com")
+	emailID, userID, err := client.SendEmailOTP(context.Background(), "test@example.com")
 	if err != nil {
 		t.Fatalf("SendEmailOTP error: %v", err)
 	}
-	if methodID != "method_456" {
-		t.Errorf("expected method_id 'method_456', got %s", methodID)
+	if emailID != "email_456" {
+		t.Errorf("expected email_id 'email_456', got %s", emailID)
 	}
 	if userID != "user_123" {
 		t.Errorf("expected user_id 'user_123', got %s", userID)
@@ -132,7 +132,7 @@ func TestAuthenticateEmailOTP(t *testing.T) {
 
 		var req authenticateEmailOTPReq
 		json.NewDecoder(r.Body).Decode(&req)
-		if req.MethodID != "method_456" || req.Code != "123456" {
+		if req.MethodID != "email_456" || req.Code != "123456" {
 			t.Errorf("unexpected request: %+v", req)
 		}
 
@@ -148,7 +148,7 @@ func TestAuthenticateEmailOTP(t *testing.T) {
 		httpClient: &http.Client{},
 	}
 
-	err := client.AuthenticateEmailOTP(context.Background(), "method_456", "123456")
+	err := client.AuthenticateEmailOTP(context.Background(), "email_456", "123456")
 	if err != nil {
 		t.Fatalf("AuthenticateEmailOTP error: %v", err)
 	}

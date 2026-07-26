@@ -33,11 +33,11 @@ func (s *Server) createPendingOTPLogin(userID, methodID string) (string, error) 
 
 	key := "otp_pending:" + token
 	otpData := struct {
-		UserID   string `json:"user_id"`
-		MethodID string `json:"method_id"`
+		UserID  string `json:"user_id"`
+		EmailID string `json:"email_id"`
 	}{
-		UserID:   userID,
-		MethodID: methodID,
+		UserID:  userID,
+		EmailID: methodID,
 	}
 
 	otpDataJSON, err := json.Marshal(otpData)
@@ -112,8 +112,8 @@ func (s *Server) loginEmailOTP(w *responseWriter, r *request) error {
 
 	// Parse OTP data
 	var otpData struct {
-		UserID   string `json:"user_id"`
-		MethodID string `json:"method_id"`
+		UserID  string `json:"user_id"`
+		EmailID string `json:"email_id"`
 	}
 	if err := json.Unmarshal([]byte(otpDataStr), &otpData); err != nil {
 		return httperr.NewBadRequest("invalid_token", "Malformed OTP token.")
@@ -146,7 +146,7 @@ func (s *Server) loginEmailOTP(w *responseWriter, r *request) error {
 	}
 
 	// Verify the OTP code with Stytch
-	if err := s.stytch.AuthenticateEmailOTP(r.ctx, otpData.MethodID, body.Code); err != nil {
+	if err := s.stytch.AuthenticateEmailOTP(r.ctx, otpData.EmailID, body.Code); err != nil {
 		// Increment failed attempts
 		conn.Do("INCR", key+":attempts")
 		return httperr.NewBadRequest("invalid_code", "Invalid or expired OTP code.")
@@ -201,8 +201,8 @@ func (s *Server) resendEmailOTP(w *responseWriter, r *request) error {
 
 	// Parse OTP data
 	var otpData struct {
-		UserID   string `json:"user_id"`
-		MethodID string `json:"method_id"`
+		UserID  string `json:"user_id"`
+		EmailID string `json:"email_id"`
 	}
 	if err := json.Unmarshal([]byte(otpDataStr), &otpData); err != nil {
 		return httperr.NewBadRequest("invalid_token", "Malformed OTP token.")
@@ -227,19 +227,19 @@ func (s *Server) resendEmailOTP(w *responseWriter, r *request) error {
 		return httperr.NewBadRequest("no_email", "User email is not set.")
 	}
 
-	// Re-send OTP - this generates a new methodID
-	newMethodID, _, err := s.stytch.SendEmailOTP(r.ctx, user.Email.String)
+	// Re-send OTP - this generates a new emailID
+	newEmailID, _, err := s.stytch.SendEmailOTP(r.ctx, user.Email.String)
 	if err != nil {
 		return err
 	}
 
-	// Update the pending token with the new method ID
+	// Update the pending token with the new email ID
 	newOTPData := struct {
-		UserID   string `json:"user_id"`
-		MethodID string `json:"method_id"`
+		UserID  string `json:"user_id"`
+		EmailID string `json:"email_id"`
 	}{
-		UserID:   otpData.UserID,
-		MethodID: newMethodID,
+		UserID:  otpData.UserID,
+		EmailID: newEmailID,
 	}
 
 	newOTPDataJSON, err := json.Marshal(newOTPData)
