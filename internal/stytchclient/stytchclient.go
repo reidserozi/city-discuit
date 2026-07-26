@@ -153,8 +153,8 @@ type sendEmailOTPReq struct {
 }
 
 type sendEmailOTPResp struct {
-	UserID   string `json:"user_id"`
-	MethodID string `json:"method_id"`
+	UserID  string `json:"user_id"`
+	EmailID string `json:"email_id"`
 }
 
 // SendEmailOTP sends a 6-digit OTP code via email for login.
@@ -171,7 +171,7 @@ func (c *Client) SendEmailOTP(ctx context.Context, email string) (methodID, styt
 		return "", "", fmt.Errorf("unmarshal response: %w", err)
 	}
 
-	return resp.MethodID, resp.UserID, nil
+	return resp.EmailID, resp.UserID, nil
 }
 
 type authenticateEmailOTPReq struct {
@@ -180,6 +180,7 @@ type authenticateEmailOTPReq struct {
 }
 
 // AuthenticateEmailOTP verifies a 6-digit OTP code.
+// methodID is the email_id from the SendEmailOTP response.
 func (c *Client) AuthenticateEmailOTP(ctx context.Context, methodID, code string) error {
 	_, err := c.do(ctx, "POST", "/v1/otps/authenticate", authenticateEmailOTPReq{
 		MethodID: methodID,
