@@ -127,3 +127,20 @@ func DeleteNeighborhood(ctx context.Context, db *sql.DB, id string) error {
 	_, err := db.ExecContext(ctx, `DELETE FROM neighborhoods WHERE id = ?`, id)
 	return err
 }
+
+// ValidateNeighborhoodCode verifies that the provided code matches the neighborhood's invite code.
+// If the neighborhood has no code set (code is NULL), any code is accepted.
+// Returns an error with message "invalid_neighborhood_code" if the code doesn't match a neighborhood with a required code.
+func ValidateNeighborhoodCode(ctx context.Context, db *sql.DB, neighborhoodID string, code string) error {
+	n, err := GetNeighborhoodByID(ctx, db, neighborhoodID)
+	if err != nil {
+		return err
+	}
+
+	// If the neighborhood has a code set, it must match exactly.
+	if n.Code.Valid && n.Code.String != code {
+		return errors.New("invalid_neighborhood_code")
+	}
+
+	return nil
+}
