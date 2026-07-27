@@ -2,6 +2,7 @@ package server
 
 import (
 	"strings"
+	"time"
 
 	"github.com/discuitnet/discuit/core"
 	"github.com/discuitnet/discuit/internal/httperr"
@@ -13,7 +14,30 @@ func (s *Server) getNeighborhoods(w *responseWriter, r *request) error {
 	if err != nil {
 		return err
 	}
-	return w.writeJSON(neighborhoods)
+
+	// Return only public fields (exclude sensitive description)
+	type publicNeighborhood struct {
+		ID        string `json:"id"`
+		Name      string `json:"name"`
+		Code      string `json:"code"`
+		CreatedAt string `json:"createdAt"`
+	}
+
+	var publicNeighborhoods []publicNeighborhood
+	for _, n := range neighborhoods {
+		code := ""
+		if n.Code.Valid {
+			code = n.Code.String
+		}
+		publicNeighborhoods = append(publicNeighborhoods, publicNeighborhood{
+			ID:        n.ID,
+			Name:      n.Name,
+			Code:      code,
+			CreatedAt: n.CreatedAt.Format(time.RFC3339),
+		})
+	}
+
+	return w.writeJSON(publicNeighborhoods)
 }
 
 // POST /api/admin/neighborhoods
