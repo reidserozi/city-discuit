@@ -156,6 +156,7 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 
 	r.Handle("/api/posts", s.withHandler(s.feed)).Methods("GET")
 	r.Handle("/api/posts", s.withHandler(s.addPost)).Methods("POST")
+	r.Handle("/api/posts/digest", s.withHandler(s.digest)).Methods("GET")
 	r.Handle("/api/posts/{postID}", s.withHandler(s.getPost)).Methods("GET")
 	r.Handle("/api/posts/{postID}", s.withHandler(s.updatePost)).Methods("PUT")
 	r.Handle("/api/posts/{postID}", s.withHandler(s.deletePost)).Methods("DELETE")
