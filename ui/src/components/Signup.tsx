@@ -113,7 +113,7 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     try {
       const res = await mfetch('/api/_signup', {
         method: 'POST',
-        body: JSON.stringify({ username, email, password, neighborhoodID, displayName, captchaToken }),
+        body: JSON.stringify({ username, email, password, neighborhoodID, neighborhoodCode, displayName, captchaToken }),
       });
       if (!res.ok) throw new APIError(res.status, await res.json());
       window.location.reload();
@@ -186,7 +186,7 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
       return;
     }
     if (!CAPTCHA_ENABLED) {
-      signInUser(username, email, password, selectedNeighborhood, displayName);
+      signInUser(username, email, password, selectedNeighborhood, displayName, undefined);
       return;
     }
     if (!captchaRef.current) {

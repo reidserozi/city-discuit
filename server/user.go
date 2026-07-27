@@ -313,6 +313,7 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 	password := values["password"]
 	captchaToken := values["captchaToken"]
 	neighborhoodID := values["neighborhoodID"]
+	neighborhoodCode := values["neighborhoodCode"]
 	displayName := values["displayName"]
 
 	// Verify captcha.
@@ -324,9 +325,12 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 		}
 	}
 
-	// Verify neighborhood exists if provided
+	// Verify neighborhood exists and invite code matches (if neighborhood is specified)
 	if neighborhoodID != "" {
-		if _, err := core.GetNeighborhoodByID(r.ctx, s.db, neighborhoodID); err != nil {
+		if err := core.ValidateNeighborhoodCode(r.ctx, s.db, neighborhoodID, neighborhoodCode); err != nil {
+			if err.Error() == "invalid_neighborhood_code" {
+				return httperr.NewBadRequest("invalid_neighborhood_code", "That invite code doesn't match this neighborhood.")
+			}
 			return httperr.NewBadRequest("invalid_neighborhood", "Neighborhood not found")
 		}
 	}

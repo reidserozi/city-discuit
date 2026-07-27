@@ -3,8 +3,8 @@ import { SiteClosedReason } from '../siteHours';
 const copy: Record<SiteClosedReason, { emoji: string; heading: string; body: string }> = {
   night: {
     emoji: '🌙',
-    heading: 'Sleep well, Raleigh.',
-    body: "Get some rest — we'll be back at 8:00 AM.",
+    heading: 'Goodnight, Raleigh.',
+    body: "Sleep well. Get some rest — we'll be back at 8:00 AM.",
   },
   sunday: {
     emoji: '☀️',
