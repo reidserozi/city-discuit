@@ -286,8 +286,9 @@ type FeedOptions struct {
 	Viewer      *uid.ID
 	Community   *uid.ID // Community should be nil if Homefeed is true.
 	// Homefeed    bool    // If true, the requested feed is the feed with only posts from communities where the user is a member
-	Limit int
-	Next  string // The pagination cursor, taken from previous API response.
+	Limit      int
+	Next       string // The pagination cursor, taken from previous API response.
+	HasLocation bool   // If true, only return posts with non-null latitude/longitude.
 }
 
 var (
@@ -381,6 +382,9 @@ func getPostsLatest(ctx context.Context, db *sql.DB, opts *FeedOptions) (*FeedRe
 	}
 	if loggedIn && opts.Feed != FeedTypeModerating {
 		where, args = whereMutedAndHidden(where, "posts", args, *opts.Viewer, opts.Feed == FeedTypeAll)
+	}
+	if opts.HasLocation {
+		where += "AND posts.latitude IS NOT NULL AND posts.longitude IS NOT NULL "
 	}
 	if opts.Next != "" {
 		next, err := opts.nextID()
@@ -524,6 +528,9 @@ func getPostsHot(ctx context.Context, db *sql.DB, opts *FeedOptions) (*FeedResul
 	if loggedIn && opts.Feed != FeedTypeModerating {
 		where, args = whereMutedAndHidden(where, "posts", args, *opts.Viewer, opts.Feed == FeedTypeAll)
 	}
+	if opts.HasLocation {
+		where += "AND posts.latitude IS NOT NULL AND posts.longitude IS NOT NULL "
+	}
 	if opts.Next != "" {
 		nextHotness, nextID, err := opts.nextPointsID()
 		if err != nil {
@@ -586,6 +593,9 @@ func getPostsTopAll(ctx context.Context, db *sql.DB, opts *FeedOptions) (*FeedRe
 	if loggedIn && opts.Feed != FeedTypeModerating {
 		where, args = whereMutedAndHidden(where, "posts", args, *opts.Viewer, opts.Feed == FeedTypeAll)
 	}
+	if opts.HasLocation {
+		where += "AND posts.latitude IS NOT NULL AND posts.longitude IS NOT NULL "
+	}
 	if opts.Next != "" {
 		nextPoints, nextID, err := opts.nextPointsID()
 		if err != nil {
@@ -647,6 +657,13 @@ func getPostsTop(ctx context.Context, db *sql.DB, opts *FeedOptions) (*FeedResul
 	}
 	if opts.Viewer != nil && opts.Feed != FeedTypeModerating {
 		where, args = whereMutedAndHidden(where, table, args, *opts.Viewer, opts.Feed == FeedTypeAll)
+	}
+	if opts.HasLocation {
+		if where != "" {
+			where += " AND "
+		}
+		query = fmt.Sprintf("SELECT %s.post_id FROM %s INNER JOIN posts ON %s.post_id = posts.id ", table, table, table)
+		where += "posts.latitude IS NOT NULL AND posts.longitude IS NOT NULL"
 	}
 	if opts.Next != "" {
 		nextPoints, nextID, err := opts.nextPointsID()
@@ -718,6 +735,9 @@ func getPostsActivity(ctx context.Context, db *sql.DB, opts *FeedOptions) (*Feed
 	}
 	if loggedIn && opts.Feed != FeedTypeModerating {
 		where, args = whereMutedAndHidden(where, "posts", args, *opts.Viewer, opts.Feed == FeedTypeAll)
+	}
+	if opts.HasLocation {
+		where += "AND posts.latitude IS NOT NULL AND posts.longitude IS NOT NULL "
 	}
 	if opts.Next != "" {
 		next, err := opts.nextInt64()

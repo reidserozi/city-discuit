@@ -142,6 +142,7 @@ func (s *Server) feed(w *responseWriter, r *request) error {
 		if cid != nil {
 			feed = core.FeedTypeCommunity
 		}
+		hasLocation := query.Get("hasLocation") == "true"
 		set, err = core.GetFeed(r.ctx, s.db, &core.FeedOptions{
 			Feed:        feed,
 			Sort:        sort,
@@ -150,6 +151,7 @@ func (s *Server) feed(w *responseWriter, r *request) error {
 			Community:   cid,
 			Limit:       limit,
 			Next:        nextText,
+			HasLocation: hasLocation,
 		})
 		if err != nil {
 			return err
@@ -208,4 +210,24 @@ func (s *Server) feed(w *responseWriter, r *request) error {
 	}
 
 	return w.writeJSON(set)
+}
+
+// /api/posts/digest [GET]
+func (s *Server) digest(w *responseWriter, r *request) error {
+	query := r.urlQueryParams()
+	limit := 5
+	if limitText := query.Get("limit"); limitText != "" {
+		if l, err := strconv.Atoi(limitText); err == nil && l > 0 && l <= 10 {
+			limit = l
+		}
+	}
+
+	posts, err := core.GetDigestPosts(r.ctx, s.db, limit)
+	if err != nil {
+		return err
+	}
+
+	return w.writeJSON(map[string]interface{}{
+		"posts": posts,
+	})
 }

@@ -2020,3 +2020,33 @@ func getPinnedPosts(ctx context.Context, db *sql.DB, viewer, community *uid.ID) 
 	}
 	return posts, err
 }
+
+// GetDigestPosts returns the top 5 most recent posts, ranked by comment engagement.
+func GetDigestPosts(ctx context.Context, db *sql.DB, limit int) ([]*Post, error) {
+	if limit <= 0 {
+		limit = 5
+	}
+	if limit > 10 {
+		limit = 10
+	}
+
+	query := buildSelectPostQuery(false,
+		`WHERE posts.deleted = FALSE
+		ORDER BY posts.created_at DESC, posts.no_comments DESC
+		LIMIT ?`)
+
+	rows, err := db.QueryContext(ctx, query, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	posts, err := scanPosts(ctx, db, rows, nil)
+	if err != nil {
+		if err == errPostNotFound {
+			return []*Post{}, nil
+		}
+		return nil, err
+	}
+	return posts, nil
+}
