@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SiteClosedReason } from '../siteHours';
+import { SiteClosedReason, isDigestWindow } from '../siteHours';
 import { mfetchjson } from '../helper';
 import type { Post } from '../serverTypes';
 
@@ -36,9 +36,15 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
   const { emoji, heading, body } = copy[reason];
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const showDigest = isDigestWindow();
 
   useEffect(() => {
     const fetchDigest = async () => {
+      if (!showDigest) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await mfetchjson('/api/posts/digest?limit=5');
         if (response && response.posts) {
@@ -52,7 +58,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
     };
 
     fetchDigest();
-  }, []);
+  }, [showDigest]);
 
   return (
     <div className="page-site-closed">
@@ -61,7 +67,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
       <p>{body}</p>
       <div className="page-site-closed-hours">Open Monday-Saturday, 8:00 AM - 10:00 PM</div>
 
-      {!loading && posts.length > 0 && (
+      {showDigest && !loading && posts.length > 0 && (
         <div className="page-site-closed-digest">
           <div className="digest-header">Posts to explore</div>
           <div className="digest-list">
