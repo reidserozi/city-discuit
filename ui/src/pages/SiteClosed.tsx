@@ -16,6 +16,22 @@ const copy: Record<SiteClosedReason, { emoji: string; heading: string; body: str
   },
 };
 
+function extractExcerpt(text: string, maxLength: number = 120): string {
+  if (!text) return '';
+  // Strip basic markdown: **bold**, *italic*, [link](url), etc.
+  let excerpt = text
+    .replace(/\*\*(.+?)\*\*/g, '$1') // **bold**
+    .replace(/\*(.+?)\*/g, '$1')     // *italic*
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1') // [text](url)
+    .replace(/^#+\s+/gm, '');        // # Headings
+
+  // Truncate and add ellipsis if needed
+  if (excerpt.length > maxLength) {
+    excerpt = excerpt.substring(0, maxLength).trim() + '…';
+  }
+  return excerpt;
+}
+
 const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
   const { emoji, heading, body } = copy[reason];
   const [posts, setPosts] = useState<Post[]>([]);
@@ -47,20 +63,19 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
 
       {!loading && posts.length > 0 && (
         <div className="page-site-closed-digest">
-          <div className="digest-header">Proposals to explore</div>
+          <div className="digest-header">Posts to explore</div>
           <div className="digest-list">
             {posts.map((post) => (
-              <a
+              <div
                 key={post.id}
-                href={`/${post.community?.name}/post/${post.id}`}
                 className="digest-item"
               >
                 <div className="digest-item-title">{post.title}</div>
                 <div className="digest-item-meta">
-                  {post.community?.name && <span className="community-badge">{post.community.name}</span>}
-                  <span className="comment-count">{post.noComments} comment{post.noComments !== 1 ? 's' : ''}</span>
+                  <span className="community-badge">{post.communityName || 'Community'}</span>
                 </div>
-              </a>
+                {post.body && <div className="digest-item-excerpt">{extractExcerpt(post.body)}</div>}
+              </div>
             ))}
           </div>
         </div>
