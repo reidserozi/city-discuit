@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { SiteClosedReason, isDigestWindow } from '../siteHours';
 import { mfetchjson } from '../helper';
+import CommunityLink from '../components/PostCard/CommunityLink';
 import LinkImage from '../components/PostCard/LinkImage';
-import MapThumbnail from '../components/MapThumbnail';
+import PostCardImage from '../components/PostCard/PostCardImage';
+import { useIsMobile } from '../hooks';
 import type { Post } from '../serverTypes';
 
 const copy: Record<SiteClosedReason, { emoji: string; heading: string; body: string }> = {
@@ -34,24 +36,12 @@ function extractExcerpt(text: string, maxLength: number = 120): string {
   return excerpt;
 }
 
-function getLinkBadge(post: Post): { icon: string; label: string } | null {
-  if (post.type !== 'link' || !post.link?.hostname) return null;
-
-  const hostname = post.link.hostname.toLowerCase();
-  const videoHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com', 'vimeo.com', 'www.vimeo.com'];
-
-  if (videoHosts.includes(hostname)) {
-    return { icon: '▶', label: 'Video' };
-  }
-
-  return { icon: '🔗', label: hostname };
-}
-
 const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
   const { emoji, heading, body } = copy[reason];
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const showDigest = isDigestWindow();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchDigest = async () => {
@@ -87,32 +77,51 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
           <div className="digest-header">Posts to explore</div>
           <div className="digest-list">
             {posts.map((post) => {
-              const image = post.image || post.images?.[0] || post.link?.image;
-              const linkBadge = getLinkBadge(post);
+              const showImage = post.type === 'image' && post.image;
+              const linkImage = post.type === 'link' && post.link?.image;
               const hasLocation = post.latitude !== null && post.longitude !== null && post.latitude !== undefined && post.longitude !== undefined;
 
               return (
-                <div key={post.id} className="digest-item">
-                  {image && (
-                    <div className="digest-item-image-wrapper">
-                      <LinkImage image={image} loading="lazy" isImagePost={post.type === 'image'} />
-                      {linkBadge && <div className="digest-item-badge">{linkBadge.icon} {linkBadge.label}</div>}
+                <div key={post.id} className="post-card">
+                  <div className="card post-card-card">
+                    <div className="post-card-heading">
+                      <div className="post-card-heading-details">
+                        <div className="left">
+                          <CommunityLink name={post.communityName} proPic={post.communityProPic} noLink />
+                        </div>
+                      </div>
                     </div>
-                  )}
-
-                  <div className="digest-item-content">
-                    <div className="digest-item-title">{post.title}</div>
-                    <div className="digest-item-meta">
-                      <span className="community-badge">{post.communityName || 'Community'}</span>
+                    <div className="post-card-body">
+                      <div className="post-card-title">
+                        <div className="post-card-title-text">
+                          <span className="post-card-title-main">{post.title}</span>
+                        </div>
+                        {linkImage && (
+                          <div className="post-card-link-image">
+                            <LinkImage image={linkImage} loading="lazy" isImagePost={false} />
+                          </div>
+                        )}
+                      </div>
+                      {showImage && post.image && <PostCardImage image={post.image} isMobile={isMobile} loading="lazy" />}
+                      {!showImage && !linkImage && post.body && (
+                        <div className="post-card-text">
+                          <div className="digest-excerpt">{extractExcerpt(post.body, 100)}</div>
+                        </div>
+                      )}
                     </div>
-                    {post.body && <div className="digest-item-excerpt">{extractExcerpt(post.body, 100)}</div>}
+                    {hasLocation && (
+                      <div className="digest-location-section">
+                        <a
+                          href={`https://www.openstreetmap.org/?mlat=${post.latitude}&mlon=${post.longitude}#map=17/${post.latitude}/${post.longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="digest-location-link"
+                        >
+                          {post.locationName || `${post.latitude}, ${post.longitude}`}
+                        </a>
+                      </div>
+                    )}
                   </div>
-
-                  {hasLocation && post.latitude !== null && post.longitude !== null && post.latitude !== undefined && post.longitude !== undefined && (
-                    <div className="digest-item-map">
-                      <MapThumbnail latitude={post.latitude as number} longitude={post.longitude as number} locationName={post.locationName} />
-                    </div>
-                  )}
                 </div>
               );
             })}
