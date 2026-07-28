@@ -108,8 +108,9 @@
         }
     }
     .about-landing {
-        height: 380px;
+        min-height: 380px;
         background: #f4f7ff;
+        padding-bottom: 2rem;
         .wrap {
             height: 100%;
             max-width: 850px;

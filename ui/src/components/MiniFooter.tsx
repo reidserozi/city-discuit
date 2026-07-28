@@ -7,7 +7,11 @@ const MiniFooter = () => {
       <Link to="/terms">Terms</Link>
       <Link to="/privacy-policy">Privacy</Link>
       <Link to="/guidelines">Guidelines</Link>
-      <a href={`mailto:${import.meta.env.VITE_EMAILCONTACT}`}>Contact</a>
+      {import.meta.env.VITE_TWITTERURL && (
+        <a href={import.meta.env.VITE_TWITTERURL} target="_blank" rel="noopener">
+          Contact
+        </a>
+      )}
       <span>
         © {new Date().getFullYear()} {import.meta.env.VITE_SITENAME}.
       </span>
