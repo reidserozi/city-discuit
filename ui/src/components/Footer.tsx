@@ -25,16 +25,22 @@ const Footer = () => {
           <Link to="/" className="footer-logo">
             {import.meta.env.VITE_SITENAME}
           </Link>
-          <div className="footer-description">Better discussions on the internet.</div>
         </div>
         <div className="footer-col">
           <div className="footer-title">Organization</div>
           <Link to="/about" className="footer-item">
             About
           </Link>
-          <a href={`mailto:${import.meta.env.VITE_EMAILCONTACT}`} className="footer-item">
-            Contact
-          </a>
+          {import.meta.env.VITE_TWITTERURL && (
+            <a
+              href={import.meta.env.VITE_TWITTERURL}
+              className="footer-item"
+              target="_blank"
+              rel="noopener"
+            >
+              Contact
+            </a>
+          )}
         </div>
         <div className="footer-col">
           <div className="footer-title">Social</div>
