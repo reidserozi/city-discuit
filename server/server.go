@@ -438,19 +438,21 @@ func constructLogLine(fields []logField, color string) string {
 	return fmt.Sprintf(b.String(), args...)
 }
 
-var ipBlockedResponse = []byte(`
+func getIPBlockedResponse(siteName string) []byte {
+	return []byte(`
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Discuit</title>
+    <title>` + siteName + `</title>
   </head>
   <body>
     <p>Suspicious activity detected. Blocked.</p>
   </body>
 </html>
 `)
+}
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	beginT := time.Now()
@@ -460,7 +462,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else if match {
 		log.Println("Blocking IP: ", httputil.GetIP(r))
 		w.WriteHeader(http.StatusForbidden)
-		w.Write(ipBlockedResponse)
+		w.Write(getIPBlockedResponse(s.config.SiteName))
 		return
 	}
 

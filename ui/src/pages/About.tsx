@@ -1,81 +1,55 @@
 import { useState } from 'react';
-import Link from '../components/Link';
 import StaticPage from '../components/StaticPage';
 
 const About = () => {
   const faqItems = [
     {
-      question: 'How does Discuit make money?',
+      question: 'Why does Edit Raleigh close at night and stay closed all day Sunday?',
       answer: (
         <>
-          {'We don’t. Discuit is funded entirely through donations from our users via our '}
-          <a href="https://www.patreon.com/discuit" target="_blank" rel="noreferrer">
-            Patreon
-          </a>
-          .
+          {`Nothing good has ever been written about a neighbor at one in the morning. We know how strange it sounds for something on the internet, but it's deliberate. We'd rather you sleep. We'd rather Sunday belong to your kids, your congregation, your garden, the greenway, the block you're arguing about. Sunday isn't a hole in the week — it's the half of this that happens outdoors. On Saturday evening we hand you a short list of open proposals with pins near where you live. Then we get out of the way. Go stand at the intersection. Photograph the culvert. See how long the walk really takes. Monday morning, tell everyone what you saw.`}
         </>
       ),
     },
     {
-      question: 'Would a non-profit social platform work at scale?',
-      answer: `
-        We do not know if all types of social platforms can have their non-profit
-        alternatives—a non-profit alternative to Youtube probably won’t work, as
-        hosting video is highly expensive—but we’re quite confident that Discuit can
-        scale into millions of users just fine as a non-profit.  Hosting text is
-        extremely cheap; images are not too costly either; it’s video that is
-        expensive, and Discuit does not, nor do we plan to, have native video uploads.
-      `,
+      question: 'Why do posts need a location?',
+      answer: `Civic argument falls apart in the abstract. "Traffic is bad" is unanswerable. "The crossing at this intersection gives you eleven seconds and the curb ramp points into the turn lane" is a thing a person can fix. Every post here is pinned to a real point in the city — a proposed sidewalk connection, a park that needs one more shade tree, a stretch of a transit line where the route makes no sense to anyone who's ridden it. You can open the map and see your neighborhood's open questions the way you'd see them on a walk. Geography tells you whether a conversation is yours.`,
     },
     {
-      question: 'Is Discuit a federated platform?',
+      question: 'Why do I need an invite code to join?',
+      answer: `Membership starts with a code from a neighborhood leader. This is deliberately slow, and we know exactly what it costs us in growth. We'd rather grow the way a city does — block by block, through people who already know each other — than the way a platform does. The code isn't a velvet rope. It's a handshake, and a quiet promise that you've met at least one person here who'll notice how you behave.`,
+    },
+    {
+      question: 'What makes a good post?',
       answer: (
         <>
-          {`Discuit is not a federated social platform, and we do not plan to support
-            federation in the future either. This is because we do not believe that
-            federated platforms, for a few specific reasons, have a chance of becoming
-            mainstream social platforms one day.`}
+          {`Every post here is a proposal or a question — never a verdict. We hold ourselves to one test: could this be handed to a council member, a city planner, or a community coalition and be genuinely useful to them? If yes, it belongs here. That means a good comment adds a cost estimate, a photo from the site, a precedent from Durham or Greenville, a paragraph from the zoning code, or a reason the idea won't work that the original poster hadn't considered. We're trying to build a workshop, not an audience.`}
         </>
       ),
     },
     {
-      question: 'Does Discuit have a mobile app?',
-      answer: (
-        <>
-          {`At the moment, Discuit does not have an official iOS or Android app. But we do
-            have an official Progressive Web App (PWA) that can be installed on both iOS
-            and Android devices (with support for device notifications). We also have two
-            actively maintained third party apps developed by two of our users: `}
-          <Link to="/DiscoApp">Disco</Link> for iOS, and <Link to="/Diskette">Diskette</Link> for
-          Android.
-        </>
-      ),
-    },
-    {
-      question: 'How can I contact someone at Discuit?',
+      question: 'How can I contact someone at Edit Raleigh?',
       answer: (
         <>
           You can send an email to{' '}
           <a href={`mailto:${import.meta.env.VITE_EMAILCONTACT}`}>
             {import.meta.env.VITE_EMAILCONTACT}
           </a>
-          , or join our <a href={import.meta.env.VITE_DISCORDURL}>Discord server </a>
-          (after you join, create a ticket to contact an admin).
+          .
         </>
       ),
     },
     {
-      question: 'I have feedback, bug reports, or questions. What should I do?',
+      question: 'I have feedback or want to report a bug. What should I do?',
       answer: (
         <>
-          {`If you have a question about Discuit that’s not addressed here, feel free to
-        ask it in the `}
-          <Link to="/DiscuitMeta">DiscuitMeta</Link>
-          {` community. If you have feedback or would like to report a bug, you can create a post in the `}
-          <Link to="/DiscuitSuggestions">DiscuitSuggestions</Link>
-          {` community (if you have a GitHub account, however, the best place to report a bug would be on `}
-          <a href={`${import.meta.env.VITE_GITHUBURL}/issues`}>GitHub</a>
-          {`)`}.
+          {`You can create an issue on our `}
+          <a href={`${import.meta.env.VITE_GITHUBURL}/issues`}>GitHub repository</a>
+          {`, or email us at `}
+          <a href={`mailto:${import.meta.env.VITE_EMAILCONTACT}`}>
+            {import.meta.env.VITE_EMAILCONTACT}
+          </a>
+          .
         </>
       ),
     },
@@ -118,11 +92,10 @@ const About = () => {
       <div className="about-landing">
         <div className="wrap">
           <h1 className="about-heading heading-highlight">
-            A social platform by the users, for the users.
+            Raleigh is a draft with a deadline.
           </h1>
           <h2 className="about-subheading">
-            Discuit is a non-profit, open-source community discussion platform. It’s an alternative
-            to Reddit.
+            Edit Raleigh is a platform for the people building Raleigh. Posts are proposals and questions pinned to real places. Nothing is secret. The agendas are posted. But knowing is not the same as having somewhere to do something with what you know. This is that place.
           </h2>
         </div>
         <div className="squiggly-line"></div>
@@ -130,56 +103,40 @@ const About = () => {
       <div className="about-rest">
         <div className="wrap">
           <div className="about-section about-mission">
+            <h2>The premise</h2>
             <p>
-              Our mission is to build the first large-scale social media platform where the
-              interests of the platform are aligned with the interests of the user—a platform, in
-              other words, that’s built on principles of ethical design. At the heart of these
-              principles is the idea of giving users the freedom to choose their online social
-              experience as they would prefer.
+              Nothing about Raleigh is finished. The greenway ends where someone stopped drawing it. The bus comes every thirty minutes because of a line in a budget. A zoning code is a document, and documents get edited — usually by whoever shows up with the most specific idea.
             </p>
             <p>
-              Social media platforms have hitherto done the opposite and taken away what little
-              control the users had, as it served those companies’ own self-interest, which was and
-              still remains, to make as much money as possible, without any regard for, indeed to
-              the utter detriment of, the well-being of the user.
+              We wanted a verb. Not <em>report Raleigh</em>, not <em>rate Raleigh</em>. <strong>Edit</strong>. The posture of someone who assumes the draft can be improved and intends to improve it.
             </p>
-            {/*<p>
-              {`For more information, see the article: `}
-              <a href="https://discuit.substack.com" target="_blank" rel="noreferrer">
-                {`Why we're building an alternative to Reddit.`}
-              </a>
-            </p>*/}
+            <p>
+              The other half is that every editor works against a press time. A council meets. An item is heard. A vote lands on a Tuesday night whether or not a single person wrote anything down beforehand. That deadline is what separates this from every other place you could be typing: <strong>things end here.</strong> The item gets heard, the thread closes, and the outcome goes on the record next to what we asked for.
+            </p>
           </div>
+
           <div className="about-section about-highlights">
+            <h2>How it works</h2>
             <div className="about-highlight">
-              <span className="is-bold">No ads. No tracking.</span>
-              There are no ads, no forms of affiliate marketing, and no tracking anywhere on
-              Discuit. And neither your attention, nor your data, is monetized in any way, shape or
-              form.
+              <span className="is-bold">Posts have addresses.</span>
+              Every proposal or question here is pinned to a real point in the city. You can open the map and see your neighborhood's open questions the way you'd see them on a walk. Geography tells you whether a conversation is yours.
             </div>
             <div className="about-highlight">
-              <span className="is-bold">Enshitification-proof.</span>
-              {`Discuit is a non-profit that's funded entirely by its users through donations. The
-              lack of a profit motive—and the lack of any shareholders or investors to answer to—is
-              essential in keeping this platform completely aligned with the interests and the
-              well-being of its users.`}
+              <span className="is-bold">Everything lives in rooms.</span>
+              Transit. Zoning and land use. Parks. Schools. The budget. Downtown. Neighborhoods. You join the rooms where you have something to offer and skip the rest without guilt. A room accumulates knowledge. A stream only has today.
             </div>
             <div className="about-highlight">
-              <span className="is-bold">Giving agency to users.</span>
-              Choice over what appears on your feed. Multiple feeds. A plethora of ways to filter
-              content. In short, you have complete control over what you see on Discuit. (Please
-              note that Discuit is a work in progress and that many of these features are yet to be
-              built.)
+              <span className="is-bold">It closes at night and all day Sunday.</span>
+              We'd rather you sleep. We'd rather Sunday belong to your kids, your congregation, your garden, the greenway. When Saturday evening comes, we hand you a list of open proposals near where you live. Then we get out of the way.
             </div>
             <div className="about-highlight">
-              <span className="is-bold">No dark patterns.</span>
-              On Discuit, there are no nagging popups asking you to sign up. You don’t need an
-              account to simply view a page. Images, in their highest quality, can be freely
-              downloaded. We don’t manipulate you into using our platform more than you desire to.
+              <span className="is-bold">You get in through someone who's already here.</span>
+              Membership starts with a code from a neighborhood leader. We'd rather grow block by block, through people who already know each other, than the way a platform grows. It's a handshake, and a quiet promise that you've met at least one person here who'll notice how you behave.
             </div>
           </div>
+
           <div className="about-section about-faq">
-            <div className="about-faq-title">Frequently asked questions</div>
+            <h2>Questions</h2>
             <div className="about-faq-list">{renderFaqItems()}</div>
           </div>
         </div>

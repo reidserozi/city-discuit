@@ -1174,7 +1174,7 @@ func (n NotificationNewBadge) view(ctx context.Context, db *sql.DB, format TextF
 	}
 	return &NotificationView{
 		ToURL: "/@" + user.Username,
-		Title: fmt.Sprintf("You are awarded the %s badge for your contribution to Discuit and for sheer awesomeness!", encloseInBold(format, "supporter")),
+		Title: fmt.Sprintf("You are awarded the %s badge for your contribution to Edit Raleigh and for sheer awesomeness!", encloseInBold(format, "supporter")),
 		Icons: []string{"/badge-supporter.png"},
 	}, nil
 }
@@ -1215,7 +1215,7 @@ func (n *NotificationWelcome) marshalJSONForAPI(ctx context.Context, db *sql.DB)
 func (n NotificationWelcome) view(ctx context.Context, db *sql.DB, format TextFormat) (*NotificationView, error) {
 	view := &NotificationView{
 		ToURL: "/" + n.CommunityName,
-		Title: fmt.Sprintf("%s. Make a post in our %s community to say hello!", encloseInBold(format, "Welcome to Discuit"), encloseInBold(format, n.CommunityName)),
+		Title: fmt.Sprintf("%s. Make a post in our %s community to say hello!", encloseInBold(format, "Welcome to Edit Raleigh"), encloseInBold(format, n.CommunityName)),
 	}
 	view.setIcon(nil)
 	return view, nil
