@@ -15,8 +15,8 @@ const copy: Record<SiteClosedReason, { emoji: string; heading: string; body: str
   },
   sunday: {
     emoji: '☀️',
-    heading: 'Go be Raleigh.',
-    body: 'Get outside. Walk a greenway, sit in a park, be with the people you love — and if one of today\'s topics is nearby, go see it for yourself. We\'ll be back tomorrow at 8:00 AM.',
+    heading: 'Raleigh is Open.',
+    body: 'We\'re closed on Sundays. Raleigh isn\'t.\nBelow are a few things people are working on, each pinned to a real spot. If you pass one today, it\'s worth a look — a post reads differently when you\'re standing in it. We\'ll be back tomorrow at 8:00 AM.',
   },
 };
 
