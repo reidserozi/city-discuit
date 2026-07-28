@@ -30,7 +30,7 @@ import Guidelines from './pages/Guidelines';
 import Home from './pages/Home';
 import { List, Lists } from './pages/Lists';
 import Login from './pages/Login';
-import MapView from './pages/MapView';
+import Map from './pages/Map';
 import MarkdownGuide from './pages/MarkdownGuide';
 import ModeratorGuidelines from './pages/ModeratorGuidelines';
 import Modtools from './pages/Modtools';
@@ -326,7 +326,7 @@ const AppSwitch = () => {
           <AllCommunities />
         </Route>
         <Route exact path="/map">
-          <MapView />
+          <Map />
         </Route>
         <ProtectedRoute path="/admin">
           <AdminDashboard />
