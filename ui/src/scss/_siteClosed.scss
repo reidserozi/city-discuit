@@ -55,7 +55,7 @@
         .digest-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 20px;
         }
 
         .digest-item {
@@ -76,10 +76,17 @@
             }
 
             .post-card-link-image-img {
+                position: relative;
                 width: 100%;
                 height: 100%;
                 background-size: cover;
                 background-position: center;
+
+                img {
+                    opacity: 0;
+                    position: relative;
+                    object-fit: cover;
+                }
             }
 
             .digest-item-badge {
@@ -142,7 +149,6 @@
             }
 
             .digest-item-map {
-                border-top: 1px solid rgba(var(--base-green), 0.1);
                 padding: 8px 0;
             }
         }
