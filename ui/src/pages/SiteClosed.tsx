@@ -67,10 +67,12 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
 
   return (
     <div className="page-site-closed">
-      <div className="page-site-closed-emoji">{emoji}</div>
-      <h1>{heading}</h1>
-      <p>{body}</p>
-      <div className="page-site-closed-hours">Open Monday-Saturday, 8:00 AM - 10:00 PM</div>
+      <div className="page-site-closed-hero">
+        <div className="page-site-closed-emoji">{emoji}</div>
+        <h1>{heading}</h1>
+        <p>{body}</p>
+        <div className="page-site-closed-hours">Open Monday-Saturday, 8:00 AM - 10:00 PM</div>
+      </div>
 
       {showDigest && !loading && posts.length > 0 && (
         <div className="page-site-closed-digest">
@@ -116,8 +118,9 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
                           target="_blank"
                           rel="noreferrer"
                           className="digest-location-link"
+                          title={post.locationName || undefined}
                         >
-                          {post.locationName || `${post.latitude}, ${post.longitude}`}
+                          📍 {(post.latitude as number).toFixed(4)}°, {(post.longitude as number).toFixed(4)}°
                         </a>
                       </div>
                     )}
