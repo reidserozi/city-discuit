@@ -73,6 +73,11 @@ const Footer = () => {
             <li>
               <Link to="/privacy-policy">Privacy</Link>
             </li>
+            <li>
+              <a href="https://x.com/RaleighWiki" target="_blank" rel="noopener">
+                Contact
+              </a>
+            </li>
             {import.meta.env.VITE_GITHUBURL && (
               <li>
                 <a

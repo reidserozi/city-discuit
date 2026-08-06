@@ -415,7 +415,9 @@ const Sidebar = ({ mobile = false }: { mobile?: boolean }) => {
               <span>Privacy</span>
             </Link>
             <a
-              href={`mailto:${import.meta.env.VITE_EMAILCONTACT}`}
+              href="https://x.com/RaleighWiki"
+              target="_blank"
+              rel="noopener"
               className="sidebar-item with-image is-m"
               onClick={handleClose}
             >

@@ -92,8 +92,16 @@ const PrivacyPolicy = () => {
           <li>Your posts and comments remain on the site (because they are part of the public civic record)</li>
         </ul>
         <p>
-          If you want your posts or comments removed after deleting your account, or if you have other data-removal requests, contact us at{' '}
-          <a href={import.meta.env.VITE_EMAILCONTACT}>{import.meta.env.VITE_EMAILCONTACT}</a>.
+          If you want your posts or comments removed after deleting your account, or if you have
+          other data-removal requests, contact us via direct message on X:{' '}
+          <a href="https://x.com/RaleighWiki" target="_blank" rel="noopener">
+            @RaleighWiki
+          </a>
+          . New to DMs?{' '}
+          <a href="https://help.x.com/en/using-x/direct-messages" target="_blank" rel="noopener">
+            Here's how
+          </a>
+          .
         </p>
 
         {/* TODO: Specific consumer-privacy statute compliance claims (CCPA, state NC data-privacy law, GDPR) were intentionally not asserted here pending review by a licensed attorney. Revisit if the site ever scales or if new legal requirements apply. */}
@@ -107,7 +115,11 @@ const PrivacyPolicy = () => {
         <p>We reserve the right to revise this Privacy Policy at any time.</p>
 
         <p>
-          Questions? Contact us at <a href={import.meta.env.VITE_EMAILCONTACT}>{import.meta.env.VITE_EMAILCONTACT}</a>.
+          Questions? Reach us via direct message on X:{' '}
+          <a href="https://x.com/RaleighWiki" target="_blank" rel="noopener">
+            @RaleighWiki
+          </a>
+          .
         </p>
       </main>
     </StaticPage>
