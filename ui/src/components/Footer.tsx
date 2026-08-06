@@ -34,7 +34,7 @@ const Footer = () => {
             <Link to="/">{import.meta.env.VITE_SITENAME}</Link>
           </div>
           <p className="footer__tagline">A draft with a deadline.</p>
-          <div className="footer__hours">Open Mon–Sat, 8:00 AM – 10:00 PM</div>
+          <div className="footer__hours">Open Mon–Sat, 6:00 AM – 10:00 PM</div>
           <div className="footer__hours-sub">Closed Sundays. Go outside.</div>
         </div>
 
