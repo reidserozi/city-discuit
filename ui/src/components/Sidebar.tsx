@@ -585,16 +585,14 @@ const Sidebar = ({ mobile = false }: { mobile?: boolean }) => {
                   <SVGDiscord />
                 </a>
               )}
-              {import.meta.env.VITE_GITHUBURL && (
-                <a
-                  href={import.meta.env.VITE_GITHUBURL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="button social-link"
-                >
-                  <SVGGithub />
-                </a>
-              )}
+              <a
+                href="https://github.com/discuitnet/discuit"
+                target="_blank"
+                rel="noreferrer"
+                className="button social-link"
+              >
+                <SVGGithub />
+              </a>
               {import.meta.env.VITE_SUBSTACKURL && (
                 <a
                   href={import.meta.env.VITE_SUBSTACKURL}

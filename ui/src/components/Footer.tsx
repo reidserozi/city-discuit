@@ -33,7 +33,7 @@ const Footer = () => {
           <div className="footer__wordmark">
             <Link to="/">{import.meta.env.VITE_SITENAME}</Link>
           </div>
-          <p className="footer__tagline">A draft with a deadline.</p>
+          <p className="footer__tagline">Edit your City.</p>
           <div className="footer__hours">Open Mon–Sat, 6:00 AM – 10:00 PM</div>
           <div className="footer__hours-sub">Closed Sundays. Go outside.</div>
         </div>
@@ -78,17 +78,15 @@ const Footer = () => {
                 Contact
               </a>
             </li>
-            {import.meta.env.VITE_GITHUBURL && (
-              <li>
-                <a
-                  href={import.meta.env.VITE_GITHUBURL}
-                  target="_blank"
-                  rel="noopener"
-                >
-                  Source code
-                </a>
-              </li>
-            )}
+            <li>
+              <a
+                href="https://github.com/discuitnet/discuit"
+                target="_blank"
+                rel="noopener"
+              >
+                Source code
+              </a>
+            </li>
           </ul>
         </nav>
       </div>
