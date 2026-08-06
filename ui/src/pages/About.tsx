@@ -171,11 +171,19 @@ const About = () => {
         <h2>Thank you</h2>
 
         <p>
-          None of this was built from nothing. Discuit is the open-source software this entire site
-          runs on — the account system, the moderation tools, the comment threads, all of it —
-          written and given away for free by people who didn't have to. LocalWiki showed what a
-          civic-minded, volunteer-run project could look like years before we started, and its own
-          guidelines and terms gave us a real document to argue with while writing ours.
+          None of this was built from nothing.{' '}
+          <a href="https://discuit.org/" target="_blank" rel="noopener">
+            Discuit
+          </a>{' '}
+          is the open-source software this entire site runs on — the account system, the
+          moderation tools, the comment threads, all of it — written and given away for free by
+          people who didn't have to.{' '}
+          <a href="https://localwiki.org/" target="_blank" rel="noopener">
+            LocalWiki
+          </a>{' '}
+          showed what a civic-minded, volunteer-run project could look like years before we
+          started, and its own guidelines and terms gave us a real document to argue with while
+          writing ours.
         </p>
 
         <p>
