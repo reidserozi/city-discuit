@@ -4,7 +4,7 @@ const About = () => {
   return (
     <StaticPage className="" title="About">
       <main className="document">
-        <h1>About</h1>
+        <h1>A memo on why we made Edit Raleigh</h1>
 
         <p>
           There's an official city sign — laminated, zip-tied to a chain-link fence — on a street you drive every day. It has a case number, a phone number, and a date. Most of us read it at a red light and forget it by the next block. Eighteen months later, something is standing there.
