@@ -81,8 +81,15 @@ const Terms = () => {
         <h2>Copyright</h2>
         <p>
           If you believe that your Content has been copied in a way that constitutes copyright
-          infringement, please send us an email at{' '}
-          <a href={import.meta.env.VITE_EMAILCONTACT}>{import.meta.env.VITE_EMAILCONTACT}</a>.
+          infringement, please contact us via direct message on X:{' '}
+          <a href="https://x.com/RaleighWiki" target="_blank" rel="noopener">
+            @RaleighWiki
+          </a>
+          . New to DMs?{' '}
+          <a href="https://help.x.com/en/using-x/direct-messages" target="_blank" rel="noopener">
+            Here's how
+          </a>
+          .
         </p>
 
         <h2>Account Termination</h2>
