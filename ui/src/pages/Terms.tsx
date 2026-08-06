@@ -13,7 +13,7 @@ const Terms = () => {
 
         <h2>Age Requirements</h2>
         <p>
-          You must be at least 13 years old to use the Services. By accessing or using Edit Raleigh, you represent and warrant that you are 13 or older.
+          You must be at least 18 years old to use the Services. By accessing or using Edit Raleigh, you represent and warrant that you are 18 or older.
         </p>
 
         <h2>Privacy</h2>
