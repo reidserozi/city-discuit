@@ -31,7 +31,7 @@ function getWeekdayAndHour(now: Date): { weekday: string; hour: number } {
   return { weekday, hour };
 }
 
-// Open Monday-Saturday, 8:00 AM - 10:00 PM Raleigh time. Closed all day Sunday.
+// Open Monday-Saturday, 6:00 AM - 10:00 PM Raleigh time. Closed all day Sunday.
 export function getSiteStatus(now: Date = getEffectiveNow()): SiteStatus {
   const { weekday, hour } = getWeekdayAndHour(now);
 
@@ -39,7 +39,7 @@ export function getSiteStatus(now: Date = getEffectiveNow()): SiteStatus {
     return { closed: true, reason: 'sunday' };
   }
 
-  if (hour < 8 || hour >= 22) {
+  if (hour < 6 || hour >= 22) {
     return { closed: true, reason: 'night' };
   }
 

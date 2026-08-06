@@ -11,12 +11,12 @@ const copy: Record<SiteClosedReason, { emoji: string; heading: string; body: str
   night: {
     emoji: '🌙',
     heading: 'Goodnight, Raleigh.',
-    body: 'Sleep well. Get some rest - we will be back at 8:00 AM.',
+    body: 'Sleep well. Get some rest - we will be back at 6:00 AM.',
   },
   sunday: {
     emoji: '☀️',
     heading: 'Raleigh is Open.',
-    body: 'We\'re closed on Sundays. Raleigh isn\'t.\nBelow are a few things people are working on, each pinned to a real spot. If you pass one today, it\'s worth a look — a post reads differently when you\'re standing in it. We\'ll be back tomorrow at 8:00 AM.',
+    body: 'We\'re closed on Sundays. Raleigh isn\'t.\nBelow are a few things people are working on, each pinned to a real spot. If you pass one today, it\'s worth a look — a post reads differently when you\'re standing in it. We\'ll be back tomorrow at 6:00 AM.',
   },
 };
 
@@ -71,7 +71,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
         <div className="page-site-closed-emoji">{emoji}</div>
         <h1>{heading}</h1>
         <p>{body}</p>
-        <div className="page-site-closed-hours">Open Monday-Saturday, 8:00 AM - 10:00 PM</div>
+        <div className="page-site-closed-hours">Open Monday-Saturday, 6:00 AM - 10:00 PM</div>
       </div>
 
       {showDigest && !loading && posts.length > 0 && (
