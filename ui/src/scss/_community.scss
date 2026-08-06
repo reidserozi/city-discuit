@@ -75,10 +75,11 @@
             align-items: center;
             justify-content: flex-end;
             .comm-main-top-join-button {
-                width: 120px;
-                padding-left: calc(2 * var(--gap));
-                padding-right: calc(2 * var(--gap));
+                min-width: 120px;
+                padding-left: var(--gap);
+                padding-right: var(--gap);
                 margin-right: calc(0.5 * var(--gap));
+                white-space: nowrap;
             }
         }
     }
