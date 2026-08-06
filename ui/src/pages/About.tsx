@@ -167,6 +167,22 @@ const About = () => {
         <p style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.8, marginTop: '3rem' }}>
           Edit Raleigh is an independent, volunteer-run civic platform for Raleigh, North Carolina. It is not affiliated with the City of Raleigh or Wake County. Built on open-source software, and open-source itself.
         </p>
+
+        <h2>Thank you</h2>
+
+        <p>
+          None of this was built from nothing. Discuit is the open-source software this entire site
+          runs on — the account system, the moderation tools, the comment threads, all of it —
+          written and given away for free by people who didn't have to. LocalWiki showed what a
+          civic-minded, volunteer-run project could look like years before we started, and its own
+          guidelines and terms gave us a real document to argue with while writing ours.
+        </p>
+
+        <p>
+          This website uses the best of both. Thank you to their creators and founders — for the
+          work itself, and for keeping it open source. A small volunteer project in Raleigh only
+          exists because bigger ones decided to share.
+        </p>
       </main>
     </StaticPage>
   );
