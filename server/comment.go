@@ -85,6 +85,17 @@ func (s *Server) addComment(w *responseWriter, r *request) error {
 		return errNotLoggedIn
 	}
 
+	// Get current user to check email verification.
+	user, err := core.GetUser(r.ctx, s.db, *r.viewer, r.viewer)
+	if err != nil {
+		return err
+	}
+
+	// Require verified email before commenting.
+	if !user.EmailConfirmedAt.Valid {
+		return core.ErrEmailNotVerified
+	}
+
 	if err := s.rateLimit(r, "add_comment_1_"+r.viewer.String(), time.Second*5, 2); err != nil {
 		return err
 	}

@@ -518,18 +518,19 @@ func RegisterUser(ctx context.Context, db *sql.DB, username, email, password, ip
 		return nil, httperr.NewBadRequest("invalid-username", fmt.Sprintf("Username %v.", err))
 	}
 
+	// Email is required.
+	if email == "" {
+		return nil, errEmailRequired
+	}
+
 	hash, err := HashPassword([]byte(password))
 	if err != nil {
 		return nil, err
 	}
 
-	// Note: Thet email address is not checked to be a valid email address. Any
+	// Note: The email address is not checked to be a valid email address. Any
 	// string can be stored as an email address currently.
-	nullEmail := msql.NullString{}
-	if email != "" {
-		nullEmail.Valid = true
-		nullEmail.String = email
-	}
+	nullEmail := msql.NewNullString(email)
 
 	var ipany any
 	if ip != "" {

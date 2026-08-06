@@ -22,6 +22,17 @@ func (s *Server) addPost(w *responseWriter, r *request) error {
 		return errNotLoggedIn
 	}
 
+	// Get current user to check email verification.
+	user, err := core.GetUser(r.ctx, s.db, *r.viewer, r.viewer)
+	if err != nil {
+		return err
+	}
+
+	// Require verified email before posting.
+	if !user.EmailConfirmedAt.Valid {
+		return core.ErrEmailNotVerified
+	}
+
 	if err := s.rateLimit(r, "add_post_1_"+r.viewer.String(), time.Second*10, 1); err != nil {
 		return err
 	}

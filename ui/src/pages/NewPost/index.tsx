@@ -213,9 +213,13 @@ const NewPost = () => {
   const isPostingDisabled =
     community !== null &&
     (isBanned ||
-      (!isEditPost && community.postingRestricted && !(isUserMod || (user && user.isAdmin))));
+      (!isEditPost && community.postingRestricted && !(isUserMod || (user && user.isAdmin))) ||
+      !user.emailConfirmedAt);
 
   const getPostingDisabledText = () => {
+    if (!user.emailConfirmedAt) {
+      return 'Verify your email before posting.';
+    }
     if (isBanned) {
       return `You've been banned from ${community?.name}.`;
     } else {
@@ -456,7 +460,15 @@ const NewPost = () => {
           />
           <div className="card page-new-form">
             {isPostingDisabled && (
-              <div className="page-new-form-disabled">{getPostingDisabledText()}</div>
+              <div className="page-new-form-disabled">
+                {getPostingDisabledText()}
+                {!user.emailConfirmedAt && (
+                  <>
+                    {' '}
+                    <Link to="/settings">Go to settings</Link>
+                  </>
+                )}
+              </div>
             )}
             <div
               className={clsx(
