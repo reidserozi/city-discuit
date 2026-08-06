@@ -7,7 +7,7 @@ import Dropdown from '../../components/Dropdown';
 import Feed from '../../components/Feed';
 import ImageEditModal from '../../components/ImageEditModal';
 import MarkdownBody from '../../components/MarkdownBody';
-import MiniFooter from '../../components/MiniFooter';
+import Footer from '../../components/Footer';
 import PageLoading from '../../components/PageLoading';
 import CommunityLink from '../../components/PostCard/CommunityLink';
 import { MemorizedPostCard } from '../../components/PostCard/PostCard';
@@ -479,10 +479,11 @@ const User = () => {
   };
 
   return (
-    <div className="page-content page-user wrap page-grid">
-      <Helmet>
-        <title>{`@${user.username}`}</title>
-      </Helmet>
+    <>
+      <div className="page-content page-user wrap page-grid">
+        <Helmet>
+          <title>{`@${user.username}`}</title>
+        </Helmet>
       <Sidebar />
       <UserAdminsViewModal
         user={userAdminsView}
@@ -635,7 +636,6 @@ const User = () => {
             <div>TODO</div>
           </div>
         </div> */}
-        <MiniFooter />
       </aside>
 
       <ImageEditModal
@@ -650,7 +650,9 @@ const User = () => {
         uploading={isUploadingPic}
         deleting={isDeletingPic}
       />
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 

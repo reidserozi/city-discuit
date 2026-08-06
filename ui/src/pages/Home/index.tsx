@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { getGlobalAppData } from '../../appData';
 import { ButtonClose } from '../../components/Button';
 import Link from '../../components/Link';
-import MiniFooter from '../../components/MiniFooter';
+import Footer from '../../components/Footer';
 import Sidebar from '../../components/Sidebar';
 import { isDeviceIos, isDeviceStandalone } from '../../helper';
 import { User } from '../../serverTypes';
@@ -76,44 +76,46 @@ const Home = () => {
   };
 
   return (
-    <div className="page-content page-home wrap page-grid">
-      <Sidebar />
-      <main className="posts">
-        {showInstallPrompt && !neverShowBanner && (
-          <div className="banner-install is-m">
-            <div className="banner-install-text">Get the app for a better experience.</div>
-            <div className="banner-install-actions">
-              <ButtonAppInstall
-                className="banner-install-button"
-                deferredPrompt={deferredPrompt as DeferredInstallPrompt}
-              >
-                Install
-              </ButtonAppInstall>
-              <ButtonClose onClick={handleNeverShowBanner} style={{ color: 'inherit' }} />
+    <>
+      <div className="page-content page-home wrap page-grid">
+        <Sidebar />
+        <main className="posts">
+          {showInstallPrompt && !neverShowBanner && (
+            <div className="banner-install is-m">
+              <div className="banner-install-text">Get the app for a better experience.</div>
+              <div className="banner-install-actions">
+                <ButtonAppInstall
+                  className="banner-install-button"
+                  deferredPrompt={deferredPrompt as DeferredInstallPrompt}
+                >
+                  Install
+                </ButtonAppInstall>
+                <ButtonClose onClick={handleNeverShowBanner} style={{ color: 'inherit' }} />
+              </div>
             </div>
-          </div>
-        )}
-        {loggedIn && !deviceStandalone && (
-          <Link
-            to="/new"
-            className="button button-main is-m"
-            style={{ borderRadius: 0, marginBottom: 'calc(var(--gap) / 2)' }}
-          >
-            Create post
-          </Link>
-        )}
-        <PostsFeed feedType={feedType} communityId={null} />
-      </main>
-      <aside className="sidebar-right is-custom-scrollbar is-v2'">
-        {!loggedIn && (
-          <div className="card card-sub card-padding">
-            <LoginForm />
-          </div>
-        )}
-        <WelcomeBanner />
-        <MiniFooter />
-      </aside>
-    </div>
+          )}
+          {loggedIn && !deviceStandalone && (
+            <Link
+              to="/new"
+              className="button button-main is-m"
+              style={{ borderRadius: 0, marginBottom: 'calc(var(--gap) / 2)' }}
+            >
+              Create post
+            </Link>
+          )}
+          <PostsFeed feedType={feedType} communityId={null} />
+        </main>
+        <aside className="sidebar-right is-custom-scrollbar is-v2'">
+          {!loggedIn && (
+            <div className="card card-sub card-padding">
+              <LoginForm />
+            </div>
+          )}
+          <WelcomeBanner />
+        </aside>
+      </div>
+      <Footer />
+    </>
   );
 };
 
