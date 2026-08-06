@@ -106,15 +106,6 @@ const Guidelines = () => {
             <strong>No racism or hate.</strong> Don't post anything that promotes violence or
             discrimination against a group of people based on race, ethnicity, sex, gender,
             religion, nationality, or sexual orientation.
-            <p>
-              Respectfully talking about racial or national differences is okay. Joking about
-              different cultural idiosyncrasies is also okay, provided it's not coming from a place
-              of hatred.
-            </p>
-            <p>
-              Racial slurs are not okay. Promoting the idea that one race is superior or inferior
-              to another is not okay. Criticism is okay; hatred is not.
-            </p>
           </li>
 
           <li>
