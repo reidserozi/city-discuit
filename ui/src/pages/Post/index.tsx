@@ -590,6 +590,7 @@ const Post = () => {
                 main
                 loggedIn={loggedIn}
                 disabled={!canComment}
+                user={user}
               />
               {commentsLoading === 'loaded' && post && community ? (
                 <>

@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import MarkdownTextarea from '../../components/MarkdownTextarea';
 import { APIError, mfetch } from '../../helper';
-import { Comment } from '../../serverTypes';
+import { Comment, User } from '../../serverTypes';
 import {
   bannedFromAdded,
   loginPromptToggled,
@@ -33,6 +33,7 @@ export interface AddCommentProps {
   disabled?: boolean;
   isMod?: boolean;
   textSelection?: string;
+  user?: User | null;
 }
 
 const AddComment = ({
@@ -48,6 +49,7 @@ const AddComment = ({
   loggedIn = true,
   disabled = false,
   textSelection = '',
+  user = null,
 }: AddCommentProps) => {
   const dispatch = useDispatch();
 
@@ -102,6 +104,9 @@ const AddComment = ({
           if (json.code === 'banned_from_community') {
             alert('You are banned from this community.');
             dispatch(bannedFromAdded(post.communityId));
+            return;
+          } else if (json.code === 'email_not_verified') {
+            dispatch(snackAlert('Verify your email before commenting.'));
             return;
           }
         } else if (res.status === 429) {

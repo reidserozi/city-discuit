@@ -558,6 +558,12 @@ export const snackAlertError = (error: unknown) => {
     if (error.status === 429) {
       return snackAlert('Whoah, slow down there!', 'too_many_requests');
     }
+    if (error.status === 403) {
+      const json = error.json as Record<string, unknown>;
+      if (json?.code === 'email_not_verified') {
+        return snackAlert('Verify your email before performing this action.', 'email_not_verified');
+      }
+    }
   }
   if (error instanceof TypeError) {
     return snackAlert(`Make sure you're connected to the internet`, 'network_error');
