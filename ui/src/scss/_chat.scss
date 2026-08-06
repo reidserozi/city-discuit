@@ -75,14 +75,14 @@
             overflow: auto;
             .chat-msg {
                 border-radius: var(--border-radius);
-                background: tomato;
+                background: rgb(var(--base-red));
                 padding: 0.5rem;
-                color: #fff;
+                color: var(--color-white);
                 max-width: 47%;
                 align-self: flex-start;
                 margin-bottom: 0.5rem;
                 &.chat-msg-reply {
-                    background: gray;
+                    background: var(--color-input);
                     align-self: flex-end;
                 }
             }

@@ -292,7 +292,7 @@
                     .button-close,
                     .button-alt-text {
                         &:hover {
-                            background-color: #000;
+                            background-color: rgb(var(--base-black));
                         }
                     }
                 }
@@ -304,10 +304,10 @@
                 .page-new-image-deleted {
                     width: 100%;
                     height: var(--textarea-min-height);
-                    border: 1px solid lightgray;
+                    border: 1px solid var(--color-border);
                     border-radius: var(--border-radius);
                     background-color: rgba(var(--base-bg), 0.028);
-                    color: gray;
+                    color: var(--color-text-secondary);
                     svg {
                         width: 60px;
                         height: auto;

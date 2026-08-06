@@ -94,7 +94,7 @@ const PostCardHeadingDetails = ({
           )}
           {post.author?.neighborhood && (
             <span className="post-card-heading-neighborhood" style={{ marginLeft: '0.5rem', opacity: 0.8 }}>
-              From 📍 Neighborhood: {post.author.neighborhood.name}
+              From 📍 {post.author.neighborhood.name}
             </span>
           )}
         </div>

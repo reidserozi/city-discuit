@@ -22,8 +22,8 @@
         margin-top: var(--gap);
         width: 100%;
         // background: rgba(var(--base-4), 0.5);
-        background: #000;
-        color: #fff;
+        background: rgb(var(--base-black));
+        color: var(--color-white);
         margin-bottom: 0;
         padding: 50px 0;
         > .wrap {
@@ -94,10 +94,8 @@
         -webkit-background-clip: text;
         background-image: linear-gradient(
             45deg,
-            rgba(70, 28, 138, 1) 0%,
-            rgba(68, 147, 205, 1) 42%,
-            rgba(216, 43, 72, 1) 69%,
-            rgba(242, 144, 47, 1) 100%
+            rgba(var(--base-brand), 1) 0%,
+            rgba(var(--base-brand), 0.8) 100%
         );
         box-decoration-break: clone;
     }
@@ -109,7 +107,7 @@
     }
     .about-landing {
         min-height: 380px;
-        background: #f4f7ff;
+        background: var(--color-body);
         padding-bottom: 2rem;
         .wrap {
             height: 100%;
@@ -197,19 +195,18 @@
             .about-faq-item {
                 display: flex;
                 flex-direction: column;
-                --border-radius: 5px;
                 border: 1px solid rgba(var(--base-fg), 0.4705882353);
                 background-color: rgba(var(--base-fg), 0.0588235294);
                 &:first-child {
-                    border-top-left-radius: var(--border-radius);
-                    border-top-right-radius: var(--border-radius);
+                    border-top-left-radius: 8px;
+                    border-top-right-radius: 8px;
                 }
                 &:not(:first-child) {
                     border-top: none;
                 }
                 &:last-child {
-                    border-bottom-left-radius: var(--border-radius);
-                    border-bottom-right-radius: var(--border-radius);
+                    border-bottom-left-radius: 8px;
+                    border-bottom-right-radius: 8px;
                 }
 
                 .about-faq-question {
@@ -245,7 +242,7 @@
 html.theme-dark {
     .page-about {
         .about-landing {
-            background: #0f0e20;
+            background: var(--color-body);
         }
         .squiggly-line {
             background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjE0IiB2aWV3Qm94PSIwIDAgMTA4IDE0IiBmaWxsPSIjMGYwZTIwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMC40NTYwNTUgMS41TDkuMjkzOCAxMC41TDE1LjY3NjYgNkwyNS40OTYzIDEwLjVMMjguNDQyMiA0LjVMMzQuMzM0MSA5TDQyLjY4MDggMTNMNDYuNjA4NyA3TDUyLjk5MTUgMTJMNTUuOTM3NSAxMC41TDYxLjgyOTMgNkw2Ni43MzkxIDkuNUw2OS42ODUxIDEzTDc1LjU3NjkgOEw4MC45Nzc3IDZMODMuOTIzNiAxMEw5MC43OTc0IDEzTDk2LjE5ODMgOEwxMDIuNTgxIDkuNUwxMDcgMSIgc3Ryb2tlPSIjYjNiM2IzIj48L3BhdGg+Cjwvc3ZnPg==');

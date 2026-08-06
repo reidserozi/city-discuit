@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net"
 	"strings"
 	"time"
 
 	"github.com/discuitnet/discuit/core"
+	"github.com/discuitnet/discuit/internal/email"
 	"github.com/discuitnet/discuit/internal/httperr"
 )
 
@@ -146,4 +148,39 @@ func (s *Server) sendEmailVerificationBestEffort(user *core.User) {
 	if err := user.SetStytchUserID(ctx, s.db, stytchUserID); err != nil {
 		s.httpLogger.Printf("Error saving Stytch user ID for %s: %v\n", user.Username, err)
 	}
+}
+
+// testEmail sends a test email to the logged-in user.
+func (s *Server) testEmail(w *responseWriter, r *request) error {
+	// Must be logged in
+	if !r.loggedIn {
+		return errNotLoggedIn
+	}
+
+	// Get current user
+	user, err := core.GetUser(r.ctx, s.db, *r.viewer, r.viewer)
+	if err != nil {
+		return err
+	}
+
+	// User must have an email
+	if !user.Email.Valid || user.Email.String == "" {
+		return httperr.NewBadRequest("no_email", "User does not have an email address.")
+	}
+
+	// Create and send a test email using the email service directly
+	emailSvc := email.New(s.config.SMTPHost, s.config.SMTPPort, s.config.SMTPUser, s.config.SMTPPassword, s.config.SMTPFromEmail, s.config.SMTPFromName)
+
+	htmlBody := email.RenderNotificationEmail(
+		"Test email from Edit Raleigh",
+		s.config.UIProxy,
+		"Visit Edit Raleigh",
+		"Edit Raleigh",
+	)
+
+	if err := emailSvc.Send(user.Email.String, "Test email from Edit Raleigh", htmlBody); err != nil {
+		return httperr.NewBadRequest("email_send_failed", fmt.Sprintf("Failed to send email: %v", err))
+	}
+
+	return w.writeJSON(map[string]bool{"success": true})
 }

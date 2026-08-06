@@ -160,7 +160,7 @@
         // display: flex;
         // align-items: center;
         // flex-wrap: wrap;
-        color: grey;
+        color: var(--color-text-secondary);
         font-size: var(--fs-xs);
         > * {
             margin-right: 5px;
@@ -245,17 +245,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(1deg, rgba(28, 23, 120, 1) 0%, rgba(148, 113, 217, 1) 100%);
+        background: linear-gradient(135deg, rgba(var(--base-brand), 1) 0%, rgba(var(--base-brand), 0.85) 100%);
         .modal-badges-close {
             position: absolute;
             right: 0;
             top: 0;
             margin: calc(var(--gap) / 2);
-            background: #3e3e3e;
-            color: #fff;
+            background: rgba(var(--base-black), 0.2);
+            color: var(--color-white);
             &:hover {
-                background: #fff;
-                color: #000;
+                background: var(--color-white);
+                color: var(--color-text);
             }
         }
     }
@@ -278,8 +278,7 @@
     }
     .modal-badges-title {
         font-weight: 600;
-        font-size: 2.1rem;
-        // align-self: center;
+        font-size: var(--fs-2xl);
     }
 }
 

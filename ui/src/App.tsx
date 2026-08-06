@@ -231,7 +231,12 @@ const App = () => {
     return <AppLoading />;
   }
 
-  if (siteStatus.closed && siteStatus.reason) {
+  if (
+    siteStatus.closed &&
+    siteStatus.reason &&
+    !(user && user.isAdmin) &&
+    location.pathname !== '/login'
+  ) {
     return <SiteClosed reason={siteStatus.reason} />;
   }
 

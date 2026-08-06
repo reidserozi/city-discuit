@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/SherClockHolmes/webpush-go"
+	"github.com/discuitnet/discuit/internal/email"
 	"github.com/discuitnet/discuit/internal/httperr"
 	msql "github.com/discuitnet/discuit/internal/sql"
 	"github.com/discuitnet/discuit/internal/uid"
@@ -27,6 +28,11 @@ var (
 	pushNotifsEnabled = false
 	webmasterEmail    = ""
 	vapidKeys         = &VAPIDKeys{}
+
+	emailMutex         sync.RWMutex // guards the following
+	emailNotifsEnabled = false
+	emailService       *email.Service
+	emailSiteURL       = ""
 )
 
 // EnablePushNotifications enables sending web push notifications. The email
@@ -38,6 +44,16 @@ func EnablePushNotifications(keys *VAPIDKeys, email string) {
 	pushNotifsEnabled = true
 	vapidKeys = keys
 	webmasterEmail = email
+}
+
+// EnableEmailNotifications enables sending email notifications.
+func EnableEmailNotifications(svc *email.Service, siteURL string) {
+	emailMutex.Lock()
+	defer emailMutex.Unlock()
+
+	emailNotifsEnabled = true
+	emailService = svc
+	emailSiteURL = siteURL
 }
 
 const MaxNotificationsPerUser = 200
@@ -521,7 +537,19 @@ func CreateNotification(ctx context.Context, db *sql.DB, user uid.ID, Type Notif
 		}
 	}
 
+	sendEmailNotif := func() {
+		notif, err := GetNotification(ctx, db, strconv.Itoa(int(lastID)), true, TextFormatsHTML)
+		if err != nil {
+			log.Println("Error getting notification (CreateNotification)", err)
+			return
+		}
+		if err = notif.SendEmailNotification(ctx); err != nil {
+			log.Printf("Error sending email notification: %v\n", err)
+		}
+	}
+
 	sendPushNotif()
+	go sendEmailNotif()
 	return err
 }
 
@@ -690,6 +718,38 @@ func (n *Notification) SendPushNotification(ctx context.Context) error {
 		TTL:             30,
 		Topic:           topic, // For collapsing comments
 	})
+}
+
+// SendEmailNotification sends the notification via email.
+func (n *Notification) SendEmailNotification(ctx context.Context) error {
+	emailMutex.RLock()
+	enabled := emailNotifsEnabled
+	svc := emailService
+	siteURL := emailSiteURL
+	emailMutex.RUnlock()
+
+	if !enabled || svc == nil {
+		return nil
+	}
+
+	user, err := GetUser(ctx, n.db, n.UserID, nil)
+	if err != nil {
+		return err
+	}
+
+	if !user.Email.Valid || user.Email.String == "" {
+		return nil
+	}
+
+	view, err := n.Notif.view(ctx, n.db, TextFormatsHTML)
+	if err != nil {
+		return err
+	}
+
+	absoluteURL := siteURL + view.ToURL
+	htmlBody := email.RenderNotificationEmail(view.Title, absoluteURL, "View on Edit Raleigh", "Edit Raleigh")
+
+	return svc.Send(user.Email.String, view.Title, htmlBody)
 }
 
 func (n *Notification) ResetUserNewNotificationsCount(ctx context.Context) error {
