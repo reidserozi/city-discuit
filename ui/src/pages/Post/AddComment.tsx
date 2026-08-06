@@ -150,8 +150,16 @@ const AddComment = ({
     if (onCancel) onCancel();
   };
 
+  const isEmailNotVerified = loggedIn && user && !user.emailConfirmedAt;
+  const textareaDisabled = disabled || sendingRequest || isEmailNotVerified;
+
   return (
     <div className={'post-comments-new' + (editing ? ' is-editing' : '')}>
+      {isEmailNotVerified && (
+        <div className="post-comments-new-email-notice">
+          Verify your email before commenting. <Link to="/settings">Go to settings</Link>
+        </div>
+      )}
       <MarkdownTextarea
         ref={textareaCallbackRef}
         name=""
@@ -160,7 +168,7 @@ const AddComment = ({
         placeholder="Add a new comment"
         value={body}
         onClick={handleTextareaClick}
-        disabled={disabled || sendingRequest}
+        disabled={textareaDisabled}
         onChange={(e) => setBody(e.target.value)}
         onQuickSubmit={handleSubmit}
         onCancel={onCancel}
@@ -179,7 +187,7 @@ const AddComment = ({
             <button
               className="button-main"
               onClick={handleSubmit}
-              disabled={empty || sendingRequest}
+              disabled={empty || sendingRequest || isEmailNotVerified}
             >
               {editing ? 'Update comment' : 'Add comment'}
             </button>
