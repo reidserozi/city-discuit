@@ -135,6 +135,13 @@ const Guidelines = () => {
           </li>
 
           <li>
+            <strong>No calling out addresses.</strong> Don't post or pin someone's home or business
+            address — on the map or in text — unless that address is already part of a public city
+            agenda, document, or zoning case. This keeps the site safe from being used to target
+            where someone lives.
+          </li>
+
+          <li>
             <strong>No brigading.</strong> Don't organize campaigns to downvote posts and comments
             in a community you don't like or to leave hostile posts and comments there. If you
             don't like how a community is run, you can create a new one.
@@ -153,15 +160,6 @@ const Guidelines = () => {
           If something doesn't get fixed that way, you can flag it for the site administrators. If
           a user repeatedly breaks these rules or posts something serious, their content may be
           removed and they may be temporarily or permanently suspended.
-        </p>
-
-        <h2>Community-level rules</h2>
-
-        <p>
-          In addition to site-wide rules, each community can have its own rules — and they can be as
-          strict or as lax as their members want, so long as they don't violate the site-wide rules
-          above. If a community's rules feel too strict for you, or you disagree with how they
-          moderate, you can start a new community.
         </p>
 
         <h2>Final note</h2>
