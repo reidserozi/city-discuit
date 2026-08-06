@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 import Dropdown from '../../components/Dropdown';
-import MiniFooter from '../../components/MiniFooter';
+import Footer from '../../components/Footer';
 import PostVotes from '../../components/PostCard/PostVotes';
 import ReportModal from '../../components/ReportModal';
 import Sidebar from '../../components/Sidebar';
@@ -315,11 +315,12 @@ const Post = () => {
   }`;
 
   return (
-    <div className="page-content page-post wrap">
-      <Helmet>
-        <title>{post.title}</title>
-        {commentId && <meta name="robots" content="noindex" />}
-      </Helmet>
+    <>
+      <div className="page-content page-post wrap">
+        <Helmet>
+          <title>{post.title}</title>
+          {commentId && <meta name="robots" content="noindex" />}
+        </Helmet>
       <Sidebar />
       <main className="left">
         <div className="post post-card">
@@ -630,10 +631,11 @@ const Post = () => {
               locationName={post.locationName || undefined}
             />
           )}
-          <MiniFooter />
         </div>
       </aside>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 

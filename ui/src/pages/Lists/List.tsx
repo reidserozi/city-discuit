@@ -8,7 +8,7 @@ import Feed from '../../components/Feed';
 import { Form, FormField } from '../../components/Form';
 import Input, { Checkbox, InputWithCount } from '../../components/Input';
 import Link from '../../components/Link';
-import MiniFooter from '../../components/MiniFooter';
+import Footer from '../../components/Footer';
 import Modal from '../../components/Modal';
 import PageLoading from '../../components/PageLoading';
 import { MemorizedPostCard } from '../../components/PostCard/PostCard';
@@ -167,11 +167,12 @@ const List = () => {
   }
 
   return (
-    <div className="page-content wrap page-grid page-list">
-      <EditListModal list={list} open={editModalOpen} onClose={() => setEditModalOpen(false)} />
-      <Helmet>
-        <title>{`${listname} of @${username}`}</title>
-      </Helmet>
+    <>
+      <div className="page-content wrap page-grid page-list">
+        <EditListModal list={list} open={editModalOpen} onClose={() => setEditModalOpen(false)} />
+        <Helmet>
+          <title>{`${listname} of @${username}`}</title>
+        </Helmet>
       <Sidebar />
       <main className="page-middle">
         <header className="card card-padding list-head">
@@ -233,9 +234,10 @@ const List = () => {
             </div>
           </div>
         </div>
-        <MiniFooter />
       </aside>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 

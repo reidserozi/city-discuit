@@ -9,7 +9,7 @@ import Feed from '../components/Feed';
 import { FormField } from '../components/Form';
 import Input, { InputWithCount, useInputMaxLength } from '../components/Input';
 import MarkdownBody from '../components/MarkdownBody';
-import MiniFooter from '../components/MiniFooter';
+import Footer from '../components/Footer';
 import Modal from '../components/Modal';
 import ShowMoreBox from '../components/ShowMoreBox';
 import Sidebar from '../components/Sidebar';
@@ -133,8 +133,9 @@ const AllCommunities = () => {
   };
 
   return (
-    <div className="page-content page-comms wrap page-grid">
-      <Sidebar />
+    <>
+      <div className="page-content page-comms wrap page-grid">
+        <Sidebar />
       <main>
         <div className="page-comms-header card card-padding">
           <div className="left">{isSearching ? renderSearchBox() : <h1>All communities</h1>}</div>
@@ -169,9 +170,10 @@ const AllCommunities = () => {
           </div>
         )}
         <CommunityCreationCard />
-        <MiniFooter />
       </aside>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 

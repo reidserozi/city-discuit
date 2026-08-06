@@ -1,8 +1,14 @@
 import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import Link from './Link';
+import { RootState } from '../store';
+import { MainState } from '../slices/mainSlice';
 
 const Footer = () => {
   const className = 'footer';
+  const sidebarCommunities = useSelector<RootState>(
+    (state) => state.main.sidebarCommunities
+  ) as MainState['sidebarCommunities'];
 
   // For some reason, on Firefox desktop, there's a small (2 pixels perhaps)
   // white bar on the bottom of the page. This useEffect hook gets rid of that
@@ -18,108 +24,72 @@ const Footer = () => {
     }
   }, []);
 
+  const topCommunities = sidebarCommunities.slice(0, 5);
+
   return (
     <footer className={className}>
-      <div className="wrap">
-        <div className="footer-col footer-show">
-          <Link to="/" className="footer-logo">
-            {import.meta.env.VITE_SITENAME}
-          </Link>
+      <div className="footer__inner">
+        <div className="footer__brand">
+          <div className="footer__wordmark">
+            <Link to="/">{import.meta.env.VITE_SITENAME}</Link>
+          </div>
+          <p className="footer__tagline">A draft with a deadline.</p>
+          <div className="footer__hours">Open Mon–Sat, 8:00 AM – 10:00 PM</div>
+          <div className="footer__hours-sub">Closed Sundays. Go outside.</div>
         </div>
-        <div className="footer-col">
-          <div className="footer-title">Organization</div>
-          <Link to="/about" className="footer-item">
+
+        <nav className="footer__col" aria-labelledby="footer-communities-title">
+          <div className="footer__col-title" id="footer-communities-title">
+            Communities
+          </div>
+          <ul className="footer__links">
+            {topCommunities.map((community) => (
+              <li key={community.id}>
+                <Link to={`/c/${community.name}`}>{community.name}</Link>
+              </li>
+            ))}
+            <li>
+              <Link to="/communities" className="footer__link-accent">
+                All communities →
+              </Link>
+            </li>
+          </ul>
+        </nav>
+
+        <nav className="footer__col" aria-labelledby="footer-about-title">
+          <div className="footer__col-title" id="footer-about-title">
             About
-          </Link>
-          {import.meta.env.VITE_TWITTERURL && (
-            <a
-              href={import.meta.env.VITE_TWITTERURL}
-              className="footer-item"
-              target="_blank"
-              rel="noopener"
-            >
-              Contact
-            </a>
-          )}
-        </div>
-        <div className="footer-col">
-          <div className="footer-title">Social</div>
-          {import.meta.env.VITE_TWITTERURL && (
-            <a
-              href={import.meta.env.VITE_TWITTERURL}
-              className="footer-item"
-              target="_blank"
-              rel="noopener"
-            >
-              Twitter / X
-            </a>
-          )}
-          {import.meta.env.VITE_SUBSTACKURL && (
-            <a
-              href={import.meta.env.VITE_SUBSTACKURL}
-              className="footer-item"
-              target="_blank"
-              rel="noopener"
-            >
-              Blog
-            </a>
-          )}
-          {import.meta.env.VITE_FACEBOOKURL && (
-            <a
-              href={import.meta.env.VITE_FACEBOOKURL}
-              className="footer-item"
-              target="_blank"
-              rel="noopener"
-            >
-              Facebook
-            </a>
-          )}
-          {import.meta.env.VITE_INSTAGRAMURL && (
-            <a
-              href={import.meta.env.VITE_INSTAGRAMURL}
-              className="footer-item"
-              target="_blank"
-              rel="noopener"
-            >
-              Instagram
-            </a>
-          )}
-          {import.meta.env.VITE_DISCORDURL && (
-            <a
-              href={import.meta.env.VITE_DISCORDURL}
-              className="footer-item"
-              target="_blank"
-              rel="noopener"
-            >
-              Discord
-            </a>
-          )}
-          {import.meta.env.VITE_GITHUBURL && (
-            <a
-              href={import.meta.env.VITE_GITHUBURL}
-              className="footer-item"
-              target="_blank"
-              rel="noopener"
-            >
-              Github
-            </a>
-          )}
-        </div>
-        <div className="footer-col">
-          <div className="footer-title">Policies</div>
-          <Link className="footer-item" to="/guidelines">
-            Site guidelines
-          </Link>
-          <Link className="footer-item" to="/moderator-guidelines">
-            Moderator guidelines
-          </Link>
-          <Link className="footer-item" to="/terms">
-            Terms
-          </Link>
-          <Link className="footer-item" to="/privacy-policy">
-            Privacy
-          </Link>
-        </div>
+          </div>
+          <ul className="footer__links">
+            <li>
+              <Link to="/about">Why we made this</Link>
+            </li>
+            <li>
+              <Link to="/guidelines">Guidelines</Link>
+            </li>
+            <li>
+              <Link to="/terms">Terms of use</Link>
+            </li>
+            <li>
+              <Link to="/privacy-policy">Privacy</Link>
+            </li>
+            {import.meta.env.VITE_GITHUBURL && (
+              <li>
+                <a
+                  href={import.meta.env.VITE_GITHUBURL}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Source code
+                </a>
+              </li>
+            )}
+          </ul>
+        </nav>
+      </div>
+
+      <div className="footer__note">
+        An independent, volunteer-run project. Not affiliated with the City of Raleigh or Wake County. Posts are written by residents. Nothing posted here constitutes official public comment or professional advice.
       </div>
     </footer>
   );

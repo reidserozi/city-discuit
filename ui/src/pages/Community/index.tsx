@@ -7,7 +7,7 @@ import CommunityProPic from '../../components/CommunityProPic';
 import Dropdown from '../../components/Dropdown';
 import Link from '../../components/Link';
 import MarkdownBody from '../../components/MarkdownBody';
-import MiniFooter from '../../components/MiniFooter';
+import Footer from '../../components/Footer';
 import PageLoading from '../../components/PageLoading';
 import ShowMoreBox from '../../components/ShowMoreBox';
 import Sidebar from '../../components/Sidebar';
@@ -285,10 +285,11 @@ const Community = () => {
   };
 
   return (
-    <div className="page-content page-community wrap page-grid">
-      <Helmet>
-        <title>{`${community.name}`}</title>
-      </Helmet>
+    <>
+      <div className="page-content page-community wrap page-grid">
+        <Helmet>
+          <title>{`${community.name}`}</title>
+        </Helmet>
       <Sidebar />
       <main className="comm-content">
         <header className="comm-main">
@@ -379,7 +380,6 @@ const Community = () => {
         {loggedIn && renderActionButtons()}
         {renderRules()}
         {renderModeratorsList()}
-        <MiniFooter />
       </aside>
 
       <ImageEditModal
@@ -410,7 +410,9 @@ const Community = () => {
         deleting={isDeletingBanner}
         isCircular={false}
       />
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 
