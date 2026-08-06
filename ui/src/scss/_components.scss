@@ -79,6 +79,11 @@
     }
     .navbar-logo {
         margin-left: 0;
+        font-size: 1.65rem;
+        white-space: nowrap;
+        @include mixins.mobile() {
+            font-size: 1.3rem;
+        }
     }
     .button-hamburger {
         display: none;
@@ -98,12 +103,22 @@
     .navbar-profile {
         cursor: pointer;
         .navbar-profile-target {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
             span.navbar-name {
+                font-size: 1.3rem;
+                @include mixins.mobile() {
+                    font-size: 1.1rem;
+                }
             }
             span.navbar-points {
                 color: var(--color-gray);
                 margin-right: 5px;
-                font-size: var(--fs-xs);
+                font-size: 1.2rem;
+                @include mixins.mobile() {
+                    font-size: 1rem;
+                }
             }
         }
     }
@@ -924,7 +939,7 @@
         }
     }
     table {
-        background-color: #5b00d108;
+        background-color: rgba(var(--base-brand), 0.05);
         td {
             padding: 8px 16px;
         }
@@ -1209,7 +1224,7 @@
         }
     }
     .image-gallery-image {
-        background: #000;
+        background: rgb(var(--base-black));
         height: 480px;
         width: 100%;
         .image {
@@ -1237,7 +1252,7 @@
             --size: 6px;
             width: var(--size);
             height: var(--size);
-            background: #fff;
+            background: var(--color-card);
             filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
             border-radius: 50%;
             margin-right: 6px;

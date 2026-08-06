@@ -22,6 +22,7 @@ import (
 	"github.com/discuitnet/discuit/config"
 	"github.com/discuitnet/discuit/core"
 	"github.com/discuitnet/discuit/core/ipblocks"
+	"github.com/discuitnet/discuit/internal/email"
 	"github.com/discuitnet/discuit/internal/httperr"
 	"github.com/discuitnet/discuit/internal/httputil"
 	"github.com/discuitnet/discuit/internal/images"
@@ -109,6 +110,12 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 		core.EnablePushNotifications(keys, conf.WebPushSubscriberEmail)
 	}
 
+	if conf.SMTPHost != "" && conf.SMTPFromEmail != "" {
+		emailSvc := email.New(conf.SMTPHost, conf.SMTPPort, conf.SMTPUser, conf.SMTPPassword, conf.SMTPFromEmail, conf.SMTPFromName)
+		core.EnableEmailNotifications(emailSvc, conf.UIProxy)
+		log.Printf("Email notifications enabled (from: %s)\n", conf.SMTPFromEmail)
+	}
+
 	if conf.StytchProjectID != "" && conf.StytchSecret != "" {
 		s.stytch = stytchclient.New(conf.StytchProjectID, conf.StytchSecret, conf.StytchEnvironment)
 	}
@@ -126,6 +133,7 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	r.Handle("/api/_password_reset/confirm", s.withHandler(s.passwordResetConfirm)).Methods("POST")
 	r.Handle("/api/_email_verification", s.withHandler(s.emailVerificationStart)).Methods("POST")
 	r.Handle("/api/_email_verification/confirm", s.withHandler(s.emailVerificationConfirm)).Methods("POST")
+	r.Handle("/api/_test_email", s.withHandler(s.testEmail)).Methods("POST")
 
 	r.Handle("/api/users/{username}", s.withHandler(s.getUser)).Methods("GET")
 	r.Handle("/api/users/{username}", s.withHandler(s.deleteUser)).Methods("DELETE")

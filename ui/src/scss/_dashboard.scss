@@ -18,7 +18,7 @@
         position: relative;
         display: grid;
         grid-template-columns: 210px 1fr;
-        background-color: #fff;
+        background-color: var(--color-card);
         border-radius: var(--border-radius);
         width: 100%;
         min-height: 400px;
@@ -43,7 +43,7 @@
                     z-index: 1000;
                     display: flex;
                     position: absolute;
-                    background-color: #fff;
+                    background-color: var(--color-card);
                     border-top: var(--seperator);
                     // box-shadow: 0px 5px 0px 0px rgba(230, 230, 230, 1);
                 }
@@ -55,7 +55,7 @@
     }
     .sidebar {
         width: 100%;
-        background-color: lightgray;
+        background-color: var(--color-input);
         border-top-left-radius: var(--border-radius);
         border-bottom-left-radius: var(--border-radius);
         @include mixins.mobile {

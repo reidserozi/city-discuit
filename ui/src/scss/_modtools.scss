@@ -64,7 +64,7 @@
                 width: 120px;
                 height: 120px;
                 border-radius: 50%;
-                border: 2px solid var(--color-fg);
+                border: 1px solid var(--color-border);
             }
             .flex {
                 align-items: center;
@@ -75,15 +75,15 @@
         }
         .modtools-change-banner {
             .label {
-                margin-bottom: 5px;
+                margin-bottom: calc(var(--gap) / 4);
             }
             img.modtools-banner {
                 width: 100%;
                 max-width: max-content;
                 height: auto;
                 border-radius: var(--border-radius);
-                border: 2px solid var(--color-fg);
-                margin-bottom: 5px;
+                border: 1px solid var(--color-border);
+                margin-bottom: calc(var(--gap) / 4);
             }
             .modtools-change-banner-buttons {
                 margin: var(--gap) 0;
@@ -168,14 +168,14 @@
         }
         .card-report-removed {
             color: var(--color-red);
-            margin-top: 3px;
+            margin-top: calc(var(--gap) / 8);
         }
         .card-report-item {
             margin-top: var(--gap);
         }
         .card-report-buttons {
             position: absolute;
-            bottom: 13px;
+            bottom: calc(var(--gap) / 2);
             left: 50%;
             display: flex;
             opacity: 0;

@@ -394,7 +394,7 @@ const Settings = () => {
                 </button>
               )}
               {stytchEnabled && email && user.emailConfirmedAt && (
-                <div style={{ fontSize: '0.85rem', color: 'var(--color-brand)', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--color-brand)', whiteSpace: 'nowrap' }}>
                   ✓ Verified
                 </div>
               )}

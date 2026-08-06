@@ -222,7 +222,6 @@ const Navbar = ({ offline = false }: { offline?: boolean }) => {
               <Link
                 to="/"
                 className="navbar-logo"
-                style={{ fontSize: '1.65rem' }}
                 onClick={handleLogoClick}
               >
                 {import.meta.env.VITE_SITENAME}

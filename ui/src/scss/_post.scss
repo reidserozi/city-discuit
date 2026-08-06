@@ -182,7 +182,7 @@
                     position: absolute;
                     right: 0;
                     top: 0;
-                    background: #ff3a3a;
+                    background: rgb(var(--base-red));
                     width: 0;
                 }
                 &.is-no-votes {

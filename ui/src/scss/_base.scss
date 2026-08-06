@@ -1,6 +1,6 @@
 @use 'mixins';
 
-@import url('https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @font-face {
     font-family: InterVariable;
@@ -20,11 +20,11 @@
 }
 
 :root {
-    --custom-font: 'Cabin', Arial, 'Helvetica Neue', 'Helvetica', sans-serif;
+    --custom-font: 'InterVariable', -apple-system, 'Helvetica Neue', Arial, sans-serif;
     --system-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     --font: var(--custom-font);
-    --font-features: 'ss04' 1, 'case' 1, 'cv10' 1, 'ccmp' 1;
-    --fs-base: 16px;
+    --font-features: 'pnum' on, 'lnum' on, 'liga' on;
+    --fs-base: 14px;
     --fs-xs: 1.2rem; // extra small
     --fs-s: 1.3rem; // small
     --fs-normal: 1.4rem;
@@ -34,31 +34,31 @@
     --fs-3xl: 2.8rem;
     --fs-4xl: 3.2rem;
     --fs-5xl: 3.8rem;
-    --border-radius: 5px;
+    --border-radius: 8px;
     --page-width-desktop: 1200px;
     --gap: 1.5rem;
     --gap-edge: var(--gap); // mobile view
 
-    // Use CSS functions rgb or rgba to use base colors.
+    // Use CSS functions rgb or rgba to use base colors. (Anthropic palette)
     --base-0: 0, 0, 0;
-    --base-1: 25, 25, 25;
-    --base-2: 50, 50, 50;
-    --base-3: 75, 75, 75;
-    --base-4: 100, 100, 100;
-    --base-5: 125, 125, 125;
-    --base-6: 150, 150, 150;
-    --base-7: 175, 175, 175;
-    --base-8: 200, 200, 200;
-    --base-9: 225, 225, 225;
+    --base-1: 15, 15, 14; // Slate Dark
+    --base-2: 31, 30, 29; // Dark mode secondary
+    --base-3: 48, 48, 46; // Dark mode tertiary
+    --base-4: 61, 61, 58; // Slate Medium
+    --base-5: 94, 93, 89; // Slate Light
+    --base-6: 135, 134, 127; // Cloud Dark
+    --base-7: 176, 174, 165; // Cloud Medium
+    --base-8: 209, 207, 197; // Cloud Light
+    --base-9: 232, 230, 220; // Ivory Dark
     --base-10: 255, 255, 255;
-    --base-brand: 78, 88, 181; // Blue-purple #4e58b5
+    --base-brand: 217, 119, 87; // Clay #D97757
     --base-white: var(--base-10);
-    --base-black: var(--base-0);
-    --base-red: 192, 103, 67; // Terracotta #c06743 for accents
-    --base-green: 52, 119, 77; // Darker green for secondary
+    --base-black: 20, 20, 19; // Slate Dark #141413
+    --base-red: 191, 77, 67; // Error #BF4D43
+    --base-green: 120, 140, 93; // Olive #788C5D
     --base-gray: var(--base-5);
     --base-fg: var(--base-black);
-    --base-bg: 250, 250, 250; // Warm light gray #fafafa
+    --base-bg: 250, 249, 245; // Ivory Light #FAF9F5
 
     --color-brand: rgb(var(--base-brand));
     --color-white: rgb(var(--base-white));
@@ -69,43 +69,47 @@
     --color-bg: rgb(var(--base-bg));
     --color-fg: rgb(var(--base-fg));
 
-    --color-body: #fafafa;
-    --color-text-black: #303030;
-    --color-text-white: rgb(210, 210, 210);
-    --color-text: #444;
-    --color-text-light: rgb(var(--base-4));
-    --color-link: #4e58b5;
+    --color-body: #faf9f5;
+    --color-text-black: #141413;
+    --color-text-white: rgb(250, 249, 245);
+    --color-text: #141413;
+    --color-text-light: rgb(var(--base-5));
+    --color-text-secondary: rgb(var(--base-5));
+    --color-link: #d97757;
+    --color-border: rgba(var(--base-black), 0.1);
 
-    --color-button-text: var(--color-text);
-    --color-button: rgba(var(--base-8), 0.7); // Normal, gray button
-    --color-button-hover: rgba(var(--base-8), 0.9); // #b5b5b5
-    --color-button-main: #4e58b5;
-    --color-button-main-hover: #3d4690;
+    --color-button-text: var(--color-white);
+    --color-button: rgba(var(--base-black), 0.08);
+    --color-button-hover: rgba(var(--base-black), 0.12);
+    --color-button-main: #d97757;
+    --color-button-main-hover: #c1663d;
     --color-button-red: var(--color-red);
-    --color-button-red-hover: rgb(207, 64, 64);
+    --color-button-red-hover: #a3654a;
 
-    --color-input: rgba(var(--base-4), 0.15);
-    --color-input-active: rgba(var(--base-4), 0.1);
-    --color-input-border-hover: #d7d7d7;
-    --color-input-border-focus: #4e58b5;
-    --color-checkbox-border: #9db4a0;
-    --color-checkbox-disabled: #f0f4f1;
-    --color-checkbox-disabled-inner: rgba(78, 88, 181, 0.8);
+    --color-input: rgba(var(--base-black), 0.06);
+    --color-input-active: rgba(var(--base-black), 0.04);
+    --color-input-border-hover: rgba(var(--base-black), 0.15);
+    --color-input-border-focus: #d97757;
+    --color-checkbox-border: #b0aea5;
+    --color-checkbox-disabled: #f0eee6;
+    --color-checkbox-disabled-inner: rgba(217, 119, 87, 0.4);
 
-    --color-supporter: rgb(101, 54, 140);
+    --color-supporter: #e9a089;
 
     // Blur removed because it looks slightly ugly in PWA.
     --color-background-blur: var(--color-bg); // rgba(var(--base-bg), 0.8);
 
-    --color-scrollbar: rgb(var(--base-gray));
-    --color-card: var(--color-bg);
-    --color-card-border: #00000029;
-    --color-card-domain: #8f8f8f;
+    --color-scrollbar: rgb(var(--base-8));
+    --color-card: #ffffff;
+    --color-card-border: rgba(var(--base-black), 0.08);
+    --color-card-domain: #87867f;
 
-    --color-skeleton: rgba(var(--base-fg), 0.05);
-    --color-comment-line: lightgray;
-    --color-mini-footer-text: #667b8c;
-    --color-modal-overlay: rgba(var(--base-9), 0.59);
+    --color-skeleton: rgba(var(--base-black), 0.06);
+    --color-comment-line: #e8e6dc;
+    --color-mini-footer-text: #5e5d59;
+    --color-modal-overlay: rgba(var(--base-black), 0.3);
+    --color-heading: #141413;
+    --heading-text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 
     --disabled-opacity: 0.6;
 
@@ -151,9 +155,9 @@
 
     --seperator: 1px solid rgba(var(--base-fg), 0.1);
 
-    --t-time: 0s; // 0.2s;
-    --t-time-quick: 0s; // 0.1s;
-    --t-time-button: 0s; // 0.15s;
+    --t-time: 0.2s;
+    --t-time-quick: 0.1s;
+    --t-time-button: 0.15s;
 
     --icon-size: var(--button-icon-size);
     --icon-color: var(--color-text);
@@ -163,52 +167,53 @@
 
 // Heading text-shadow effect (LocalWiki-inspired)
 h1, h2, h3, h4, h5, h6 {
-    color: #303030;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+    color: var(--color-heading);
+    text-shadow: var(--heading-text-shadow);
 }
 
 html.theme-dark {
-    --base-brand: 117, 110, 255;
-    --base-bg: 32, 32, 32;
-    --base-fg: var(--base-white);
+    --base-brand: 217, 119, 87; // Clay stays same (Anthropic uses consistent accent)
+    --base-bg: 20, 20, 19; // Slate Dark
+    --base-fg: 250, 249, 245; // Ivory Light
 
-    --color-body: rgb(15, 15, 15);
-    --color-text: var(--color-text-white);
-    --color-text-light: rgb(var(--base-8));
-    --color-link: rgb(128, 122, 255); // rgb(117, 110, 255);
-    --color-button: rgba(var(--base-2), 0.7);
-    --color-input-border-focus: #7f6bff;
-    --color-scrollbar: rgb(var(--base-6));
+    --color-body: #141413;
+    --color-text: #faf9f5;
+    --color-text-light: rgb(var(--base-5));
+    --color-text-secondary: rgb(var(--base-7));
+    --color-link: #d97757;
+    --color-border: rgba(250, 249, 245, 0.15);
 
-    --color-button: rgba(var(--base-4), 0.7);
+    --color-button: rgba(250, 249, 245, 0.1);
     --color-button-text: var(--color-white);
-    --color-button-hover: rgba(var(--base-4), 1);
-    --color-button-main: rgb(80, 72, 238);
-    --color-button-main-hover: rgb(62, 52, 238);
+    --color-button-hover: rgba(250, 249, 245, 0.15);
+    --color-button-main: #d97757;
+    --color-button-main-hover: #e8957d;
 
-    --color-input: rgba(var(--base-4), 0.25);
-    --color-input-active: rgba(var(--base-4), 0.3);
-    --color-input-border-hover: #4f4f4f;
-    --color-input-border-focus: #7f6bff;
-    --color-checkbox-border: #bbc1e1;
-    --color-checkbox-disabled: #f6f8ff;
-    --color-checkbox-disabled-inner: #e1e6f9;
+    --color-input: rgba(250, 249, 245, 0.08);
+    --color-input-active: rgba(250, 249, 245, 0.12);
+    --color-input-border-hover: rgba(250, 249, 245, 0.2);
+    --color-input-border-focus: #d97757;
+    --color-checkbox-border: #9c9a92;
+    --color-checkbox-disabled: #1f1e1d;
+    --color-checkbox-disabled-inner: rgba(217, 119, 87, 0.5);
 
-    --color-scrollbar: rgb(var(--base-gray));
-    --color-card: var(--color-bg);
-    --color-card-domain: #8f8f8f;
-    --color-card-border: #ffffff14;
+    --color-scrollbar: rgb(var(--base-5));
+    --color-card: #1f1e1d;
+    --color-card-domain: #87867f;
+    --color-card-border: rgba(250, 249, 245, 0.1);
 
-    --color-skeleton: rgba(var(--base-fg), 0.05);
-    --color-mini-footer-text: rgb(var(--base-6));
-    --color-comment-line: #d3d3d35e;
+    --color-skeleton: rgba(250, 249, 245, 0.06);
+    --color-mini-footer-text: rgb(var(--base-7));
+    --color-comment-line: #30302e;
 
-    --color-modal-overlay: rgba(var(--base-2), 0.59);
+    --color-modal-overlay: rgba(20, 20, 19, 0.5);
+    --color-heading: #faf9f5;
+    --heading-text-shadow: none;
 
-    --color-supporter: #e9c8ff;
+    --color-supporter: #e9a089;
 
     --modal-box-shadow: none;
-    --modal-box-border: 1px solid #ffffff29;
+    --modal-box-border: 1px solid rgba(250, 249, 245, 0.1);
 
     --card-border: 1px solid var(--color-card-border);
     --card-border-top: var(--card-border);
@@ -233,8 +238,10 @@ html {
     font-family: var(--font);
     font-feature-settings: var(--font-features);
     font-size: var(--fs-base);
-    line-height: 1.5; // 1.333;
-    letter-spacing: -0.15px; // Because Inter is a bit too wide by default.
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 html.is-system-font {
@@ -404,7 +411,7 @@ ul {
 }
 
 code {
-    font-family: monospace;
+    font-family: 'JetBrains Mono', monospace;
 }
 
 .card {
@@ -526,13 +533,13 @@ code {
         width: 100%;
         display: flex;
         flex-direction: column;
-        border: 2px solid gray;
+        border: 2px solid var(--color-border);
         border-radius: 8px;
         padding: 10px 20px;
         > h1,
         > h2,
         > h3 {
-            border-bottom: 1px solid gray;
+            border-bottom: 1px solid var(--color-border);
             margin-bottom: 8px;
             font-size: var(--fs-2xl);
         }
@@ -631,7 +638,7 @@ form,
     display: flex;
     flex-direction: column;
     .form-field {
-        margin-bottom: 12px;
+        margin-bottom: calc(var(--gap) / 2);
         &:last-child {
             margin-bottom: 0;
         }
@@ -742,7 +749,7 @@ button,
     border: none;
     padding: var(--button-padding);
     border-radius: var(--border-radius);
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     transition: all var(--t-time-button);
     &,

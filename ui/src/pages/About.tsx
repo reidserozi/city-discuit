@@ -7,7 +7,7 @@ const About = () => {
       question: 'Why does Edit Raleigh close at night and all day Sunday?',
       answer: (
         <>
-          {`Nothing good has ever been written about a neighbor at one in the morning. We know how strange it sounds for something on the internet, but it's the most deliberate decision we've made. We'd rather you sleep. We'd rather Sunday belong to your kids, your congregation, your garden, the greenway, the block you're arguing about. Sunday isn't a hole in the week — it's the half of this that happens outdoors. On Saturday evening we hand you a short list of open proposals with pins near where you live. Then we get out of the way. Go stand at the intersection. Photograph the culvert. See how long the walk really takes. Monday morning, tell everyone what you saw.`}
+          {`Your mental health, sleep, and being present is important. We know how strange it sounds for something on the internet, but it's the most deliberate decision we've made. We'd rather you sleep. We'd rather Sunday belong to your kids, your friends, your garden, the greenway, the exploring civic spaces. Sunday isn't a hole in the week — it's the half of this that happens outdoors. On Saturday evening we hand you a short list of open proposals with pins near where you live. Then we get out of the way. Go stand at the intersection. Photograph the culvert. See how long the walk really takes. Monday morning, tell everyone what you saw.`}
         </>
       ),
     },
@@ -16,7 +16,7 @@ const About = () => {
       answer: `Civic argument falls apart in the abstract. "Traffic is bad" is unanswerable. "The crossing at this intersection gives you eleven seconds and the curb ramp points into the turn lane" is a thing a person can fix. Every post here is pinned to a real point in the city. You can open the map and see your neighborhood's open questions the way you'd see them on a walk. Geography does something that tags never could: it tells you whether a conversation is yours.`,
     },
     {
-      question: 'Why is there no room for neighborhoods?',
+      question: 'Why is there no specific "community" for my neighborhood?',
       answer: `Your neighborhood already has somewhere to talk to itself. A Facebook group, an old listserv, an app built for precisely that. Those work fine for what they are. But a platform organized by neighborhood produces neighborhood-sized thinking — a hundred small rooms, each one convinced that its own block is the entire argument. Stormwater does not respect a subdivision boundary. Neither does a bus route, a school assignment, a floodplain, or a budget. Those things need Southeast Raleigh and North Hills in the same conversation — occasionally annoyed with one another — working out something that has to hold true for the whole city. So geography stays on your profile, not on the door. You still post as someone from a specific part of Raleigh; that's the accountability. But you walk into a room organized around a subject, where the person disagreeing with you lives four miles away and has an entirely different view out the window.`,
     },
     {
@@ -84,10 +84,10 @@ const About = () => {
       <div className="about-landing">
         <div className="wrap">
           <h1 className="about-heading heading-highlight">
-            Raleigh is a draft with a deadline.
+            A memo on why we made Edit Raleigh.
           </h1>
           <h2 className="about-subheading">
-            Edit Raleigh is a third option. A platform for the people building Raleigh, where proposals and questions stay pinned to the places they matter.
+            There's an official city sign — laminated, zip-tied to a chain-link fence — on a street you drive every day. It has a case number, a phone number, and a date. Most of us read it at a red light and forget it by the next block. Eighteen months later, something is standing there.
           </h2>
         </div>
         <div className="squiggly-line"></div>
@@ -95,7 +95,7 @@ const About = () => {
       <div className="about-rest">
         <div className="wrap">
           <div className="about-section">
-            <h2>The premise</h2>
+            <h2>The premise: Raleigh is a draft with a deadline</h2>
             <p>
               Nothing about Raleigh is finished. The greenway ends where someone stopped drawing it. The bus comes every thirty minutes because of a line in a budget. A zoning code is a document, and documents get edited — usually by whoever shows up with the most specific idea.
             </p>

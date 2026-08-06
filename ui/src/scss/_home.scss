@@ -145,12 +145,12 @@ a {
         }
     }
     &.is-guest {
-        background: radial-gradient(circle, rgb(106, 21, 217) 0%, rgb(110, 3, 247) 100%);
-        color: #fff;
+        background: linear-gradient(135deg, rgba(var(--base-brand), 1) 0%, rgba(var(--base-brand), 0.85) 100%);
+        color: var(--color-white);
         button,
         .button {
-            color: #000;
-            background-color: #fff;
+            color: var(--color-text);
+            background-color: var(--color-white);
             &:hover {
                 background-color: rgba(255, 255, 255, 0.9);
             }
@@ -186,7 +186,7 @@ a {
         }
     }
     .post-votes-arrow {
-        color: #5c5c5c;
+        color: var(--color-text-secondary);
         --arrow-size: 28px;
         width: var(--post-votes-size);
         height: var(--arrow-size);
@@ -477,6 +477,10 @@ a {
             > * {
                 margin-right: 8px;
             }
+            @include mixins.mobile() {
+                align-items: flex-start;
+                font-size: var(--fs-s);
+            }
             @include mixins.tablet() {
                 > * {
                     margin-top: 5px;
@@ -484,6 +488,11 @@ a {
             }
         }
         .post-card-heading-by {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            word-break: normal;
+            overflow-wrap: normal;
             a {
                 color: inherit;
             }
@@ -886,17 +895,17 @@ html.theme-dark {
     align-items: center;
     padding: var(--card-padding);
     background: var(--color-brand);
-    color: #fff;
+    color: var(--color-white);
     margin-bottom: var(--gap);
     .banner-button-close {
-        color: #fff;
+        color: var(--color-white);
     }
     .banner-install-button {
-        background: #fff;
-        border-radius: 16px;
-        color: #000;
+        background: var(--color-white);
+        border-radius: var(--border-radius);
+        color: var(--color-text);
         &:active {
-            color: #000;
+            color: var(--color-text);
         }
     }
     .banner-install-actions {

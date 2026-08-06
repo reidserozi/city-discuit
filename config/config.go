@@ -97,6 +97,15 @@ type Config struct {
 	// vendors) in case they need to reach out. If this field is empty, push
 	// notifications are not enabled.
 	WebPushSubscriberEmail string `yaml:"webPushSubscriberEmail"`
+
+	// SMTP configuration for email notifications (optional).
+	// If SMTPHost is empty, email notifications are disabled.
+	SMTPHost      string `yaml:"smtpHost"`
+	SMTPPort      int    `yaml:"smtpPort"`
+	SMTPUser      string `yaml:"smtpUser"`
+	SMTPPassword  string `yaml:"smtpPassword"`
+	SMTPFromEmail string `yaml:"smtpFromEmail"`
+	SMTPFromName  string `yaml:"smtpFromName"`
 }
 
 // Parse parses the yaml file at path and returns a Config.
@@ -112,6 +121,7 @@ func Parse(path string) (*Config, error) {
 		DefaultFeedSort:    core.FeedSortHot,
 		MaxImageSize:       25 * (1 << 20),
 		MaxImagesPerPost:   10,
+		SMTPPort:           587,
 
 		// Required fields:
 		ForumCreationRequiredPoints: -1,
@@ -184,6 +194,14 @@ func Parse(path string) (*Config, error) {
 		"DISCUIT_STYTCH_PROJECT_ID":   &c.StytchProjectID,
 		"DISCUIT_STYTCH_SECRET":       &c.StytchSecret,
 		"DISCUIT_STYTCH_ENVIRONMENT":  &c.StytchEnvironment,
+
+		// SMTP configuration (optional).
+		"DISCUIT_SMTP_HOST":       &c.SMTPHost,
+		"DISCUIT_SMTP_PORT":       &c.SMTPPort,
+		"DISCUIT_SMTP_USER":       &c.SMTPUser,
+		"DISCUIT_SMTP_PASSWORD":   &c.SMTPPassword,
+		"DISCUIT_SMTP_FROM_EMAIL": &c.SMTPFromEmail,
+		"DISCUIT_SMTP_FROM_NAME":  &c.SMTPFromName,
 	}
 
 	// Attempt to unmarshal the YAML file if it exists
