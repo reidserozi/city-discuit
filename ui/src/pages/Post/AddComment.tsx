@@ -150,7 +150,7 @@ const AddComment = ({
     if (onCancel) onCancel();
   };
 
-  const isEmailNotVerified = loggedIn && user && !user.emailConfirmedAt;
+  const isEmailNotVerified = loggedIn && user && !user.emailConfirmedAt ? true : false;
   const textareaDisabled = disabled || sendingRequest || isEmailNotVerified;
 
   return (
