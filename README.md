@@ -33,9 +33,10 @@ Discuit's core forum functionality:
 - **Site hours**: the site closes overnight (10 PM–6 AM) and all day Sunday,
   showing a "site closed" page with a weekend digest of open proposals near
   you instead (`ui/src/siteHours.ts`, `ui/src/pages/SiteClosed.tsx`).
-- **Mandatory email verification**: users must verify their email (via
-  Stytch magic links) before they can post or comment
-  (`server/email_verification.go`, checks in `server/post.go` and
+- **Email required and verified**: an email address is required at signup,
+  and it must be verified (via Stytch magic links) before a user can post
+  or comment in any community (`core/user.go` `RegisterUser`,
+  `server/email_verification.go`, checks in `server/post.go` and
   `server/comment.go`).
 - **Rewritten legal & community pages**: About, Terms of Use, Privacy Policy,
   and Guidelines were rewritten from scratch to reflect Edit Raleigh's civic
