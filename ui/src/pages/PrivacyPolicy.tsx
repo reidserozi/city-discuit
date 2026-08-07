@@ -1,4 +1,3 @@
-import Link from '../components/Link';
 import StaticPage from '../components/StaticPage';
 
 const PrivacyPolicy = () => {
