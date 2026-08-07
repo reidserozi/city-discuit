@@ -1,7 +1,14 @@
-# City Discuit
+# Edit Raleigh
 
-This is the codebase that powers [Discuit](https://discuit.org), which is an
-open-source community platform, an alternative to Reddit.
+Edit Raleigh is an independent, volunteer-run civic platform for Raleigh, North
+Carolina — a place for residents to research, propose, and sharpen civic ideas
+(zoning cases, budget lines, transit, parks, and anything else headed for a
+vote, hearing, permit, or plan), organized by topic and grounded in real
+locations.
+
+It's built on [Discuit](https://discuit.org), an open-source community
+platform (an alternative to Reddit), and remains free and open-source itself.
+See the site's `/about` page for the full story of why this exists.
 
 Built with:
 
@@ -9,12 +16,44 @@ Built with:
 - [React](https://react.dev/): The frontend.
 - [MariaDB](https://en.wikipedia.org/wiki/MariaDB): The main datastore.
 - [Redis](https://redis.io/): For transient data.
+- [Stytch](https://stytch.com) (optional): Email verification and passwordless auth.
+
+## What's different from upstream Discuit
+
+Since forking, Edit Raleigh has added a civic-platform layer on top of
+Discuit's core forum functionality:
+
+- **Neighborhoods**: users join via an invite code from an existing member and
+  are associated with a neighborhood, which travels with their profile
+  (`core/neighborhood.go`, `server/neighborhood.go`).
+- **Geo-tagged posts and a map view**: posts can be pinned to a real
+  latitude/longitude and location name, and viewed on an aggregate map
+  (`ui/src/pages/Map.tsx`, `ui/src/components/MapDisplay.tsx`,
+  `ui/src/components/MapPicker.tsx`).
+- **Site hours**: the site closes overnight (10 PM–6 AM) and all day Sunday,
+  showing a "site closed" page with a weekend digest of open proposals near
+  you instead (`ui/src/siteHours.ts`, `ui/src/pages/SiteClosed.tsx`).
+- **Mandatory email verification**: users must verify their email (via
+  Stytch magic links) before they can post or comment
+  (`server/email_verification.go`, checks in `server/post.go` and
+  `server/comment.go`).
+- **Rewritten legal & community pages**: About, Terms of Use, Privacy Policy,
+  and Guidelines were rewritten from scratch to reflect Edit Raleigh's civic
+  mission, North Carolina governing law, and CC-BY-licensed contributions
+  (`ui/src/pages/About.tsx`, `Terms.tsx`, `PrivacyPolicy.tsx`,
+  `Guidelines.tsx`) — partly inspired by [LocalWiki](https://localwiki.org)'s
+  own community documents.
+- **Redesigned UI**: a site-wide footer with dynamic community listings, and
+  a normalized design system (spacing, typography, color tokens) across the
+  site.
+- **Contact via X/Twitter**: rather than a public email address, contact
+  routes through direct messages on X ([@RaleighWiki](https://x.com/RaleighWiki)).
 
 ## Getting started
 
 ### Running locally
 
-To setup a development environment of Discuit on your local computer:
+To setup a development environment of Edit Raleigh on your local computer:
 
 1.  Install Go (1.21 or higher) by following the instructions at
     [go.dev.](https://go.dev/doc/install)
@@ -49,18 +88,21 @@ To setup a development environment of Discuit on your local computer:
     exit;
     ```
 
-1.  Discuit uses `libvips` for fast image transformations. Make sure it's
+1.  Edit Raleigh uses `libvips` for fast image transformations. Make sure it's
     installed on your computer. On Ubuntu you can install it with:
     `sudo apt install libvips-dev`.
 1.  Clone this repository:
 
     ```shell
-    git clone https://github.com/discuitnet/discuit.git && cd discuit
+    git clone https://github.com/reidserozi/city-discuit.git && cd city-discuit
     ```
 
 1.  Create a file named `config.yaml` in the root directory and copy the contents
     of `config.default.yaml` into it. And enter the required config parameters in
-    `config.yaml`.
+    `config.yaml`. Stytch (`stytchProjectID`/`stytchSecret`/`stytchEnvironment`)
+    and SMTP (`smtpHost` and friends) are both optional — without Stytch
+    configured, email verification is disabled and the requirement to post/
+    comment is inert.
 1.  Build the frontend and the backend:
 
     ```shell
@@ -86,37 +128,30 @@ Note: Do not install the discuit binary using `go install` or move it somewhere 
 
 ### Running with Docker
 
-1. **Build the Docker Image**
+The included `docker-compose.yml` builds and runs the full stack (app,
+MariaDB, Redis) in one container:
 
-   > **Note**: If you need to run discuit on a different architecture, simply change the Dockerfile in the `-f` flag to the appropriate Dockerfile for your architecture, currently we support `linux/amd64` (docker/Dockerfile.amd64), and `linux/arm64` (docker/Dockerfile.arm64).
+```shell
+docker-compose build
+docker-compose up -d
+```
 
-   ```shell
-   docker build -t discuit -f docker/Dockerfile.amd64 .
-   ```
+This builds the `edit-raleigh:latest` image (see `docker/Dockerfile.arm64` and
+`docker/Dockerfile.amd64`) and serves the site on `http://localhost:8080`.
+Database, Redis, and uploaded images persist in the `discuit-db`,
+`discuit-redis`, and `discuit-images` Docker volumes.
 
-2. **Run the Docker Container**
+To rebuild after making changes:
 
-   > **Note**: The following command while having a persistent database, the included config.yaml file is not. You will need to mount the file to the container if you want to persist the configuration.
+```shell
+docker-compose build && docker-compose up -d
+```
 
-  > **Note**: Discuit runs on port 8080 inside the container, so the 8080 outside the container doesn't matter, so long as it maps to 8080 on the inside.
+To stop:
 
-   ```shell
-   docker run -d --name discuit -v discuit-db:/var/lib/mysql -v discuit-redis:/var/lib/redis -v discuit-images:/app/images -p 8080:8080 discuit
-   ```
-
-3. **Accessing Discuit**: After the container starts, you can access Discuit by navigating to `http://localhost:8080` on your web browser, or to the specific port if you customized the port mapping.
-
-4. **Stopping the Container**: When you're done, you can stop the container by running:
-
-   ```shell
-   docker stop discuit
-   ```
-
-5. **Starting the Container Again**: To start the container again, use:
-
-   ```shell
-   docker start discuit
-   ```
+```shell
+docker-compose down
+```
 
 ### Running with Nix Flakes
 
@@ -142,64 +177,30 @@ When you exit the shell, MariaDB and Redis will automatically stop.
 In the root directory are these directories:
 
 - `cli`: Contains the command-line interface.
-- `core`: Contains all the core functionality of the backend.
-- `internal`: Contains Go packages internal to the project.
+- `core`: Contains all the core functionality of the backend, including
+  Edit Raleigh additions like `neighborhood.go`.
+- `internal`: Contains Go packages internal to the project, including
+  `internal/email` (SMTP) and Stytch integration.
 - `migrations`: Contains the SQL migration files.
 - `server`: Contains the REST API backend.
-- `ui` - Contains the React frontend.
-
-## Roadmap
-
-- [x] Dark mode.
-- [x] User created communities.
-- UI preferences:
-  - [x] Compact mode.
-  - [x] Enable or disable infinite scroll.
-  - [x] Choose which notifications to get.
-  - [x] Change default feed sort.
-- Filtering:
-  - [x] Mute communities.
-  - [x] Mute users.
-  - [ ] Filter posts by topic.
-  - [ ] An explore page (modeled after Youtube's home page).
-  - [ ] Filter link-posts by URL or domain.
-- Moderation:
-  - [x] Pinned posts and comments.
-  - [x] Lock individual comments (so they cannot be replied to).
-  - [ ] A single page for handling reports for users who moderate multiple communities.
-  - [ ] Temporary bans.
-- [ ] User and community mentions (@user and +community).
-- [x] Image posts.
-- [ ] Poll posts.
-- [x] Video embeds (Youtube, Vimeo, etc).
-- [x] Image galleries.
-- [ ] Server side rendering (for better SEO).
-- [ ] Direct messages.
-- [x] Saved posts and comments (modeled after Youtube playlists).
-- [ ] Multiple feeds (modeled after Twitter Lists).
-- [ ] Search.
-- [ ] Moderation log.
-- [ ] RSS feeds.
-- [ ] Wiki pages for communities.
-- [x] User profile pictures.
-- [x] User badges (displayed on profile page).
-- [ ] Post drafts.
-- [ ] History (viewed posts).
-- [ ] Something like Reddit's flairs to group posts within a community.
+- `ui` - Contains the React frontend, including Edit Raleigh-specific pages
+  like `ui/src/pages/Map.tsx` and `ui/src/pages/SiteClosed.tsx`.
 
 ## Contributing
 
-Discuit is free and open-source software, and you're welcome to contribute to
-its development.
+Edit Raleigh is free and open-source software, and volunteers are welcome to
+contribute. For civic-platform-specific work (this repo), reach out via
+direct message on X: [@RaleighWiki](https://x.com/RaleighWiki).
 
-If you're thinking of working on something substantial, however, (like a major
-feature) please create an issue, or contact [the
-maintainer](https://discuit.org/@previnder), to discuss it before commencing
-work.
-
-The documentation of the API can be found at [docs.discuit.org](https://docs.discuit.org).
+For contributions to the underlying Discuit platform itself, see the
+[upstream project](https://github.com/discuitnet/discuit) and its own
+contribution guidelines.
 
 ## License
+
+Edit Raleigh is a derivative work of [Discuit](https://discuit.org),
+copyright (C) 2024 Previnder, and remains free software under the same
+license — our thanks to its creator for keeping it open source.
 
 Copyright (C) 2024 Previnder
 
