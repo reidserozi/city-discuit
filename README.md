@@ -45,7 +45,7 @@ Discuit's core forum functionality:
   own community documents.
 - **Redesigned UI**: a site-wide footer with dynamic community listings, and
   a normalized design system (spacing, typography, color tokens) across the
-  site.
+  site — see [Design system](#design-system) below.
 - **Contact via X/Twitter**: rather than a public email address, contact
   routes through direct messages on X ([@RaleighWiki](https://x.com/RaleighWiki)).
 
@@ -185,6 +185,38 @@ In the root directory are these directories:
 - `server`: Contains the REST API backend.
 - `ui` - Contains the React frontend, including Edit Raleigh-specific pages
   like `ui/src/pages/Map.tsx` and `ui/src/pages/SiteClosed.tsx`.
+
+## Design system
+
+The UI was restyled from Discuit's original look to a warmer, more
+restrained aesthetic inspired by Anthropic/Claude's product design. All
+styles live in `ui/src/scss/`, and the whole palette, spacing, and typography
+scale are driven by CSS custom properties defined in `_base.scss` — nothing
+should be hardcoded outside of that file.
+
+- **Color palette**: an Ivory/Slate/Clay palette (warm neutrals plus a clay
+  accent) replaced Discuit's original purple/blue scheme, defined as RGB
+  triplets (`--base-*`) and referenced everywhere as `--color-*` tokens
+  (e.g. `--color-brand`, `--color-text`, `--color-border`), so the palette
+  can be changed in one place. Light and dark mode are both supported via
+  `html.theme-dark`.
+- **Typography scale**: a fixed set of font-size tokens (`--fs-xs` through
+  `--fs-5xl`) replaced one-off `rem`/`px` values throughout the stylesheets.
+- **Spacing scale**: margins and padding are expressed as `var(--gap)` or
+  `calc()` expressions off it, rather than ad-hoc pixel values, so spacing
+  stays consistent as the base scale changes.
+- **Motion**: transitions are enabled site-wide (`--t-time: 0.2s`,
+  `--t-time-quick: 0.1s`, `--t-time-button: 0.15s`) so interactive elements
+  fade instead of snapping — these were previously `0s` (no animation).
+- **Type weight**: buttons use a lighter `font-weight: 500` (was `600`),
+  reserving `600` for headings, usernames, and badges to preserve hierarchy.
+
+This pass touched every SCSS partial in `ui/src/scss/` (`_base`, `_static`,
+`_home`, `_user`, `_post`, `_chat`, `_newPost`, `_dashboard`, `_components`,
+`_modtools`, `_community`, `_comms`, `_settings`) plus a handful of
+components with inline styles that were moved onto tokens. If you're adding
+new UI, reuse an existing token rather than introducing a new hardcoded
+color or spacing value.
 
 ## Contributing
 
