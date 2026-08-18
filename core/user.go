@@ -1456,7 +1456,7 @@ func CreateGhostUser(db *sql.DB) (bool, error) {
 	if err := db.QueryRow("SELECT username_lc FROM users WHERE username_lc = ?", GhostUserUsername).Scan(&s); err != nil {
 		if err == sql.ErrNoRows {
 			// Ghost user not found; create one.
-			_, createErr := RegisterUser(context.Background(), db, GhostUserUsername, "", utils.GenerateStringID(48), "", "", "", "")
+			_, createErr := RegisterUser(context.Background(), db, GhostUserUsername, "ghost@localhost", utils.GenerateStringID(48), "", "", "", "")
 			return createErr == nil, createErr
 		}
 		return false, err
@@ -1471,7 +1471,7 @@ func CreateNobodyUser(db *sql.DB) (bool, error) {
 	if dbErr := db.QueryRow("SELECT username_lc FROM users WHERE username_lc = ?", NobodyUserUsername).Scan(&s); dbErr != nil {
 		if dbErr == sql.ErrNoRows {
 			// Ghost user not found; create one.
-			user, err := RegisterUser(context.Background(), db, NobodyUserUsername, "", utils.GenerateStringID(48), "", "", "", "")
+			user, err := RegisterUser(context.Background(), db, NobodyUserUsername, "nobody@localhost", utils.GenerateStringID(48), "", "", "", "")
 			if err != nil {
 				return false, err
 			}
