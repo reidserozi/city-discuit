@@ -53,8 +53,8 @@
     margin-left: auto;
     margin-right: auto;
     padding-top: calc(var(--gap) * 2);
-    padding-left: 10vw;
-    padding-right: 10vw;
+    padding-left: var(--card-padding);
+    padding-right: var(--card-padding);
     border-top: 1px solid rgba(var(--base-green), 0.2);
 
     .digest-header {
@@ -78,10 +78,6 @@
     }
 
     .digest-excerpt {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
         line-height: 1.4;
         text-align: left;
     }

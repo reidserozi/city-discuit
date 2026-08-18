@@ -54,22 +54,22 @@ const VerifyEmail = () => {
 
   return (
     <div className="page-content wrap">
-      <div className="card" style={{ maxWidth: '500px', margin: '2rem auto', padding: '2rem', textAlign: 'center' }}>
+      <div className="card verify-email-card">
         {status === 'loading' && (
           <>
             <div className="title">Verifying your email...</div>
-            <p style={{ marginTop: '1rem', color: '#666' }}>Please wait while we confirm your email address.</p>
+            <p className="verify-email-message">Please wait while we confirm your email address.</p>
           </>
         )}
 
         {status === 'success' && (
           <>
-            <div className="title" style={{ color: 'var(--color-brand)' }}>Email verified!</div>
-            <p style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>{message}</p>
-            <p style={{ fontSize: '0.9rem', color: '#666' }}>
+            <div className="title verify-email-success">Email verified!</div>
+            <p className="verify-email-body">{message}</p>
+            <p className="verify-email-message">
               You can now close this page and enjoy the full features of the site.
             </p>
-            <a href="/" className="button button-main" style={{ marginTop: '1rem', display: 'inline-block' }}>
+            <a href="/" className="button button-main verify-email-action">
               Go to home
             </a>
           </>
@@ -77,16 +77,16 @@ const VerifyEmail = () => {
 
         {status === 'error' && (
           <>
-            <div className="title" style={{ color: 'var(--color-red)' }}>Verification failed</div>
-            <p style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>{message}</p>
-            <div style={{ fontSize: '0.9rem', color: '#666' }}>
+            <div className="title verify-email-error">Verification failed</div>
+            <p className="verify-email-body">{message}</p>
+            <div className="verify-email-message">
               <p>Try:</p>
-              <ul style={{ textAlign: 'left', display: 'inline-block' }}>
+              <ul className="verify-email-list">
                 <li>Requesting a new verification email from your settings</li>
                 <li>Checking your spam or junk folder</li>
               </ul>
             </div>
-            <a href="/" className="button button-main" style={{ marginTop: '1rem', display: 'inline-block' }}>
+            <a href="/" className="button button-main verify-email-action">
               Go to home
             </a>
           </>

@@ -55,6 +55,7 @@
     --base-white: var(--base-10);
     --base-black: 20, 20, 19; // Slate Dark #141413
     --base-red: 191, 77, 67; // Error #BF4D43
+    --base-blue: 25, 118, 210; // Info #1976D2
     --base-green: 120, 140, 93; // Olive #788C5D
     --base-gray: var(--base-5);
     --base-fg: var(--base-black);
@@ -64,50 +65,51 @@
     --color-white: rgb(var(--base-white));
     --color-black: rgb(var(--base-black));
     --color-red: rgb(var(--base-red));
+    --color-blue: rgb(var(--base-blue));
     --color-green: rgb(var(--base-green));
     --color-gray: rgb(var(--base-gray));
     --color-bg: rgb(var(--base-bg));
     --color-fg: rgb(var(--base-fg));
 
-    --color-body: #faf9f5;
-    --color-text-black: #141413;
-    --color-text-white: rgb(250, 249, 245);
-    --color-text: #141413;
+    --color-body: rgb(var(--base-bg));
+    --color-text-black: rgb(var(--base-black));
+    --color-text-white: rgb(var(--base-white));
+    --color-text: rgb(var(--base-black));
     --color-text-light: rgb(var(--base-5));
     --color-text-secondary: rgb(var(--base-5));
-    --color-link: #d97757;
+    --color-link: rgb(var(--base-brand));
     --color-border: rgba(var(--base-black), 0.1);
 
-    --color-button-text: var(--color-white);
+    --color-button-text: var(--color-text);
     --color-button: rgba(var(--base-black), 0.08);
     --color-button-hover: rgba(var(--base-black), 0.12);
-    --color-button-main: #d97757;
-    --color-button-main-hover: #c1663d;
+    --color-button-main: rgb(var(--base-brand));
+    --color-button-main-hover: rgb(193, 102, 61);
     --color-button-red: var(--color-red);
-    --color-button-red-hover: #a3654a;
+    --color-button-red-hover: rgb(163, 101, 74);
 
     --color-input: rgba(var(--base-black), 0.06);
     --color-input-active: rgba(var(--base-black), 0.04);
     --color-input-border-hover: rgba(var(--base-black), 0.15);
-    --color-input-border-focus: #d97757;
-    --color-checkbox-border: #b0aea5;
+    --color-input-border-focus: rgb(var(--base-brand));
+    --color-checkbox-border: rgb(176, 174, 165);
     --color-checkbox-disabled: #f0eee6;
     --color-checkbox-disabled-inner: rgba(217, 119, 87, 0.4);
 
-    --color-supporter: #e9a089;
+    --color-supporter: rgb(233, 160, 137);
 
     // Blur removed because it looks slightly ugly in PWA.
     --color-background-blur: var(--color-bg); // rgba(var(--base-bg), 0.8);
 
     --color-scrollbar: rgb(var(--base-8));
-    --color-card: #ffffff;
+    --color-card: rgb(var(--base-10));
     --color-card-border: rgba(var(--base-black), 0.08);
-    --color-card-domain: #87867f;
+    --color-card-domain: rgb(135, 134, 127);
 
     --color-skeleton: rgba(var(--base-black), 0.06);
-    --color-comment-line: #e8e6dc;
+    --color-comment-line: rgb(232, 230, 220);
     --color-modal-overlay: rgba(var(--base-black), 0.3);
-    --color-heading: #141413;
+    --color-heading: rgb(var(--base-black));
     --heading-text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 
     --disabled-opacity: 0.6;
@@ -175,43 +177,43 @@ html.theme-dark {
     --base-bg: 20, 20, 19; // Slate Dark
     --base-fg: 250, 249, 245; // Ivory Light
 
-    --color-body: #141413;
-    --color-text: #faf9f5;
-    --color-text-light: rgb(var(--base-5));
+    --color-body: rgb(var(--base-bg));
+    --color-text: rgb(var(--base-fg));
+    --color-text-light: rgb(var(--base-7));
     --color-text-secondary: rgb(var(--base-7));
-    --color-link: #d97757;
+    --color-link: rgb(var(--base-brand));
     --color-border: rgba(250, 249, 245, 0.15);
 
-    --color-button: rgba(250, 249, 245, 0.1);
+    --color-button: rgba(var(--base-fg), 0.1);
     --color-button-text: var(--color-white);
-    --color-button-hover: rgba(250, 249, 245, 0.15);
-    --color-button-main: #d97757;
-    --color-button-main-hover: #e8957d;
+    --color-button-hover: rgba(var(--base-fg), 0.15);
+    --color-button-main: rgb(var(--base-brand));
+    --color-button-main-hover: rgb(232, 149, 125);
 
-    --color-input: rgba(250, 249, 245, 0.08);
-    --color-input-active: rgba(250, 249, 245, 0.12);
-    --color-input-border-hover: rgba(250, 249, 245, 0.2);
-    --color-input-border-focus: #d97757;
-    --color-checkbox-border: #9c9a92;
-    --color-checkbox-disabled: #1f1e1d;
-    --color-checkbox-disabled-inner: rgba(217, 119, 87, 0.5);
+    --color-input: rgba(var(--base-fg), 0.08);
+    --color-input-active: rgba(var(--base-fg), 0.12);
+    --color-input-border-hover: rgba(var(--base-fg), 0.2);
+    --color-input-border-focus: rgb(var(--base-brand));
+    --color-checkbox-border: rgb(156, 154, 146);
+    --color-checkbox-disabled: rgb(31, 30, 29);
+    --color-checkbox-disabled-inner: rgba(var(--base-brand), 0.5);
 
     --color-scrollbar: rgb(var(--base-5));
-    --color-card: #1f1e1d;
-    --color-card-domain: #87867f;
-    --color-card-border: rgba(250, 249, 245, 0.1);
+    --color-card: rgb(var(--base-2));
+    --color-card-domain: rgb(135, 134, 127);
+    --color-card-border: rgba(var(--base-fg), 0.1);
 
-    --color-skeleton: rgba(250, 249, 245, 0.06);
-    --color-comment-line: #30302e;
+    --color-skeleton: rgba(var(--base-fg), 0.06);
+    --color-comment-line: rgb(48, 48, 46);
 
-    --color-modal-overlay: rgba(20, 20, 19, 0.5);
-    --color-heading: #faf9f5;
+    --color-modal-overlay: rgba(var(--base-bg), 0.5);
+    --color-heading: rgb(var(--base-fg));
     --heading-text-shadow: none;
 
-    --color-supporter: #e9a089;
+    --color-supporter: rgb(233, 160, 137);
 
     --modal-box-shadow: none;
-    --modal-box-border: 1px solid rgba(250, 249, 245, 0.1);
+    --modal-box-border: 1px solid rgba(var(--base-fg), 0.1);
 
     --card-border: 1px solid var(--color-card-border);
     --card-border-top: var(--card-border);
@@ -1011,6 +1013,10 @@ html.no-wrap {
         > :nth-child(2) {
             // no overflow on middle pane
             overflow: hidden;
+        }
+        > :nth-child(3) {
+            overflow-x: hidden;
+            min-width: 0;
         }
         @include mixins.tablet {
             grid-template-columns: 5fr 2fr;

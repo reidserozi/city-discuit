@@ -239,17 +239,50 @@ func (r *Report) FetchTarget(ctx context.Context, db *sql.DB) error {
 	return nil
 }
 
-// // TakeAction takes action on r by moderator mod.
-// func (r *Report) TakeAction(ctx context.Context, action string, mod luid.ID) error {
-// 	now := time.Now()
-// 	_, err := r.db.ExecContext(ctx, "UPDATE reports SET action_taken = ?, dealt_at = ?, dealt_by = ? WHERE id = ?", action, now, mod, r.ID)
-// 	if err == nil {
-// 		r.ActionTaken = msql.NewNullString(action)
-// 		r.DealtBy.Valid, r.DealtBy.ID = true, mod
-// 		r.DealtAt = msql.NewNullTime(now)
-// 	}
-// 	return err
-// }
+// TakeAction marks a report as dealt with by setting action_taken, dealt_at, and dealt_by.
+func (r *Report) TakeAction(ctx context.Context, db *sql.DB, action string, mod uid.ID) error {
+	now := time.Now()
+	_, err := db.ExecContext(ctx, "UPDATE reports SET action_taken = ?, dealt_at = ?, dealt_by = ? WHERE id = ?", action, now, mod, r.ID)
+	if err == nil {
+		r.ActionTaken = msql.NewNullString(action)
+		r.DealtBy.Valid, r.DealtBy.ID = true, mod
+		r.DealtAt = msql.NewNullTime(now)
+	}
+	return err
+}
+
+// UndoAction clears the action_taken, dealt_at, and dealt_by fields, marking the report as unresolved.
+func (r *Report) UndoAction(ctx context.Context, db *sql.DB) error {
+	_, err := db.ExecContext(ctx, "UPDATE reports SET action_taken = NULL, dealt_at = NULL, dealt_by = NULL WHERE id = ?", r.ID)
+	if err == nil {
+		r.ActionTaken = msql.NullString{}
+		r.DealtBy = uid.NullID{}
+		r.DealtAt = msql.NullTime{}
+	}
+	return err
+}
+
+// GetAllReports retrieves all user submitted reports across all communities. The results are paginated.
+func GetAllReports(ctx context.Context, db *sql.DB, limit, page int) ([]*Report, error) {
+	query := msql.BuildSelectQuery("reports", selectReportCols, selectReportJoins, "")
+	query += " ORDER BY reports.created_at DESC LIMIT ? OFFSET ?"
+	offset := limit * (page - 1)
+	rows, err := db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	reports, err := scanReports(db, rows)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range reports {
+		if err = r.FetchTarget(ctx, db); err != nil {
+			return nil, errors.New("couldn't fetch target: " + err.Error())
+		}
+	}
+	return reports, nil
+}
 
 // Delete deletes the report permanently.
 func (r *Report) Delete(ctx context.Context, db *sql.DB, mod uid.ID) error {

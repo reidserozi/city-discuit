@@ -19,8 +19,6 @@ const WelcomeBanner = ({
   const user = useSelector<RootState>((state) => state.main.user) as MainState['user'];
   const loggedIn = user !== null;
 
-  const usersCount = useSelector<RootState>((state) => state.main.noUsers) as MainState['noUsers'];
-
   if (hideIfMember && loggedIn) {
     return null;
   }
@@ -37,10 +35,10 @@ const WelcomeBanner = ({
       {...props}
     >
       <div className="home-welcome-text">
-        <div className="home-welcome-join">Improve Raleigh</div>
+        <div className="home-welcome-join">Edit your city.</div>
         <div className="home-welcome-subtext">
-          Edit Raleigh is where <span>{usersCount}</span> residents propose, discuss, and improve
-          their city.
+          A place for Raleigh residents to propose ideas, work on them together, and take them to
+          the city.
         </div>
       </div>
       <div className="home-welcome-buttons">
@@ -61,7 +59,12 @@ const WelcomeBanner = ({
         )}
         <>{children}</>
         {!loggedIn && (
-          <button onClick={() => dispatch(signupModalOpened())}>Create new account</button>
+          <>
+            <button onClick={() => dispatch(signupModalOpened())}>Create an account</button>
+            <div className="home-welcome-invite-note">
+              You&apos;ll need an invite code from a neighborhood leader.
+            </div>
+          </>
         )}
       </div>
     </div>

@@ -13,6 +13,7 @@ import { ButtonClose } from './Button';
 import { Form, FormField } from './Form';
 import Input, { InputPassword, InputWithCount } from './Input';
 import Modal from './Modal';
+import TermsGateModal from './TermsGateModal';
 import type { Neighborhood } from '../serverTypes';
 
 const errors = [
@@ -79,6 +80,11 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const [neighborhoodCode, setNeighborhoodCode] = useState('');
   const [neighborhoodCodeError, setNeighborhoodCodeError] = useState<string | null>(null);
 
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [termsAgreedError, setTermsAgreedError] = useState<string | null>(null);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [termsVersion, setTermsVersion] = useState('');
+
   useEffect(() => {
     const fetchNeighborhoods = async () => {
       try {
@@ -113,7 +119,17 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     try {
       const res = await mfetch('/api/_signup', {
         method: 'POST',
-        body: JSON.stringify({ username, email, password, neighborhoodID, neighborhoodCode, displayName, captchaToken }),
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          neighborhoodID,
+          neighborhoodCode,
+          displayName,
+          captchaToken,
+          termsAccepted: termsAgreed,
+          termsVersion,
+        }),
       });
       if (!res.ok) throw new APIError(res.status, await res.json());
       window.location.reload();
@@ -151,19 +167,12 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
       errFound = true;
       setRepeatPasswordError(errors[6]);
     }
-    if (stytchEnabled) {
-      if (!email) {
-        errFound = true;
-        setEmailError('Email is required.');
-      } else if (!validEmail(email)) {
-        errFound = true;
-        setEmailError(errors[3]);
-      }
-    } else if (email) {
-      if (!validEmail(email)) {
-        errFound = true;
-        setEmailError(errors[3]);
-      }
+    if (!email) {
+      errFound = true;
+      setEmailError('Email is required.');
+    } else if (!validEmail(email)) {
+      errFound = true;
+      setEmailError(errors[3]);
     }
     if (!selectedNeighborhood) {
       errFound = true;
@@ -181,6 +190,10 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         errFound = true;
         setNeighborhoodCodeError('Neighborhood code is required for this neighborhood');
       }
+    }
+    if (!termsAgreed) {
+      errFound = true;
+      setTermsAgreedError('You must read and agree to the Terms of Service and Privacy Policy.');
     }
     if (errFound) {
       return;
@@ -234,7 +247,7 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
               />
             </FormField>
             <FormField
-              label={stytchEnabled ? 'Email' : 'Email (optional)'}
+              label="Email"
               description={
                 stytchEnabled
                   ? 'An email address is required to log in securely.'
@@ -313,6 +326,12 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
                 disabled={signupsDisabled || !selectedNeighborhood}
                 maxLength={10}
               />
+              <p className="modal-signup-terms">
+                Codes come from your neighborhood leader.{' '}
+                <a href="/neighborhoods" target="_blank" rel="noopener">
+                  Don&apos;t see your neighborhood, or need a code?
+                </a>
+              </p>
             </FormField>
             {CAPTCHA_ENABLED && (
               <div style={{ margin: 0 }}>
@@ -325,29 +344,41 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
                 />
               </div>
             )}
-            <FormField>
-              <p className="modal-signup-terms">
-                {'By creating an account, you agree to our '}
-                <a target="_blank" href="/terms">
-                  Terms
-                </a>
-                {' and '}
-                <a target="_blank" href="/privacy-policy">
-                  {' Privacy Policy'}
-                </a>
-                .
-              </p>
-              <p className="modal-signup-terms is-captcha">
-                This site is protected by reCAPTCHA and the Google{' '}
-                <a href="https://policies.google.com/privacy-policy" target="_blank">
-                  Privacy Policy
-                </a>{' '}
-                and{' '}
-                <a href="https://policies.google.com/terms" target="_blank">
-                  Terms of Service
-                </a>{' '}
-                apply.
-              </p>
+            <FormField
+              description="You must review and agree before creating an account"
+              error={termsAgreedError || undefined}
+            >
+              <div className="terms-agreement">
+                <input
+                  type="checkbox"
+                  checked={termsAgreed}
+                  onChange={() => {}}
+                  disabled={true}
+                />
+                <span>
+                  I agree to the:{' '}
+                  <button
+                    type="button"
+                    className="button-link terms-agreement-link"
+                    onClick={() => setTermsModalOpen(true)}
+                  >
+                    Terms of Service and Privacy Policy
+                  </button>
+                </span>
+              </div>
+              {CAPTCHA_ENABLED && (
+                <p className="modal-signup-terms is-captcha">
+                  This site is protected by reCAPTCHA and the Google{' '}
+                  <a href="https://policies.google.com/privacy-policy" target="_blank">
+                    Privacy Policy
+                  </a>{' '}
+                  and{' '}
+                  <a href="https://policies.google.com/terms" target="_blank">
+                    Terms of Service
+                  </a>{' '}
+                  apply.
+                </p>
+              )}
             </FormField>
             <FormField className="is-submit">
               <input type="submit" className="button button-main" value="Signup" />
@@ -358,6 +389,16 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
           </Form>
         </div>
       </Modal>
+      <TermsGateModal
+        open={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+        onAgree={(version) => {
+          setTermsAgreed(true);
+          setTermsVersion(version);
+          setTermsAgreedError(null);
+          setTermsModalOpen(false);
+        }}
+      />
     </>
   );
 };

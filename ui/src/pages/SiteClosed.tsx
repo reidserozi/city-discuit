@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SiteClosedReason, isDigestWindow } from '../siteHours';
-import { mfetchjson } from '../helper';
+import { mfetchjson, omitWWWFromHostname } from '../helper';
 import CommunityLink from '../components/PostCard/CommunityLink';
 import LinkImage from '../components/PostCard/LinkImage';
 import PostCardImage from '../components/PostCard/PostCardImage';
@@ -20,20 +20,14 @@ const copy: Record<SiteClosedReason, { emoji: string; heading: string; body: str
   },
 };
 
-function extractExcerpt(text: string, maxLength: number = 120): string {
+function extractExcerpt(text: string): string {
   if (!text) return '';
   // Strip basic markdown: **bold**, *italic*, [link](url), etc.
-  let excerpt = text
+  return text
     .replace(/\*\*(.+?)\*\*/g, '$1') // **bold**
     .replace(/\*(.+?)\*/g, '$1')     // *italic*
     .replace(/\[(.+?)\]\(.+?\)/g, '$1') // [text](url)
     .replace(/^#+\s+/gm, '');        // # Headings
-
-  // Truncate and add ellipsis if needed
-  if (excerpt.length > maxLength) {
-    excerpt = excerpt.substring(0, maxLength).trim() + '…';
-  }
-  return excerpt;
 }
 
 const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
@@ -97,6 +91,25 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
                       <div className="post-card-title">
                         <div className="post-card-title-text">
                           <span className="post-card-title-main">{post.title}</span>
+                          {post.type === 'link' && post.link && (
+                            <a
+                              className="post-card-link-domain"
+                              href={post.link.url}
+                              target="_blank"
+                              rel="nofollow noreferrer"
+                            >
+                              <span>{omitWWWFromHostname(post.link.hostname)}</span>
+                              <svg
+                                fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 16 16"
+                                width="16px"
+                                height="16px"
+                              >
+                                <path d="M 9 2 L 9 3 L 12.292969 3 L 6.023438 9.273438 L 6.726563 9.976563 L 13 3.707031 L 13 7 L 14 7 L 14 2 Z M 4 4 C 2.894531 4 2 4.894531 2 6 L 2 12 C 2 13.105469 2.894531 14 4 14 L 10 14 C 11.105469 14 12 13.105469 12 12 L 12 7 L 11 8 L 11 12 C 11 12.550781 10.550781 13 10 13 L 4 13 C 3.449219 13 3 12.550781 3 12 L 3 6 C 3 5.449219 3.449219 5 4 5 L 8 5 L 9 4 Z" />
+                              </svg>
+                            </a>
+                          )}
                         </div>
                         {linkImage && (
                           <div className="post-card-link-image">
@@ -107,7 +120,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
                       {showImage && post.image && <PostCardImage image={post.image} isMobile={isMobile} loading="lazy" />}
                       {!showImage && !linkImage && post.body && (
                         <div className="post-card-text">
-                          <div className="digest-excerpt">{extractExcerpt(post.body, 100)}</div>
+                          <div className="digest-excerpt">{extractExcerpt(post.body)}</div>
                         </div>
                       )}
                     </div>

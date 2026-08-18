@@ -35,7 +35,7 @@ const Footer = () => {
           </div>
           <p className="footer__tagline">Edit your City.</p>
           <div className="footer__hours">Open Mon–Sat, 6:00 AM – 10:00 PM</div>
-          <div className="footer__hours-sub">Closed Sundays. Go outside.</div>
+          <div className="footer__hours-sub">Closed Sundays. Go explore Raleigh.</div>
         </div>
 
         <nav className="footer__col" aria-labelledby="footer-communities-title">
@@ -72,6 +72,9 @@ const Footer = () => {
             </li>
             <li>
               <Link to="/privacy-policy">Privacy</Link>
+            </li>
+            <li>
+              <Link to="/neighborhoods">Add your neighborhood</Link>
             </li>
             <li>
               <a href="https://x.com/RaleighWiki" target="_blank" rel="noopener">

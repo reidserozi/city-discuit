@@ -221,6 +221,8 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	r.Handle("/api/_admin", s.withHandler(s.adminActions)).Methods("POST")
 	r.Handle("/api/users", s.withHandler(s.getUsers)).Methods("GET")
 	r.Handle("/api/comments", s.withHandler(s.getComments)).Methods("GET")
+	r.Handle("/api/admin/reports", s.withHandler(s.getAdminReports)).Methods("GET")
+	r.Handle("/api/admin/reports/{reportID}", s.withHandler(s.updateAdminReport)).Methods("PUT")
 
 	r.Handle("/api/_link_info", s.withHandler(s.getLinkInfo)).Methods("GET")
 

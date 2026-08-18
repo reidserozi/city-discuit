@@ -162,7 +162,7 @@ const About = () => {
 
         <p>Go edit your city.</p>
 
-        <p>We open at six. We close at ten. On Sunday, go outside.</p>
+        <p>We open at six. We close at ten. On Sunday, go explore Raleigh.</p>
 
         <p style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.8, marginTop: '3rem' }}>
           Edit Raleigh is an independent, volunteer-run civic platform for Raleigh, North Carolina. It is not affiliated with the City of Raleigh or Wake County. Built on open-source software, and open-source itself.

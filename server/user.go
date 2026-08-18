@@ -315,6 +315,8 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 	neighborhoodID := values["neighborhoodID"]
 	neighborhoodCode := values["neighborhoodCode"]
 	displayName := values["displayName"]
+	termsAccepted := values["termsAccepted"]
+	termsVersion := values["termsVersion"]
 
 	// Verify captcha.
 	if s.config.CaptchaSecret != "" {
@@ -342,6 +344,11 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 		}
 	}
 
+	// Verify terms acceptance
+	if termsAccepted != "true" || termsVersion == "" {
+		return httperr.NewBadRequest("terms_not_accepted", "You must read and agree to the Terms of Service and Privacy Policy.")
+	}
+
 	ip := httputil.GetIP(r.req)
 	if err := s.rateLimit(r, "signup_1_"+ip, time.Minute, 2); err != nil {
 		return err
@@ -350,7 +357,7 @@ func (s *Server) signup(w *responseWriter, r *request) error {
 		return err
 	}
 
-	user, err := core.RegisterUser(r.ctx, s.db, username, email, password, "", neighborhoodID, displayName)
+	user, err := core.RegisterUser(r.ctx, s.db, username, email, password, "", neighborhoodID, displayName, termsVersion)
 	if err != nil {
 		return err
 	}

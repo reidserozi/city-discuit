@@ -1159,12 +1159,14 @@
         min-width: calc(7 * var(--gap));
     }
     .select-bar-dp-target {
+        color: var(--color-text-secondary);
         background: var(--color-bg);
         font-weight: normal;
         padding-left: 1.5rem;
         padding-right: 1.5rem;
     }
     .dropdown .dropdown-target button {
+        color: var(--color-text-secondary);
         background-color: rgba(var(--base-fg), 0.07);
         @include mixins.mobile() {
             background-color: var(--color-bg);

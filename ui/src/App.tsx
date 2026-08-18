@@ -33,6 +33,7 @@ import Login from './pages/Login';
 import Map from './pages/Map';
 import MarkdownGuide from './pages/MarkdownGuide';
 import ModeratorGuidelines from './pages/ModeratorGuidelines';
+import NeighborhoodLeaderConduct from './pages/NeighborhoodLeaderConduct';
 import Modtools from './pages/Modtools';
 import NewPost from './pages/NewPost';
 import NotFound from './pages/NotFound';
@@ -44,6 +45,7 @@ import Settings from './pages/Settings';
 import { getDevicePreference } from './pages/Settings/devicePrefs';
 import SiteClosed from './pages/SiteClosed';
 import Terms from './pages/Terms';
+import Neighborhoods from './pages/Neighborhoods';
 import User from './pages/User';
 import VerifyEmail from './pages/VerifyEmail';
 import PushNotifications from './PushNotifications';
@@ -345,11 +347,17 @@ const AppSwitch = () => {
         <Route exact path="/moderator-guidelines">
           <ModeratorGuidelines />
         </Route>
+        <Route exact path="/neighborhood-leader-conduct">
+          <NeighborhoodLeaderConduct />
+        </Route>
         <Route exact path="/terms">
           <Terms />
         </Route>
         <Route exact path="/privacy-policy">
           <PrivacyPolicy />
+        </Route>
+        <Route exact path="/neighborhoods">
+          <Neighborhoods />
         </Route>
         <Route exact path="/markdown_guide">
           <MarkdownGuide />

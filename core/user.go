@@ -501,7 +501,7 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 }
 
 // RegisterUser creates a new user.
-func RegisterUser(ctx context.Context, db *sql.DB, username, email, password, ip, neighborhoodID, displayName string) (*User, error) {
+func RegisterUser(ctx context.Context, db *sql.DB, username, email, password, ip, neighborhoodID, displayName, termsVersion string) (*User, error) {
 	// Check for duplicates.
 	if exists, _, err := usernameExists(ctx, db, username); err != nil {
 		return nil, err
@@ -563,6 +563,8 @@ func RegisterUser(ctx context.Context, db *sql.DB, username, email, password, ip
 		{Name: "password", Value: hash},
 		{Name: "created_ip", Value: ipany},
 		{Name: "neighborhood_id", Value: neighborhoodIDVal},
+		{Name: "terms_accepted_at", Value: time.Now()},
+		{Name: "terms_version", Value: termsVersion},
 	})
 	_, err = db.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -1454,7 +1456,7 @@ func CreateGhostUser(db *sql.DB) (bool, error) {
 	if err := db.QueryRow("SELECT username_lc FROM users WHERE username_lc = ?", GhostUserUsername).Scan(&s); err != nil {
 		if err == sql.ErrNoRows {
 			// Ghost user not found; create one.
-			_, createErr := RegisterUser(context.Background(), db, GhostUserUsername, "", utils.GenerateStringID(48), "", "", "")
+			_, createErr := RegisterUser(context.Background(), db, GhostUserUsername, "", utils.GenerateStringID(48), "", "", "", "")
 			return createErr == nil, createErr
 		}
 		return false, err
@@ -1469,7 +1471,7 @@ func CreateNobodyUser(db *sql.DB) (bool, error) {
 	if dbErr := db.QueryRow("SELECT username_lc FROM users WHERE username_lc = ?", NobodyUserUsername).Scan(&s); dbErr != nil {
 		if dbErr == sql.ErrNoRows {
 			// Ghost user not found; create one.
-			user, err := RegisterUser(context.Background(), db, NobodyUserUsername, "", utils.GenerateStringID(48), "", "", "")
+			user, err := RegisterUser(context.Background(), db, NobodyUserUsername, "", utils.GenerateStringID(48), "", "", "", "")
 			if err != nil {
 				return false, err
 			}

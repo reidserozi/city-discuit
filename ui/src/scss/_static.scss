@@ -59,3 +59,40 @@
         margin-bottom: calc(var(--gap) / 2);
     }
 }
+
+// Verify Email page
+.verify-email-card {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+.verify-email-body {
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.verify-email-message {
+    margin-top: 1rem;
+    font-size: var(--fs-xs);
+    color: var(--color-text-light);
+}
+
+.verify-email-success {
+    color: var(--color-brand);
+}
+
+.verify-email-error {
+    color: var(--color-red);
+}
+
+.verify-email-action {
+    margin-top: 1rem;
+    display: inline-block;
+}
+
+.verify-email-list {
+    text-align: left;
+    display: inline-block;
+}

@@ -153,18 +153,16 @@ export default function Neighborhoods() {
         <div className="table-column" style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>
           {item.code || '—'}
         </div>
-        <div className="table-column" style={{ textAlign: 'right' }}>
+        <div className="table-column table-actions">
           <button
             onClick={() => handleEditStart(item)}
-            className="button-clear"
-            style={{ color: '#1976d2', marginRight: '1rem' }}
+            className="button-clear button-action-edit"
           >
             Edit
           </button>
           <button
             onClick={() => handleDelete(item.id)}
-            className="button-clear"
-            style={{ color: '#d32f2f' }}
+            className="button-clear button-action-delete"
           >
             Delete
           </button>

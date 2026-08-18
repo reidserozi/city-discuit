@@ -10,6 +10,7 @@ import Communities from './Communities';
 import IPBlocks from './IPBlocks';
 import Neighborhoods from './Neighborhoods';
 import NewCommunityRequests from './NewCommunityRequests';
+import Reports from './Reports';
 import Settings from './Settings';
 import Users from './Users';
 
@@ -82,6 +83,18 @@ const SVGNeighborhoods = (
   </svg>
 );
 
+const SVGReports = (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      fill="none"
+    />
+    <path d="M12 6V12M12 16H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
 function AdminDashboard() {
   const { path } = useRouteMatch();
 
@@ -103,6 +116,7 @@ function AdminDashboard() {
         { name: 'Users', to: '/admin/users', icon: SVGUsers },
         { name: 'Comments', to: '/admin/comments', icon: <SVGComment /> },
         { name: 'Communities', to: '/admin/communities', icon: <SVGCommunities /> },
+        { name: 'Reports', to: '/admin/reports', icon: SVGReports },
         { name: 'Neighborhoods', to: '/admin/neighborhoods', icon: SVGNeighborhoods },
         { name: 'IP blocks', to: '/admin/ipblocks', icon: SVGIPBlocks },
         { name: 'Analytics', to: '/admin/bss', icon: SVGAnalytics },
@@ -125,6 +139,9 @@ function AdminDashboard() {
         </Route>
         <Route exact path={`${path}/communities`}>
           <Communities />
+        </Route>
+        <Route exact path={`${path}/reports`}>
+          <Reports />
         </Route>
         <Route exact path={`${path}/neighborhoods`}>
           <Neighborhoods />

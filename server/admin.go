@@ -150,6 +150,75 @@ func (s *Server) getComments(w *responseWriter, r *request) error {
 	return w.writeJSON(res)
 }
 
+func (s *Server) getAdminReports(w *responseWriter, r *request) error {
+	_, err := getLoggedInAdmin(s.db, r)
+	if err != nil {
+		return err
+	}
+
+	query := r.urlQueryParams()
+	limit, err := getFeedLimit(query, s.config.PaginationLimit, s.config.PaginationLimitMax)
+	if err != nil {
+		return err
+	}
+
+	page := 1
+	if spage := query.Get("page"); spage != "" {
+		if page, err = strconv.Atoi(spage); err != nil {
+			return httperr.NewBadRequest("invalid_page", "Invalid page.")
+		}
+	}
+
+	reports, err := core.GetAllReports(r.ctx, s.db, limit, page)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	res := struct {
+		Reports []*core.Report `json:"reports"`
+		Limit   int            `json:"limit"`
+		Page    int            `json:"page"`
+	}{reports, limit, page}
+
+	return w.writeJSON(res)
+}
+
+func (s *Server) updateAdminReport(w *responseWriter, r *request) error {
+	admin, err := getLoggedInAdmin(s.db, r)
+	if err != nil {
+		return err
+	}
+
+	reportID, err := strconv.Atoi(r.muxVar("reportID"))
+	if err != nil {
+		return httperr.NewBadRequest("invalid-report-id", "Invalid report ID.")
+	}
+
+	report, err := core.GetReport(r.ctx, s.db, reportID)
+	if err != nil {
+		return err
+	}
+
+	reqBody := struct {
+		Resolved bool `json:"resolved"`
+	}{}
+	if err := r.unmarshalJSONBody(&reqBody); err != nil {
+		return err
+	}
+
+	if reqBody.Resolved {
+		if err := report.TakeAction(r.ctx, s.db, "resolved", admin.ID); err != nil {
+			return err
+		}
+	} else {
+		if err := report.UndoAction(r.ctx, s.db); err != nil {
+			return err
+		}
+	}
+
+	return w.writeJSON(report)
+}
+
 func (s *Server) getUsers(w *responseWriter, r *request) error {
 	_, err := getLoggedInAdmin(s.db, r)
 	if err != nil {

@@ -297,3 +297,25 @@
         }
     }
 }
+
+// Table action buttons
+.table-actions {
+    text-align: right;
+}
+
+.button-action-edit {
+    color: var(--color-blue);
+    margin-right: 1rem;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.button-action-delete {
+    color: var(--color-red);
+
+    &:hover {
+        opacity: 0.8;
+    }
+}

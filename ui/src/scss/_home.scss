@@ -32,12 +32,12 @@
     &.is-default {
         width: 80px;
         height: 80px;
-        background-color: darkcyan;
+        background-color: var(--color-border);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff;
+        color: var(--color-text);
         svg {
             text {
                 font-size: 40px;
@@ -121,11 +121,14 @@ a {
     flex-direction: column;
     border-radius: var(--border-radius);
     .home-welcome-text {
+        text-align: left;
         .home-welcome-join {
             font-weight: 600;
-            font-size: var(--fs-l);
         }
         .home-welcome-subtext {
+            margin: 0.5rem 0 1rem;
+            font-size: var(--fs-s);
+            line-height: 1.6;
             opacity: 0.9;
             span {
                 font-weight: 600;
@@ -145,14 +148,28 @@ a {
         }
     }
     &.is-guest {
-        background: linear-gradient(135deg, rgba(var(--base-brand), 1) 0%, rgba(var(--base-brand), 0.85) 100%);
+        text-align: center;
+        background: linear-gradient(135deg, #9e5733 0%, #8d4d2c 100%);
         color: var(--color-white);
+        .home-welcome-subtext {
+            opacity: 1;
+            color: #fbf1eb;
+        }
         button,
         .button {
-            color: var(--color-text);
-            background-color: var(--color-white);
+            color: var(--color-white);
+            background-color: transparent;
+            border: 1px solid #e3b79e;
             &:hover {
-                background-color: rgba(255, 255, 255, 0.9);
+                background-color: rgba(255, 255, 255, 0.1);
+                border-color: var(--color-white);
+            }
+            &:active {
+                background-color: rgba(0, 0, 0, 0.12);
+            }
+            &:focus-visible {
+                outline: 2px solid var(--color-white);
+                outline-offset: 2px;
             }
         }
     }
@@ -170,6 +187,14 @@ a {
             height: calc(1.25 * var(--input-height));
         }
     }
+}
+
+.home-welcome-invite-note {
+    margin-top: 0.875rem;
+    font-size: var(--fs-xs);
+    line-height: 1.5;
+    text-align: center;
+    color: #fbf1eb;
 }
 
 .post-votes {
@@ -252,6 +277,7 @@ a {
     align-items: center;
     .post-votes-arrow {
         padding: 0;
+        color: var(--color-text-secondary);
         &.arrow-up {
         }
         &.arrow-down {
@@ -850,6 +876,21 @@ html.theme-dark {
         .form-field.is-username {
             margin-bottom: 5px;
         }
+        .terms-agreement {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            line-height: 1.4;
+            input[type='checkbox'] {
+                margin-top: 3px;
+                flex-shrink: 0;
+            }
+        }
+        .terms-agreement-link {
+            font-weight: 600;
+            padding: 0;
+        }
         .form-field.is-submit .form-control {
             display: flex;
             flex-direction: column;
@@ -880,6 +921,49 @@ html.theme-dark {
             padding: var(--gap);
         }
         &.is-disabled {
+        }
+    }
+    .terms-gate-modal {
+        display: flex;
+        flex-direction: column;
+        max-height: 80vh;
+        max-width: 700px;
+        .modal-card-head {
+            border-bottom: 1px solid var(--color-border);
+        }
+        .modal-card-content.terms-gate-scroll {
+            flex: 1;
+            overflow-y: auto;
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--card-padding);
+            // Content from TermsContent and PrivacyPolicyContent
+            .document {
+                margin: 0;
+                h1 {
+                    margin-top: 0;
+                }
+                h2 {
+                    margin-top: var(--gap);
+                    margin-bottom: calc(var(--gap) / 2);
+                }
+                p, ul {
+                    margin-bottom: calc(var(--gap) / 2);
+                    line-height: 1.5;
+                }
+            }
+        }
+        .modal-card-foot {
+            padding: var(--card-padding);
+            display: flex;
+            gap: calc(var(--gap) / 2);
+            justify-content: flex-end;
+            border-top: 1px solid var(--color-border);
+            button {
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
         }
     }
     .modal-login {

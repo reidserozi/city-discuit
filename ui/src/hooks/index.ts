@@ -37,7 +37,7 @@ export function useDelayedEffect(effect: () => void, delay = 1000) {
     return () => {
       window.clearTimeout(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [effect, delay]);
 }
 
