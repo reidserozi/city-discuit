@@ -24,6 +24,8 @@ mysql -e "GRANT ALL PRIVILEGES ON discuit.* TO 'discuit'@'127.0.0.1';"
 # Build the UI
 echo "Building the UI..."
 cd /app/ui
+# Clean up malformed @types directories (npm extraction race condition artifacts)
+find node_modules/@types -maxdepth 1 -type d -name "* 2" -exec rm -rf {} + 2>/dev/null || true
 npm run build
 cd ..
 
