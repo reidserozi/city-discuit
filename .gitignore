@@ -15,3 +15,5 @@ node_modules
 .redis
 dump.rdb
 .DS_Store
+discuit-db-backup-*.tar.gz
+*.tar.gz

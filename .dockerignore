@@ -8,3 +8,5 @@ node_modules
 /logs
 /discuit
 /images
+discuit-db-backup-*.tar.gz
+*.tar.gz
