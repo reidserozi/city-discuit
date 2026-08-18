@@ -38,17 +38,36 @@ Discuit's core forum functionality:
   or comment in any community (`core/user.go` `RegisterUser`,
   `server/email_verification.go`, checks in `server/post.go` and
   `server/comment.go`).
-- **Rewritten legal & community pages**: About, Terms of Use, Privacy Policy,
-  and Guidelines were rewritten from scratch to reflect Edit Raleigh's civic
-  mission, North Carolina governing law, and CC-BY-licensed contributions
-  (`ui/src/pages/About.tsx`, `Terms.tsx`, `PrivacyPolicy.tsx`,
-  `Guidelines.tsx`) — partly inspired by [LocalWiki](https://localwiki.org)'s
+- **Comprehensive legal & community pages**: About, Terms of Service (26 sections
+  covering CC-BY content licensing, location data privacy, neighborhood code
+  system, shutdown disclaimers, indemnification, DMCA), Privacy Policy,
+  Guidelines, and a Code of Conduct for Neighborhood Leaders (addressing
+  good-faith verification + non-discrimination) were all rewritten to reflect
+  Edit Raleigh's civic mission, North Carolina governing law, and CC-BY-licensed
+  contributions (`ui/src/pages/About.tsx`, `TermsContent.tsx`,
+  `PrivacyPolicyContent.tsx`, `Guidelines.tsx`,
+  `NeighborhoodLeaderConduct.tsx`) — partly inspired by [LocalWiki](https://localwiki.org)'s
   own community documents.
+- **Terms & Privacy gate in signup**: new signup flow requires users to scroll
+  through and explicitly agree to both Terms of Service and Privacy Policy before
+  creating an account (`ui/src/components/TermsGateModal.tsx`, database tracking
+  via `0065_add_terms_acceptance` migration).
 - **Redesigned UI**: a site-wide footer with dynamic community listings, and
   a normalized design system (spacing, typography, color tokens) across the
   site — see [Design system](#design-system) below.
 - **Contact via X/Twitter**: rather than a public email address, contact
   routes through direct messages on X ([@RaleighWiki](https://x.com/RaleighWiki)).
+- **Admin reports system**: admins can view user-submitted reports (spam,
+  harassment, copyright, etc.) via an admin dashboard, with filtering and
+  status tracking (`ui/src/pages/AdminDashboard/Reports.tsx`,
+  `core/report.go`, `server/admin.go`).
+- **Neighborhood leader conduct standards**: a voluntary code of conduct for
+  people who distribute invite codes, emphasizing good-faith verification of
+  neighborhood membership while prohibiting exclusion based on protected
+  characteristics (race, ethnicity, sex, gender, religion, national origin,
+  disability, age, familial/marital status, veteran status) with explicit
+  anti-pretext language (`ui/src/pages/NeighborhoodLeaderConduct.tsx`,
+  cross-linked from `/neighborhoods` and `/terms`).
 
 ## Getting started
 
@@ -212,12 +231,26 @@ should be hardcoded outside of that file.
 - **Type weight**: buttons use a lighter `font-weight: 500` (was `600`),
   reserving `600` for headings, usernames, and badges to preserve hierarchy.
 
-This pass touched every SCSS partial in `ui/src/scss/` (`_base`, `_static`,
-`_home`, `_user`, `_post`, `_chat`, `_newPost`, `_dashboard`, `_components`,
-`_modtools`, `_community`, `_comms`, `_settings`) plus a handful of
-components with inline styles that were moved onto tokens. If you're adding
-new UI, reuse an existing token rather than introducing a new hardcoded
-color or spacing value.
+The initial design pass touched every SCSS partial in `ui/src/scss/` (`_base`,
+`_static`, `_home`, `_user`, `_post`, `_chat`, `_newPost`, `_dashboard`,
+`_components`, `_modtools`, `_community`, `_comms`, `_settings`) plus components
+with inline styles that were moved onto tokens.
+
+A subsequent CSS audit identified and fixed 5 styling issues:
+1. Dark-mode button visibility (Admin Neighborhoods) — replaced hardcoded Material
+   colors with `--color-blue` and `--color-red` tokens.
+2. Light-mode text contrast (VerifyEmail) — replaced hardcoded `#666` gray with
+   `--color-text-light` token; refactored 11 inline styles into semantic classes.
+3. Profile picture fallback — replaced `darkcyan` with `--color-border` token.
+4. Token system cleanup — replaced 30+ literal hex values in semantic tokens
+   with `--base-*` references (light + dark mode) to ensure all colors trace
+   back to single authoritative ramp.
+5. Inline style refactoring — removed sprawl from VerifyEmail.tsx, created
+   reusable `.verify-email-*` utility classes in `_static.scss`.
+
+If you're adding new UI, reuse an existing token rather than introducing a new
+hardcoded color or spacing value. Check `_base.scss` first — if a token for
+what you need doesn't exist, add it there and use it everywhere.
 
 ## Contributing
 
