@@ -68,6 +68,12 @@ Discuit's core forum functionality:
   disability, age, familial/marital status, veteran status) with explicit
   anti-pretext language (`ui/src/pages/NeighborhoodLeaderConduct.tsx`,
   cross-linked from `/neighborhoods` and `/terms`).
+- **Discussion items per community**: each community can define discussion items
+  (e.g., "Not on the agenda yet", "Zoning", "Transit", "Parks") that organize posts
+  around specific topics. Users must select an item when creating a post, helping
+  structure civic discussion and making it easier for residents to find posts about
+  specific subjects (`ui/src/pages/Community/Items.tsx`, `ui/src/pages/NewPost/index.tsx`,
+  `core/item.go`, `server/item.go`).
 
 ## Getting started
 
