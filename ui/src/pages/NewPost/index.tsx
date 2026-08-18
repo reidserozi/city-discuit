@@ -460,11 +460,30 @@ const NewPost = () => {
       </Helmet>
       <div className="page-new-content">
         <div className="page-new-content-post">
+          <div className="form-description">Choose the community you'd like to post in.</div>
           <SelectCommunity
             onChange={handleCommunityChange}
             disabled={isEditPost}
             initial={community ? community.name : ''}
           />
+          <div className="page-new-item">
+            <div className="page-new-item-header">
+              <label htmlFor="post-item">Item <span className="is-required">*</span></label>
+              <div className="form-description">Select which discussion item this post is about.</div>
+            </div>
+            <select
+              id="post-item"
+              value={selectedItemId}
+              onChange={(e) => setSelectedItemId(e.target.value)}
+              disabled={!community}
+              required
+            >
+              <option value="">-- Select an item --</option>
+              {(community?.items || []).map((item) => (
+                <option key={item.id} value={item.id}>{item.item}</option>
+              ))}
+            </select>
+          </div>
           <div className="card page-new-form">
             {isPostingDisabled && (
               <div className="page-new-form-disabled">
@@ -656,22 +675,8 @@ const NewPost = () => {
               <AsUser isMod={isUserMod} onChange={(g) => setUserGroup(g)} />
             </div>
           )}
-          <div className="page-new-item">
-            <label htmlFor="post-item">Item <span className="is-required">*</span></label>
-            <select
-              id="post-item"
-              value={selectedItemId}
-              onChange={(e) => setSelectedItemId(e.target.value)}
-              disabled={!community}
-              required
-            >
-              <option value="">-- Select an item --</option>
-              {(community?.items || []).map((item) => (
-                <option key={item.id} value={item.id}>{item.item}</option>
-              ))}
-            </select>
-          </div>
           <div className="page-new-location">
+            <div className="form-description">Optional — add a location if this post is about a specific place.</div>
             <button
               className="button-secondary"
               onClick={() => setShowMapPicker(!showMapPicker)}
