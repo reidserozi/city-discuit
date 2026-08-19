@@ -352,9 +352,37 @@
     }
     .new-page-help,
     .new-page-user-group,
+    .page-new-item,
     .page-new-location {
         margin-top: var(--gap);
         margin-left: 4px;
+    }
+    .page-new-item {
+        display: flex;
+        flex-direction: column;
+        label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            .is-required {
+                color: var(--color-danger);
+            }
+        }
+        select {
+            padding: 8px 12px;
+            border: 1px solid var(--color-input-border);
+            border-radius: var(--border-radius);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-size: 1rem;
+            &:focus {
+                outline: none;
+                border-color: var(--color-input-border-focus);
+            }
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+        }
     }
     .page-new-location {
         button {

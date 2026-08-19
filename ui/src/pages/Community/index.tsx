@@ -31,7 +31,7 @@ import PostsFeed from '../../views/PostsFeed';
 import NotFound from '../NotFound';
 import Banner from './Banner';
 import JoinButton from './JoinButton';
-import Rules from './Rules';
+import Items from './Items';
 
 const Community = () => {
   const { name } = useParams<{ [key: string]: string }>();
@@ -241,9 +241,9 @@ const Community = () => {
     }
   };
 
-  const renderRules = () => {
-    if (community.rules) {
-      return <Rules rules={community.rules} />;
+  const renderItems = () => {
+    if (community.items) {
+      return <Items items={community.items} />;
     }
     return null;
   };
@@ -370,7 +370,7 @@ const Community = () => {
           {tab === 'posts' && <PostsFeed communityId={community.id} feedType="community" />}
           {tab === 'about' && (
             <div className="comm-about">
-              {renderRules()}
+              {renderItems()}
               {renderModeratorsList()}
             </div>
           )}
@@ -378,7 +378,7 @@ const Community = () => {
       </main>
       <aside className="sidebar-right is-custom-scrollbar is-v2">
         {loggedIn && renderActionButtons()}
-        {renderRules()}
+        {renderItems()}
         {renderModeratorsList()}
       </aside>
 

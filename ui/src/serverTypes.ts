@@ -87,7 +87,7 @@ export interface Community {
   userMod: boolean | null;
   isMuted: boolean;
   mods: User[] | null;
-  rules: CommunityRule[] | null;
+  items: CommunityItem[] | null;
   ReportsDetails: {
     noReports: number;
     noPostReports: number;
@@ -95,14 +95,14 @@ export interface Community {
   };
 }
 
-export interface CommunityRule {
+export interface CommunityItem {
   id: number;
-  rule: string;
+  item: string;
   description: string | null;
   communityId: string;
   zIndex: number;
   createdBy: string;
-  createdA: string; // A datetime.
+  createdAt: string; // A datetime.
 }
 
 export interface Post {

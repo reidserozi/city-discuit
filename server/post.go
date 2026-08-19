@@ -52,6 +52,7 @@ func (s *Server) addPost(w *responseWriter, r *request) error {
 		Latitude    *float64            `json:"latitude"`
 		Longitude   *float64            `json:"longitude"`
 		LocationName string             `json:"locationName"`
+		ItemID      uint                `json:"itemId"`
 	}{
 		PostType:  core.PostTypeText,
 		UserGroup: core.UserGroupNormal,
@@ -70,6 +71,18 @@ func (s *Server) addPost(w *responseWriter, r *request) error {
 		return err
 	}
 
+	if req.ItemID == 0 {
+		return httperr.NewBadRequest("missing_item_id", "An item must be selected.")
+	}
+
+	item, err := core.GetCommunityItem(r.ctx, s.db, req.ItemID)
+	if err != nil {
+		return err
+	}
+	if item.CommunityID != comm.ID {
+		return httperr.NewBadRequest("invalid_item", "The selected item does not belong to this community.")
+	}
+
 	if req.PostType == core.PostTypeImage || req.PostType == core.PostTypeLink {
 		allowed, err := core.UserAllowedToPostImages(r.ctx, s.db, *r.viewer, s.config.MediaUploadRequiredPoints)
 		if err != nil {
@@ -83,7 +96,7 @@ func (s *Server) addPost(w *responseWriter, r *request) error {
 	var post *core.Post
 	switch req.PostType {
 	case core.PostTypeText:
-		post, err = core.CreateTextPost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, req.Body, req.Latitude, req.Longitude, req.LocationName)
+		post, err = core.CreateTextPost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, req.Body, req.Latitude, req.Longitude, req.LocationName, req.ItemID)
 	case core.PostTypeImage:
 		var images []*core.ImageUpload
 		if req.Images != nil {
@@ -100,9 +113,9 @@ func (s *Server) addPost(w *responseWriter, r *request) error {
 		if len(images) > s.config.MaxImagesPerPost {
 			return httperr.NewBadRequest("too-many-images", "Maximum images count exceeded.")
 		}
-		post, err = core.CreateImagePost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, images, req.Latitude, req.Longitude, req.LocationName)
+		post, err = core.CreateImagePost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, images, req.Latitude, req.Longitude, req.LocationName, req.ItemID)
 	case core.PostTypeLink:
-		post, err = core.CreateLinkPost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, req.URL, req.Latitude, req.Longitude, req.LocationName)
+		post, err = core.CreateLinkPost(r.ctx, s.db, *r.viewer, comm.ID, req.Title, req.URL, req.Latitude, req.Longitude, req.LocationName, req.ItemID)
 	default:
 		return httperr.NewBadRequest("invalid_post_type", "Invalid post type.")
 	}
@@ -138,7 +151,7 @@ func (s *Server) getPost(w *responseWriter, r *request) error {
 		if err != nil {
 			return err
 		}
-		if err = comm.FetchRules(r.ctx, s.db); err != nil {
+		if err = comm.FetchItems(r.ctx, s.db); err != nil {
 			return err
 		}
 		if err = comm.PopulateMods(r.ctx, s.db); err != nil {

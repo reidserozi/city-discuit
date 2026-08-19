@@ -356,7 +356,7 @@ func (s *Server) removeCommunityMod(w *responseWriter, r *request) error {
 }
 
 // /api/communities/{communityID}/rules [GET]
-func (s *Server) getCommunityRules(w *responseWriter, r *request) error {
+func (s *Server) getCommunityItems(w *responseWriter, r *request) error {
 	cid, err := strToID(r.muxVar("communityID"))
 	if err != nil {
 		return err
@@ -366,18 +366,18 @@ func (s *Server) getCommunityRules(w *responseWriter, r *request) error {
 	if err != nil {
 		return err
 	}
-	if err = comm.FetchRules(r.ctx, s.db); err != nil {
+	if err = comm.FetchItems(r.ctx, s.db); err != nil {
 		return err
 	}
 
-	if comm.Rules == nil {
+	if comm.Items == nil {
 		return w.writeString("[]")
 	}
-	return w.writeJSON(comm.Rules)
+	return w.writeJSON(comm.Items)
 }
 
-// /api/communities/{communityID}/rules [POST]
-func (s *Server) addCommunityRule(w *responseWriter, r *request) error {
+// /api/communities/{communityID}/items [POST]
+func (s *Server) addCommunityItem(w *responseWriter, r *request) error {
 	if !r.loggedIn {
 		return errNotLoggedIn
 	}
@@ -392,93 +392,93 @@ func (s *Server) addCommunityRule(w *responseWriter, r *request) error {
 		return err
 	}
 
-	rule := core.CommunityRule{}
-	if err := r.unmarshalJSONBody(&rule); err != nil {
+	item := core.CommunityItem{}
+	if err := r.unmarshalJSONBody(&item); err != nil {
 		return err
 	}
 
-	if err = comm.AddRule(r.ctx, s.db, rule.Rule, rule.Description.String, *r.viewer); err != nil {
+	if err = comm.AddItem(r.ctx, s.db, item.Item, item.Description.String, *r.viewer); err != nil {
 		return err
 	}
 
-	if err = comm.FetchRules(r.ctx, s.db); err != nil {
+	if err = comm.FetchItems(r.ctx, s.db); err != nil {
 		return err
 	}
 
-	if comm.Rules == nil {
+	if comm.Items == nil {
 		return w.writeString("[]")
 	}
 
-	return w.writeJSON(comm.Rules)
+	return w.writeJSON(comm.Items)
 }
 
-// /api/communities/{communityID}/rules/{ruleID} [GET]
-func (s *Server) getCommunityRule(w *responseWriter, r *request) error {
-	ruleID, err := strconv.Atoi(r.muxVar("ruleID"))
+// /api/communities/{communityID}/items/{itemID} [GET]
+func (s *Server) getCommunityItem(w *responseWriter, r *request) error {
+	itemID, err := strconv.Atoi(r.muxVar("itemID"))
 	if err != nil {
-		return httperr.NewNotFound("rule_not_found", "Rule not found.")
+		return httperr.NewNotFound("item_not_found", "Item not found.")
 	}
 
-	rule, err := core.GetCommunityRule(r.ctx, s.db, uint(ruleID))
+	item, err := core.GetCommunityItem(r.ctx, s.db, uint(itemID))
 	if err != nil {
 		return err
 	}
 
-	return w.writeJSON(rule)
+	return w.writeJSON(item)
 }
 
-// /api/communities/{communityID}/rules/{ruleID} [PUT]
-func (s *Server) updateCommunityRule(w *responseWriter, r *request) error {
+// /api/communities/{communityID}/items/{itemID} [PUT]
+func (s *Server) updateCommunityItem(w *responseWriter, r *request) error {
 	if !r.loggedIn {
 		return errNotLoggedIn
 	}
 
-	ruleID, err := strconv.Atoi(r.muxVar("ruleID"))
+	itemID, err := strconv.Atoi(r.muxVar("itemID"))
 	if err != nil {
-		return httperr.NewNotFound("rule_not_found", "Rule not found.")
+		return httperr.NewNotFound("item_not_found", "Item not found.")
 	}
 
-	rule, err := core.GetCommunityRule(r.ctx, s.db, uint(ruleID))
+	item, err := core.GetCommunityItem(r.ctx, s.db, uint(itemID))
 	if err != nil {
 		return err
 	}
 
-	req := core.CommunityRule{}
+	req := core.CommunityItem{}
 	if err := r.unmarshalJSONBody(&req); err != nil {
 		return err
 	}
-	rule.Rule = req.Rule
-	rule.Description = req.Description
-	rule.ZIndex = req.ZIndex
+	item.Item = req.Item
+	item.Description = req.Description
+	item.ZIndex = req.ZIndex
 
-	if err = rule.Update(r.ctx, s.db, *r.viewer); err != nil {
+	if err = item.Update(r.ctx, s.db, *r.viewer); err != nil {
 		return err
 	}
 
-	return w.writeJSON(rule)
+	return w.writeJSON(item)
 }
 
-// /api/communities/{communityID}/rules/{ruleID} [DELETE]
-func (s *Server) deleteCommunityRule(w *responseWriter, r *request) error {
+// /api/communities/{communityID}/items/{itemID} [DELETE]
+func (s *Server) deleteCommunityItem(w *responseWriter, r *request) error {
 	if !r.loggedIn {
 		return errNotLoggedIn
 	}
 
-	ruleID, err := strconv.Atoi(r.muxVar("ruleID"))
+	itemID, err := strconv.Atoi(r.muxVar("itemID"))
 	if err != nil {
-		return httperr.NewNotFound("rule_not_found", "Rule not found.")
+		return httperr.NewNotFound("item_not_found", "Item not found.")
 	}
 
-	rule, err := core.GetCommunityRule(r.ctx, s.db, uint(ruleID))
+	item, err := core.GetCommunityItem(r.ctx, s.db, uint(itemID))
 	if err != nil {
 		return err
 	}
 
-	if err = rule.Delete(r.ctx, s.db, *r.viewer); err != nil {
+	if err = item.Delete(r.ctx, s.db, *r.viewer); err != nil {
 		return err
 	}
 
-	return w.writeJSON(rule)
+	return w.writeJSON(item)
 }
 
 // /api/_report [POST]

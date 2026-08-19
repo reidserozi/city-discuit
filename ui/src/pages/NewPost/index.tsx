@@ -16,7 +16,7 @@ import type { Community, Post, Image as ServerImage } from '../../serverTypes';
 import { MainState, snackAlert, snackAlertError } from '../../slices/mainSlice';
 import { postAdded } from '../../slices/postsSlice';
 import { RootState } from '../../store';
-import Rules from '../Community/Rules';
+import Items from '../Community/Items';
 import AsUser from '../Post/AsUser';
 import CommunityCard from '../Post/CommunityCard';
 import Image from './Image';
@@ -85,6 +85,7 @@ const NewPost = () => {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [locationName, setLocationName] = useState<string>('');
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<string>('');
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useLoading();
@@ -272,6 +273,10 @@ const NewPost = () => {
         return;
       }
     }
+    if (!selectedItemId) {
+      alert('Please select an item for this post.');
+      return;
+    }
     try {
       setIsSubmitting(true);
 
@@ -296,6 +301,7 @@ const NewPost = () => {
             latitude: latitude || undefined,
             longitude: longitude || undefined,
             locationName: locationName || undefined,
+            itemId: Number(selectedItemId),
           }),
         });
       } else {
@@ -320,6 +326,7 @@ const NewPost = () => {
             latitude: latitude || undefined,
             longitude: longitude || undefined,
             locationName: locationName || undefined,
+            itemId: Number(selectedItemId),
           }),
         });
         if (!res.ok) {
@@ -649,6 +656,21 @@ const NewPost = () => {
               <AsUser isMod={isUserMod} onChange={(g) => setUserGroup(g)} />
             </div>
           )}
+          <div className="page-new-item">
+            <label htmlFor="post-item">Item <span className="is-required">*</span></label>
+            <select
+              id="post-item"
+              value={selectedItemId}
+              onChange={(e) => setSelectedItemId(e.target.value)}
+              disabled={!community}
+              required
+            >
+              <option value="">-- Select an item --</option>
+              {(community?.items || []).map((item) => (
+                <option key={item.id} value={item.id}>{item.item}</option>
+              ))}
+            </select>
+          </div>
           <div className="page-new-location">
             <button
               className="button-secondary"
@@ -684,7 +706,7 @@ const NewPost = () => {
           {community && (
             <>
               <CommunityCard community={community} />
-              <Rules rules={community.rules || []} unordered />
+              <Items items={community.items || []} unordered />
             </>
           )}
         </div>

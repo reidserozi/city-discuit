@@ -7,25 +7,25 @@ import { InputWithCount, useInputMaxLength } from '../../components/Input';
 import Modal from '../../components/Modal';
 import { mfetchjson } from '../../helper';
 import { useLoading } from '../../hooks';
-import { Community, CommunityRule } from '../../serverTypes';
+import { Community, CommunityItem } from '../../serverTypes';
 import { snackAlertError } from '../../slices/mainSlice';
 
-const Rules = ({ community }: { community: Community }) => {
+const Items = ({ community }: { community: Community }) => {
   const dispatch = useDispatch();
-  const [rules, _setRules] = useState<CommunityRule[]>([]);
-  const setRules = (rules: CommunityRule[]) => {
-    _setRules(rules.sort((a, b) => a.zIndex - b.zIndex));
+  const [items, _setItems] = useState<CommunityItem[]>([]);
+  const setItems = (items: CommunityItem[]) => {
+    _setItems(items.sort((a, b) => a.zIndex - b.zIndex));
   };
 
-  const [isEditRule, setIsEditRule] = useState(false);
+  const [isEditItem, setIsEditItem] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
   const [loading, setLoading] = useLoading();
   useEffect(() => {
     (async () => {
       try {
-        const rrules = await mfetchjson(`/api/communities/${community.id}/rules`);
-        setRules(rrules);
+        const ritems = await mfetchjson(`/api/communities/${community.id}/items`);
+        setItems(ritems);
         setLoading('loaded');
       } catch (error) {
         dispatch(snackAlertError(error));
@@ -34,50 +34,50 @@ const Rules = ({ community }: { community: Community }) => {
     })();
   }, [community.id, dispatch, setLoading]);
 
-  const ruleMaxLength = 512;
-  const [rule, setRule] = useInputMaxLength(ruleMaxLength);
+  const itemMaxLength = 512;
+  const [item, setItem] = useInputMaxLength(itemMaxLength);
   const descriptionMaxLength = 512;
   const [description, setDescription] = useInputMaxLength(descriptionMaxLength);
 
   const handleEditClose = () => {
     setEditOpen(false);
-    setRule('');
+    setItem('');
     setDescription('');
   };
 
-  const handleAddRule = () => {
-    setIsEditRule(false);
+  const handleAddItem = () => {
+    setIsEditItem(false);
     setEditOpen(true);
   };
 
-  const [ruleEditing, setRuleEditing] = useState<CommunityRule | null>(null);
-  const handleEditRule = (rule: CommunityRule) => {
-    setRuleEditing(rule);
-    setIsEditRule(true);
-    setRule(rule.rule);
-    setDescription(rule.description || '');
+  const [itemEditing, setItemEditing] = useState<CommunityItem | null>(null);
+  const handleEditItem = (item: CommunityItem) => {
+    setItemEditing(item);
+    setIsEditItem(true);
+    setItem(item.item);
+    setDescription(item.description || '');
     setEditOpen(true);
   };
 
   const handleSave = async () => {
     try {
-      if (isEditRule) {
-        if (!ruleEditing) return;
-        const rrule = await mfetchjson(`/api/communities/${community.id}/rules/${ruleEditing.id}`, {
+      if (isEditItem) {
+        if (!itemEditing) return;
+        const ritem = await mfetchjson(`/api/communities/${community.id}/items/${itemEditing.id}`, {
           method: 'PUT',
-          body: JSON.stringify({ zIndex: ruleEditing.zIndex, rule, description }),
+          body: JSON.stringify({ zIndex: itemEditing.zIndex, item, description }),
         });
-        const nrules = [...rules.filter((r) => r.id !== rrule.id), rrule];
-        setRules(nrules);
+        const nitems = [...items.filter((i) => i.id !== ritem.id), ritem];
+        setItems(nitems);
       } else {
-        const rrules = await mfetchjson(`/api/communities/${community.id}/rules`, {
+        const ritems = await mfetchjson(`/api/communities/${community.id}/items`, {
           method: 'POST',
           body: JSON.stringify({
-            rule,
+            item,
             description,
           }),
         });
-        setRules(rrules);
+        setItems(ritems);
       }
       handleEditClose();
     } catch (error) {
@@ -85,13 +85,13 @@ const Rules = ({ community }: { community: Community }) => {
     }
   };
 
-  const handleDeleteRule = async (rule: CommunityRule) => {
+  const handleDeleteItem = async (item: CommunityItem) => {
     if (confirm('Are you certain?')) {
       try {
-        await mfetchjson(`/api/communities/${community.id}/rules/${rule.id}`, {
+        await mfetchjson(`/api/communities/${community.id}/items/${item.id}`, {
           method: 'DELETE',
         });
-        setRules(rules.filter((r) => r.id !== rule.id));
+        setItems(items.filter((i) => i.id !== item.id));
       } catch (error) {
         dispatch(snackAlertError(error));
       }
@@ -102,17 +102,17 @@ const Rules = ({ community }: { community: Community }) => {
     return null;
   }
 
-  const modalTitle = isEditRule ? 'Edit rule' : 'Add rule';
-  const modalDisabled = rule === '';
+  const modalTitle = isEditItem ? 'Edit item' : 'Add item';
+  const modalDisabled = item === '';
 
   return (
     <DashboardPage
-      className="modtools-content modtools-rules"
-      title="Rules"
+      className="modtools-content modtools-items"
+      title="Items"
       fullWidth
       titleRightContent={
-        <button className="button-main" onClick={handleAddRule}>
-          Add rule
+        <button className="button-main" onClick={handleAddItem}>
+          Add item
         </button>
       }
     >
@@ -129,8 +129,8 @@ const Rules = ({ community }: { community: Community }) => {
               if (!modalDisabled) handleSave();
             }}
           >
-            <FormField label="Rule">
-              <InputWithCount maxLength={ruleMaxLength} value={rule} onChange={setRule} autoFocus />
+            <FormField label="Item">
+              <InputWithCount maxLength={itemMaxLength} value={item} onChange={setItem} autoFocus />
             </FormField>
             <FormField label="Description">
               <InputWithCount
@@ -151,45 +151,27 @@ const Rules = ({ community }: { community: Community }) => {
           </div>
         </div>
       </Modal>
-      <div className="modtools-rules-list">
+      <div className="modtools-items-list">
         <div className="table">
-          {rules.map((rule) => (
-            <div className="table-row" key={rule.id}>
-              <div className="table column">{rule.zIndex}</div>
-              <div className="table-column">{rule.rule}</div>
-              <div className="table-column">{rule.description}</div>
+          {items.map((item) => (
+            <div className="table-row" key={item.id}>
+              <div className="table column">{item.zIndex}</div>
+              <div className="table-column">{item.item}</div>
+              <div className="table-column">{item.description}</div>
               <div className="table-column" style={{ display: 'flex', justifyContent: 'center' }}>
-                <button className="button-red" onClick={() => handleDeleteRule(rule)}>
+                <button className="button-red" onClick={() => handleDeleteItem(item)}>
                   Delete
                 </button>
               </div>
               <div className="table-column">
-                <button onClick={() => handleEditRule(rule)}>Edit</button>
+                <button onClick={() => handleEditItem(item)}>Edit</button>
               </div>
             </div>
           ))}
-          {/*
-          <div className="table-row">
-            <div className="table-column">1</div>
-            <div className="table-column">No Spam</div>
-            <div className="table-column">{"Don't add any spam..."}</div>
-            <div className="table-column">
-              <button onClick={() => setEditOpen(true)}>Edit</button>
-            </div>
-          </div>
-          <div className="table-row">
-            <div className="table-column">1</div>
-            <div className="table-column">No self promotion</div>
-            <div className="table-column">{"Just don't do it..."}</div>
-            <div className="table-column">
-              <button onClick={() => setEditOpen(true)}>Edit</button>
-            </div>
-          </div>
-          */}
         </div>
       </div>
     </DashboardPage>
   );
 };
 
-export default Rules;
+export default Items;

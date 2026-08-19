@@ -185,11 +185,11 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	r.Handle("/api/communities/{communityID}", s.withHandler(s.getCommunity)).Methods("GET")
 	r.Handle("/api/communities/{communityID}", s.withHandler(s.updateCommunity)).Methods("PUT")
 
-	r.Handle("/api/communities/{communityID}/rules", s.withHandler(s.getCommunityRules)).Methods("GET")
-	r.Handle("/api/communities/{communityID}/rules", s.withHandler(s.addCommunityRule)).Methods("POST")
-	r.Handle("/api/communities/{communityID}/rules/{ruleID}", s.withHandler(s.getCommunityRule)).Methods("GET")
-	r.Handle("/api/communities/{communityID}/rules/{ruleID}", s.withHandler(s.updateCommunityRule)).Methods("PUT")
-	r.Handle("/api/communities/{communityID}/rules/{ruleID}", s.withHandler(s.deleteCommunityRule)).Methods("DELETE")
+	r.Handle("/api/communities/{communityID}/items", s.withHandler(s.getCommunityItems)).Methods("GET")
+	r.Handle("/api/communities/{communityID}/items", s.withHandler(s.addCommunityItem)).Methods("POST")
+	r.Handle("/api/communities/{communityID}/items/{itemID}", s.withHandler(s.getCommunityItem)).Methods("GET")
+	r.Handle("/api/communities/{communityID}/items/{itemID}", s.withHandler(s.updateCommunityItem)).Methods("PUT")
+	r.Handle("/api/communities/{communityID}/items/{itemID}", s.withHandler(s.deleteCommunityItem)).Methods("DELETE")
 
 	r.Handle("/api/communities/{communityID}/mods", s.withHandler(s.getCommunityMods)).Methods("GET")
 	r.Handle("/api/communities/{communityID}/mods", s.withHandler(s.addCommunityMod)).Methods("POST")

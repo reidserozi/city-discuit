@@ -14,7 +14,7 @@ import Banned from './Banned';
 import Mods from './Mods';
 import Removed from './Removed';
 import Reports from './Reports';
-import Rules from './Rules';
+import Items from './Items';
 import Settings from './Settings';
 
 const svgs = {
@@ -161,7 +161,7 @@ const Modtools = () => {
           to: getSidebarMenuItemLink('settings'),
           icon: <SVGSettings />,
         },
-        { name: 'Rules', to: getSidebarMenuItemLink('rules'), icon: svgs.rules },
+        { name: 'Items', to: getSidebarMenuItemLink('items'), icon: svgs.rules },
         { type: 'topic', name: 'Content' },
         { name: 'Reports', to: getSidebarMenuItemLink('reports'), icon: svgs.reports },
         { name: 'Removed', to: getSidebarMenuItemLink('removed'), icon: svgs.removed },
@@ -196,8 +196,8 @@ const Modtools = () => {
         <Route path={`${path}/mods`}>
           <Mods community={community} />
         </Route>
-        <Route path={`${path}/rules`}>
-          <Rules community={community} />
+        <Route path={`${path}/items`}>
+          <Items community={community} />
         </Route>
         <Route path="*">
           <div className="modtools-content flex flex-center">Not found.</div>

@@ -45,7 +45,7 @@ type Community struct {
 	MutedByViewer bool          `json:"isMuted"`
 
 	Mods           []*User                  `json:"mods"`
-	Rules          []*CommunityRule         `json:"rules"`
+	Items          []*CommunityItem         `json:"items"`
 	ReportsDetails *CommunityReportsDetails `json:"ReportsDetails"`
 }
 
@@ -275,6 +275,11 @@ func CreateCommunity(ctx context.Context, db *sql.DB, creator uid.ID, reqPoints,
 
 	comm, err := GetCommunityByID(ctx, db, id, nil)
 	if err != nil {
+		return nil, err
+	}
+
+	// Auto-seed community with default item.
+	if err := comm.AddItem(ctx, db, "Not on the agenda yet — an idea", "", creator); err != nil {
 		return nil, err
 	}
 
@@ -1063,7 +1068,7 @@ func makeUserMod(ctx context.Context, db *sql.DB, c *Community, user uid.ID, isM
 	})
 }
 
-func (c *Community) AddRule(ctx context.Context, db *sql.DB, rule, description string, mod uid.ID) error {
+func (c *Community) AddItem(ctx context.Context, db *sql.DB, item, description string, mod uid.ID) error {
 	if is, err := c.UserModOrAdmin(ctx, db, mod); err != nil {
 		return err
 	} else if !is {
@@ -1071,7 +1076,7 @@ func (c *Community) AddRule(ctx context.Context, db *sql.DB, rule, description s
 	}
 
 	zIndex := 0
-	row := db.QueryRowContext(ctx, "SELECT z_index FROM community_rules WHERE community_id = ? ORDER BY z_index DESC LIMIT 1", c.ID)
+	row := db.QueryRowContext(ctx, "SELECT z_index FROM community_items WHERE community_id = ? ORDER BY z_index DESC LIMIT 1", c.ID)
 	if err := row.Scan(&zIndex); err != nil && err != sql.ErrNoRows {
 		return err
 	}
@@ -1080,29 +1085,29 @@ func (c *Community) AddRule(ctx context.Context, db *sql.DB, rule, description s
 	if description != "" {
 		d = description
 	}
-	_, err := db.ExecContext(ctx, "INSERT INTO community_rules (rule, description, community_id, created_by, z_index) VALUES (?, ?, ?, ?, ?)", rule, d, c.ID, mod, zIndex+1)
+	_, err := db.ExecContext(ctx, "INSERT INTO community_items (item, description, community_id, created_by, z_index) VALUES (?, ?, ?, ?, ?)", item, d, c.ID, mod, zIndex+1)
 	return err
 }
 
-func (c *Community) RemoveRule(ctx context.Context, db *sql.DB, ruleID string, mod uid.ID) error {
+func (c *Community) RemoveItem(ctx context.Context, db *sql.DB, itemID string, mod uid.ID) error {
 	if is, err := c.UserModOrAdmin(ctx, db, mod); err != nil {
 		return err
 	} else if !is {
 		return errNotMod
 	}
-	_, err := db.ExecContext(ctx, "DELETE FROM community_rules WHERE id = ?", ruleID)
+	_, err := db.ExecContext(ctx, "DELETE FROM community_items WHERE id = ?", itemID)
 	return err
 }
 
-// FetchRules populates c.Rules.
-func (c *Community) FetchRules(ctx context.Context, db *sql.DB) error {
-	query := msql.BuildSelectQuery("community_rules", selectCommunityRuleCols, nil, "WHERE community_id = ?")
+// FetchItems populates c.Items.
+func (c *Community) FetchItems(ctx context.Context, db *sql.DB) error {
+	query := msql.BuildSelectQuery("community_items", selectCommunityItemCols, nil, "WHERE community_id = ?")
 	rows, err := db.QueryContext(ctx, query, c.ID)
 	if err != nil {
 		return err
 	}
 
-	rules, err := scanCommunityRules(db, rows)
+	items, err := scanCommunityItems(db, rows)
 	if err != nil {
 		if hErr, ok := err.(*httperr.Error); ok {
 			if hErr.HTTPStatus != http.StatusNotFound {
@@ -1114,16 +1119,16 @@ func (c *Community) FetchRules(ctx context.Context, db *sql.DB) error {
 		}
 	}
 
-	c.Rules = rules
-	if c.Rules == nil {
-		c.Rules = make([]*CommunityRule, 0)
+	c.Items = items
+	if c.Items == nil {
+		c.Items = make([]*CommunityItem, 0)
 	}
 	return nil
 }
 
-type CommunityRule struct {
+type CommunityItem struct {
 	ID          uint            `json:"id"`
-	Rule        string          `json:"rule"`
+	Item        string          `json:"item"`
 	Description msql.NullString `json:"description"`
 	CommunityID uid.ID          `json:"communityId"`
 	ZIndex      int             `json:"zIndex"`
@@ -1131,9 +1136,9 @@ type CommunityRule struct {
 	CreatedAt   time.Time       `json:"createdAt"`
 }
 
-var selectCommunityRuleCols = []string{
+var selectCommunityItemCols = []string{
 	"id",
-	"rule",
+	"item",
 	"description",
 	"community_id",
 	"created_by",
@@ -1141,67 +1146,67 @@ var selectCommunityRuleCols = []string{
 	"created_at",
 }
 
-func GetCommunityRule(ctx context.Context, db *sql.DB, ruleID uint) (*CommunityRule, error) {
-	query := msql.BuildSelectQuery("community_rules", selectCommunityRuleCols, nil, "WHERE id = ?")
-	rows, err := db.QueryContext(ctx, query, ruleID)
+func GetCommunityItem(ctx context.Context, db *sql.DB, itemID uint) (*CommunityItem, error) {
+	query := msql.BuildSelectQuery("community_items", selectCommunityItemCols, nil, "WHERE id = ?")
+	rows, err := db.QueryContext(ctx, query, itemID)
 	if err != nil {
 		return nil, err
 	}
-	rules, err := scanCommunityRules(db, rows)
+	items, err := scanCommunityItems(db, rows)
 	if err != nil {
 		return nil, err
 	}
-	return rules[0], nil
+	return items[0], nil
 }
 
-// scanCommunityRules returns an httperr.Error if no rules are found.
-func scanCommunityRules(db *sql.DB, rows *sql.Rows) ([]*CommunityRule, error) {
+// scanCommunityItems returns an httperr.Error if no items are found.
+func scanCommunityItems(db *sql.DB, rows *sql.Rows) ([]*CommunityItem, error) {
 	defer rows.Close()
 
-	var rules []*CommunityRule
+	var items []*CommunityItem
 	var err error
 	for rows.Next() {
-		rule := &CommunityRule{}
-		err = rows.Scan(&rule.ID,
-			&rule.Rule,
-			&rule.Description,
-			&rule.CommunityID,
-			&rule.CreatedBy,
-			&rule.ZIndex,
-			&rule.CreatedAt)
+		item := &CommunityItem{}
+		err = rows.Scan(&item.ID,
+			&item.Item,
+			&item.Description,
+			&item.CommunityID,
+			&item.CreatedBy,
+			&item.ZIndex,
+			&item.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
-		rules = append(rules, rule)
+		items = append(items, item)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	if len(rules) == 0 {
-		return nil, httperr.NewNotFound("rules-not-found", "Community rules not found.")
+	if len(items) == 0 {
+		return nil, httperr.NewNotFound("items-not-found", "Community items not found.")
 	}
-	return rules, nil
+	return items, nil
 }
 
-// Update updates the rule's rule, description, and ZIndex.
-func (r *CommunityRule) Update(ctx context.Context, db *sql.DB, mod uid.ID) error {
-	if is, err := UserModOrAdmin(ctx, db, r.CommunityID, mod); err != nil {
+// Update updates the item's item, description, and ZIndex.
+func (i *CommunityItem) Update(ctx context.Context, db *sql.DB, mod uid.ID) error {
+	if is, err := UserModOrAdmin(ctx, db, i.CommunityID, mod); err != nil {
 		return err
 	} else if !is {
 		return errNotMod
 	}
-	_, err := db.ExecContext(ctx, "UPDATE community_rules SET rule = ?, description = ?, z_index = ? WHERE id = ?", r.Rule, r.Description, r.ZIndex, r.ID)
+	_, err := db.ExecContext(ctx, "UPDATE community_items SET item = ?, description = ?, z_index = ? WHERE id = ?", i.Item, i.Description, i.ZIndex, i.ID)
 	return err
 }
 
-func (r *CommunityRule) Delete(ctx context.Context, db *sql.DB, mod uid.ID) error {
-	if is, err := UserModOrAdmin(ctx, db, r.CommunityID, mod); err != nil {
+func (i *CommunityItem) Delete(ctx context.Context, db *sql.DB, mod uid.ID) error {
+	if is, err := UserModOrAdmin(ctx, db, i.CommunityID, mod); err != nil {
 		return err
 	} else if !is {
 		return errNotMod
 	}
-	_, err := db.ExecContext(ctx, "DELETE FROM community_rules WHERE id = ?", r.ID)
+	_, err := db.ExecContext(ctx, "DELETE FROM community_items WHERE id = ?", i.ID)
 	return err
 }
 

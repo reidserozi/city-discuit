@@ -170,6 +170,8 @@ type Post struct {
 	Longitude msql.NullFloat64 `json:"longitude"`
 	LocationName msql.NullString `json:"locationName"`
 
+	ItemID msql.NullInt32 `json:"itemId"`
+
 	Community *Community `json:"community,omitempty"`
 	Author    *User      `json:"author,omitempty"`
 }
@@ -212,6 +214,7 @@ var selectPostCols = []string{
 	"posts.latitude",
 	"posts.longitude",
 	"posts.location_name",
+	"posts.item_id",
 }
 
 var selectPostJoins = []string{
@@ -358,6 +361,7 @@ func scanPosts(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 			&post.Latitude,
 			&post.Longitude,
 			&post.LocationName,
+			&post.ItemID,
 		}
 
 		linkImage := &images.Image{}
@@ -664,6 +668,9 @@ type createPostOpts struct {
 	latitude  *float64
 	longitude *float64
 	locationName string
+
+	// Optional item:
+	itemID uint
 }
 
 func createPost(ctx context.Context, db *sql.DB, opts *createPostOpts) (*Post, error) {
@@ -721,6 +728,9 @@ func createPost(ctx context.Context, db *sql.DB, opts *createPostOpts) (*Post, e
 	}
 	if opts.locationName != "" {
 		cols = append(cols, msql.ColumnValue{Name: "location_name", Value: opts.locationName})
+	}
+	if opts.itemID != 0 {
+		cols = append(cols, msql.ColumnValue{Name: "item_id", Value: opts.itemID})
 	}
 
 	if opts.postType == PostTypeLink {
@@ -818,7 +828,7 @@ func createPost(ctx context.Context, db *sql.DB, opts *createPostOpts) (*Post, e
 	return GetPost(ctx, db, &post.ID, "", nil, false)
 }
 
-func CreateTextPost(ctx context.Context, db *sql.DB, author, community uid.ID, title string, body string, latitude *float64, longitude *float64, locationName string) (*Post, error) {
+func CreateTextPost(ctx context.Context, db *sql.DB, author, community uid.ID, title string, body string, latitude *float64, longitude *float64, locationName string, itemID uint) (*Post, error) {
 	return createPost(ctx, db, &createPostOpts{
 		postType:     PostTypeText,
 		author:       author,
@@ -828,10 +838,11 @@ func CreateTextPost(ctx context.Context, db *sql.DB, author, community uid.ID, t
 		latitude:     latitude,
 		longitude:    longitude,
 		locationName: locationName,
+		itemID:       itemID,
 	})
 }
 
-func CreateImagePost(ctx context.Context, db *sql.DB, author, community uid.ID, title string, imgs []*ImageUpload, latitude *float64, longitude *float64, locationName string) (*Post, error) {
+func CreateImagePost(ctx context.Context, db *sql.DB, author, community uid.ID, title string, imgs []*ImageUpload, latitude *float64, longitude *float64, locationName string, itemID uint) (*Post, error) {
 	// We don't check whether the image belongs to the person who uploaded it.
 	// This is not a big deal as image ids are hard to guess.
 
@@ -856,6 +867,7 @@ func CreateImagePost(ctx context.Context, db *sql.DB, author, community uid.ID, 
 		latitude:     latitude,
 		longitude:    longitude,
 		locationName: locationName,
+		itemID:       itemID,
 	})
 }
 
@@ -913,7 +925,7 @@ func getLinkPostImage(u *url.URL) []byte {
 	return nil
 }
 
-func CreateLinkPost(ctx context.Context, db *sql.DB, author, community uid.ID, title string, link string, latitude *float64, longitude *float64, locationName string) (*Post, error) {
+func CreateLinkPost(ctx context.Context, db *sql.DB, author, community uid.ID, title string, link string, latitude *float64, longitude *float64, locationName string, itemID uint) (*Post, error) {
 	errInvalidURL := httperr.NewBadRequest("invalid-url", "Invalid URL.")
 	if len(link) > maxPostLinkLength {
 		link = link[:maxPostLinkLength]
@@ -939,6 +951,7 @@ func CreateLinkPost(ctx context.Context, db *sql.DB, author, community uid.ID, t
 		latitude:     latitude,
 		longitude:    longitude,
 		locationName: locationName,
+		itemID:       itemID,
 		link: postLink{
 			Version:  1,
 			URL:      u.String(),
