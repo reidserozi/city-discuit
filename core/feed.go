@@ -377,7 +377,7 @@ func getPostsLatest(ctx context.Context, db *sql.DB, opts *FeedOptions) (*FeedRe
 			return nil, err
 		}
 	case FeedTypeCommunity:
-		where += "AND community_id = ? "
+		where += "AND posts.community_id = ? "
 		args = append(args, *opts.Community)
 	}
 	if loggedIn && opts.Feed != FeedTypeModerating {
@@ -480,7 +480,7 @@ func whereMutedAndHidden(where, postsTable string, args []any, viewer uid.ID, mu
 		where += "AND "
 	}
 	if muteCommunities {
-		where += "community_id NOT IN (SELECT community_id FROM muted_communities WHERE user_id = ?) AND "
+		where += "posts.community_id NOT IN (SELECT community_id FROM muted_communities WHERE user_id = ?) AND "
 		args = append(args, viewer)
 	}
 	where += postsTable + ".user_id NOT IN (SELECT muted_user_id FROM muted_users WHERE user_id = ?) "
@@ -521,7 +521,7 @@ func getPostsHot(ctx context.Context, db *sql.DB, opts *FeedOptions) (*FeedResul
 			return nil, err
 		}
 	case FeedTypeCommunity:
-		where += "AND community_id = ? "
+		where += "AND posts.community_id = ? "
 		args = append(args, *opts.Community)
 
 	}
@@ -586,7 +586,7 @@ func getPostsTopAll(ctx context.Context, db *sql.DB, opts *FeedOptions) (*FeedRe
 			return nil, err
 		}
 	case FeedTypeCommunity:
-		where += "AND community_id = ? "
+		where += "AND posts.community_id = ? "
 		args = append(args, *opts.Community)
 
 	}
@@ -651,7 +651,7 @@ func getPostsTop(ctx context.Context, db *sql.DB, opts *FeedOptions) (*FeedResul
 			return nil, err
 		}
 	case FeedTypeCommunity:
-		where += "AND community_id = ? "
+		where += "AND posts.community_id = ? "
 		args = append(args, *opts.Community)
 
 	}
@@ -729,7 +729,7 @@ func getPostsActivity(ctx context.Context, db *sql.DB, opts *FeedOptions) (*Feed
 			return nil, err
 		}
 	case FeedTypeCommunity:
-		where += "AND community_id = ? "
+		where += "AND posts.community_id = ? "
 		args = append(args, *opts.Community)
 
 	}
@@ -800,7 +800,7 @@ func GetPostsDeleted(ctx context.Context, db *sql.DB, community uid.ID, limit, p
 		return 0, nil, err
 	}
 
-	query := buildSelectPostQuery(false, "WHERE community_id = ? AND posts.deleted = TRUE ORDER BY communities.id DESC LIMIT ? OFFSET ?")
+	query := buildSelectPostQuery(false, "WHERE posts.community_id = ? AND posts.deleted = TRUE ORDER BY communities.id DESC LIMIT ? OFFSET ?")
 	rows, err := db.QueryContext(ctx, query, community, limit, limit*(page-1))
 	if err != nil {
 		return 0, nil, err
@@ -822,7 +822,7 @@ func GetPostsLocked(ctx context.Context, db *sql.DB, community uid.ID, limit, pa
 		return 0, nil, err
 	}
 
-	query := buildSelectPostQuery(false, "WHERE community_id = ? AND posts.deleted = FALSE AND locked = TRUE ORDER BY communities.id DESC LIMIT ? OFFSET ?")
+	query := buildSelectPostQuery(false, "WHERE posts.community_id = ? AND posts.deleted = FALSE AND locked = TRUE ORDER BY communities.id DESC LIMIT ? OFFSET ?")
 	rows, err := db.QueryContext(ctx, query, community, limit, limit*(page-1))
 	if err != nil {
 		return 0, nil, err
