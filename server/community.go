@@ -146,7 +146,7 @@ func (s *Server) getCommunity(w *responseWriter, r *request) error {
 	if err = comm.PopulateMods(r.ctx, s.db); err != nil {
 		return err
 	}
-	if err = comm.FetchRules(r.ctx, s.db); err != nil {
+	if err = comm.FetchItems(r.ctx, s.db); err != nil {
 		return err
 	}
 	if _, err = comm.Default(r.ctx, s.db); err != nil {
@@ -187,7 +187,7 @@ func (s *Server) updateCommunity(w *responseWriter, r *request) error {
 	if err = comm.PopulateMods(r.ctx, s.db); err != nil {
 		return err
 	}
-	if err = comm.FetchRules(r.ctx, s.db); err != nil {
+	if err = comm.FetchItems(r.ctx, s.db); err != nil {
 		return err
 	}
 

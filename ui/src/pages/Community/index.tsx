@@ -41,7 +41,7 @@ const Community = () => {
   const dispatch = useDispatch();
 
   const community = useSelector(selectCommunity(name));
-  const loading = !(community && Array.isArray(community.mods) && Array.isArray(community.rules));
+  const loading = !(community && Array.isArray(community.mods) && Array.isArray(community.items));
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     if (!loading) return;
