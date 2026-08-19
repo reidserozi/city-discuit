@@ -252,6 +252,29 @@ If you're adding new UI, reuse an existing token rather than introducing a new
 hardcoded color or spacing value. Check `_base.scss` first — if a token for
 what you need doesn't exist, add it there and use it everywhere.
 
+## Bringing this to your city
+
+Edit Raleigh is built on an open-source platform and available under the GNU Affero
+General Public License — meaning civic leaders in other cities can take the code, run
+it themselves, and adapt it to fit their own communities.
+
+The core insight behind Edit Raleigh applies everywhere: **there is a gap between
+the official notice and the thing that gets built, and that gap is where a city is
+actually decided.** In most places, like Raleigh, that gap is navigable only by
+showing up angriest at a podium or affording a consultant. But it doesn't have to be.
+
+Here's what this platform offers to any city willing to run it:
+
+- **A third option**: between three minutes at a microphone and shouting into a social feed. A place where civic thinking is public, specific, and on the record *before* the vote happens.
+- **Subject-organized communities**: not neighborhood silos that fragment the picture, but topic-based (zoning, transit, parks, budget) so that the person working on an issue lives where it matters — and sometimes four miles away from you, with a different view entirely. Those conversations need to happen together.
+- **Geography that grounds the argument**: every proposal pinned to a real place so people can see it on a map, walk to it, photograph what's there, and come back Monday with something that actually changes the thinking. The most valuable contribution anyone ever makes to a civic conversation is having actually gone and looked.
+- **A permanent record**: searchable, linkable, citable. A thread from two years ago becomes evidence you can paste into public comment. Institutional memory that doesn't vanish in a week.
+- **No algorithm tuning the feed**: volunteers running open-source code on a small server, not a business extracting value from outrage. That changes what's possible.
+
+If your city is ready to build this — if you have residents who want a place to research, sharpen, and propose civic ideas *before* they reach the city council — you have everything you need here. Fork the code. Adapt the neighborhoods to your wards. Rename the communities to match what your city is actually deciding. Run it on your own server. The only cost is volunteer time and the will to try.
+
+The infrastructure is tested. The design is there. The hard part — getting a critical mass of residents to show up and think carefully about their city — that part is on you. But that's the part that matters.
+
 ## Contributing
 
 Edit Raleigh is free and open-source software, and volunteers are welcome to
