@@ -76,6 +76,9 @@ const PostCardHeadingDetails = ({
     <div className="post-card-heading-details">
       <div className="left">
         <CommunityLink name={post.communityName} proPic={post.communityProPic} />
+        {post.itemName && (
+          <span className="post-card-heading-item">{post.itemName}</span>
+        )}
         <div className="post-card-heading-by">
           <span>{compact ? null : 'Posted by '}</span>
           <UserLink

@@ -147,6 +147,8 @@ export interface Post {
   latitude?: number | null;
   longitude?: number | null;
   locationName?: string | null;
+  itemId?: number | null;
+  itemName?: string | null;
   noComments: number;
   comments?: Comment[] | null;
   commentsNext?: string | null;

@@ -170,7 +170,8 @@ type Post struct {
 	Longitude msql.NullFloat64 `json:"longitude"`
 	LocationName msql.NullString `json:"locationName"`
 
-	ItemID msql.NullInt32 `json:"itemId"`
+	ItemID   msql.NullInt32 `json:"itemId"`
+	ItemName msql.NullString `json:"itemName"`
 
 	Community *Community `json:"community,omitempty"`
 	Author    *User      `json:"author,omitempty"`
@@ -215,11 +216,13 @@ var selectPostCols = []string{
 	"posts.longitude",
 	"posts.location_name",
 	"posts.item_id",
+	"community_items.item",
 }
 
 var selectPostJoins = []string{
 	"STRAIGHT_JOIN communities ON posts.community_id = communities.id",
 	"INNER JOIN users ON posts.user_id = users.id",
+	"LEFT JOIN community_items ON community_items.id = posts.item_id",
 }
 
 func init() {
@@ -362,6 +365,7 @@ func scanPosts(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 			&post.Longitude,
 			&post.LocationName,
 			&post.ItemID,
+			&post.ItemName,
 		}
 
 		linkImage := &images.Image{}

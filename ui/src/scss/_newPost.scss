@@ -45,7 +45,7 @@
                 margin-right: 0;
             }
         }
-        .card-rules {
+        .card-items {
             align-self: flex-start;
             @include mixins.mobile() {
                 margin-top: var(--gap);

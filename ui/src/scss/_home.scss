@@ -531,6 +531,14 @@ a {
             color: var(--color-brand);
             font-weight: 600;
         }
+        .post-card-heading-item {
+            background-color: var(--color-border);
+            color: var(--color-text-light);
+            border-radius: var(--border-radius);
+            padding: 1px 8px;
+            font-size: var(--fs-xs);
+            line-height: 1.6;
+        }
         .dropdown:not(.is-active) {
             .dropdown-target {
                 opacity: 0.7;
