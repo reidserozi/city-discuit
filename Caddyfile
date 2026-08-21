@@ -1,0 +1,7 @@
+www.editraleigh.com {
+    redir https://editraleigh.com{uri}
+}
+
+editraleigh.com {
+    reverse_proxy discuit:80
+}

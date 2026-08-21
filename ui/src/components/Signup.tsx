@@ -127,7 +127,7 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
           neighborhoodCode,
           displayName,
           captchaToken,
-          termsAccepted: termsAgreed,
+          termsAccepted: termsAgreed ? 'true' : 'false',
           termsVersion,
         }),
       });

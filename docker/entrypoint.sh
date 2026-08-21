@@ -13,9 +13,9 @@ service redis-server start
 echo "Creating the discuit database if it doesn't already exist..."
 mysql -e "CREATE DATABASE IF NOT EXISTS discuit;"
 
-# Create a user for the Discuit server
+# Create a user for the Discuit server (use env variable for password)
 echo "Creating the discuit user..."
-mysql -e "CREATE USER IF NOT EXISTS 'discuit'@'127.0.0.1' IDENTIFIED BY 'discuit';"
+mysql -e "CREATE USER IF NOT EXISTS 'discuit'@'127.0.0.1' IDENTIFIED BY '$DISCUIT_DB_PASSWORD';"
 mysql -e "GRANT ALL PRIVILEGES ON discuit.* TO 'discuit'@'127.0.0.1';"
 
 # Run migrations

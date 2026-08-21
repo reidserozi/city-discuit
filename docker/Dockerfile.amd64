@@ -21,6 +21,12 @@ RUN go build -ldflags "-s -w" -o discuit .
 # Use official Node image for the frontend build
 FROM node:24 AS frontend-builder
 
+# Install libvips for discuit binary
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libvips-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy required configuration files and build files
 WORKDIR /app
 COPY config.default.yaml .
@@ -32,7 +38,7 @@ WORKDIR /app/ui
 COPY ui/package*.json ./
 RUN npm ci
 COPY ui/ .
-RUN npm run build 
+RUN npm run build
 
 # Final stage: setup the runtime environment
 FROM node:24

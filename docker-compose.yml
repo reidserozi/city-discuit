@@ -4,11 +4,11 @@ services:
   discuit:
     build:
       context: .
-      dockerfile: docker/Dockerfile.arm64
+      dockerfile: docker/Dockerfile.amd64
     image: edit-raleigh:latest
     restart: unless-stopped
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
     environment:
       DISCUIT_ADDR: ":80"
       DISCUIT_SITE_NAME: "Edit Raleigh"
@@ -20,8 +20,24 @@ services:
       - discuit-db:/var/lib/mysql
       - discuit-redis:/var/lib/redis
       - discuit-images:/app/images
+    env_file: .env
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /app/Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - discuit
 
 volumes:
   discuit-db:
   discuit-redis:
   discuit-images:
+  caddy-data:
+  caddy-config:
