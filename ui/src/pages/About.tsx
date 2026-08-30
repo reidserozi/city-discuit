@@ -16,7 +16,7 @@ const About = () => {
         />
 
         <p>
-          That gap — between the sign and what gets built — is where a city is actually decided. None of it's secret; the agendas are posted, the maps are public. But knowing isn't the same as having somewhere to <em>do</em> something with what you know. We've mostly had two options: three minutes at a podium on a Tuesday night, or a feed where a broken streetlight becomes a fight about who belongs here.
+          That gap — between the sign and what gets built — is where a city is actually decided. None of it's secret; the agendas are posted, the maps are public. But knowing isn't the same as having somewhere to <em>do</em> something with what you know. We've mostly had two options: three minutes at a podium on a Tuesday night, or a feed where a broken streetlight gets lost in noise about who belongs here.
         </p>
 
         <p>Edit Raleigh is a third option: one place to research, propose, and sharpen civic ideas, organized by topic, grounded in real locations, built so the results are useful to the people who actually decide.</p>
@@ -27,7 +27,7 @@ const About = () => {
 
         <h2>Organized by topic, not neighborhood</h2>
 
-        <p>Your neighborhood already has a Facebook group; we're not trying to replace it. But sorting people by geography produces neighborhood-sized thinking — a hundred silos, each convinced its own block is the whole picture. Stormwater doesn't respect a subdivision line, and neither does a bus route or a budget. So Edit Raleigh is organized by subject — zoning, transit, parks, the budget — where the person working beside you on an issue lives four miles away with an entirely different view out the window. You still post as someone from a specific part of Raleigh. You just don't argue from inside a silo.</p>
+        <p>Your neighborhood already has a Facebook group; we're not trying to replace it. But sorting people by geography produces neighborhood-sized thinking — a hundred silos, each convinced its own block is the whole picture. Stormwater doesn't respect a subdivision line, and neither does a bus route or a budget. So Edit Raleigh is organized by subject — zoning, transit, parks, the budget — where the person working beside you on an issue lives four miles away with an entirely different view out the window. You still post as someone from a specific part of Raleigh. You just don't collaborate from inside a silo.</p>
 
         <h2>A proposal, never a verdict</h2>
 
