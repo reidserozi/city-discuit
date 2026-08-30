@@ -10,9 +10,8 @@ const About = () => {
           There's an official city sign — a white placard staked into the ground — on a street you drive every day. Case number, phone number, date. Eighteen months later, something is standing there.
         </p>
 
-        {/* TODO: replace with an actual photo of a City of Raleigh zoning case sign */}
         <img
-          src="/images/zoning-sign.jpg"
+          src="/zoning-sign.jpg"
           alt="A City of Raleigh zoning case sign staked into the ground on a street"
         />
 
