@@ -35,13 +35,13 @@ const About = () => {
 
         <h2>Closed nights and Sundays</h2>
 
-        <p>Every night at ten, the site goes quiet. It doesn't open on Sundays. Good ideas rarely show up at 1 a.m. — that's a product working exactly as designed, somewhere else. We'd rather you sleep, and we'd rather Sunday be for going outside and actually looking at the thing you're arguing about.</p>
+        <p>Every night at midnight, the site goes quiet. It doesn't open on Sundays. Good discourse rarely shows up at 1 a.m. — that's a product working exactly as designed, somewhere else. We'd rather you sleep, and we'd rather Sunday be for going outside and actually looking at the thing you're arguing about.</p>
 
         <h2>No business model</h2>
 
         <p>Nobody makes money here — no ads, no investors, nothing to sell. That's leverage: we can afford to admit when something's not working, and if this ever becomes the outrage machine we built it to avoid, we'll close it. Not throttle it. Close it.</p>
 
-        <p>Go edit your city. We open at six, close at ten, and on Sunday, go explore Raleigh.</p>
+        <p>Go edit your city. We open at six, close at midnight, and on Sunday, go explore Raleigh.</p>
 
         <p style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.8, marginTop: '3rem' }}>
           Edit Raleigh is an independent, volunteer-run civic platform for Raleigh, North Carolina. It is not affiliated with the City of Raleigh or Wake County. Built on{' '}

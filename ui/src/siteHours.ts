@@ -31,7 +31,7 @@ function getWeekdayAndHour(now: Date): { weekday: string; hour: number } {
   return { weekday, hour };
 }
 
-// Open Monday-Saturday, 6:00 AM - 10:00 PM Raleigh time. Closed all day Sunday.
+// Open Monday-Saturday, 6:00 AM - Midnight Raleigh time. Closed all day Sunday.
 export function getSiteStatus(now: Date = getEffectiveNow()): SiteStatus {
   const { weekday, hour } = getWeekdayAndHour(now);
 
@@ -39,15 +39,15 @@ export function getSiteStatus(now: Date = getEffectiveNow()): SiteStatus {
     return { closed: true, reason: 'sunday' };
   }
 
-  if (hour < 6 || hour >= 22) {
+  if (hour < 6) {
     return { closed: true, reason: 'night' };
   }
 
   return { closed: false, reason: null };
 }
 
-// Digest window: Saturday 10 PM through Sunday 11:59 PM (to encourage weekend exploration)
+// Digest window: all day Sunday (to encourage weekend exploration)
 export function isDigestWindow(now: Date = getEffectiveNow()): boolean {
-  const { weekday, hour } = getWeekdayAndHour(now);
-  return (weekday === 'Sat' && hour >= 22) || weekday === 'Sun';
+  const { weekday } = getWeekdayAndHour(now);
+  return weekday === 'Sun';
 }

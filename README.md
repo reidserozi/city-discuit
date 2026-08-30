@@ -30,7 +30,7 @@ Discuit's core forum functionality:
   latitude/longitude and location name, and viewed on an aggregate map
   (`ui/src/pages/Map.tsx`, `ui/src/components/MapDisplay.tsx`,
   `ui/src/components/MapPicker.tsx`).
-- **Site hours**: the site closes overnight (10 PM–6 AM) and all day Sunday,
+- **Site hours**: the site closes overnight (midnight–6 AM) and all day Sunday,
   showing a "site closed" page with a weekend digest of open proposals near
   you instead (`ui/src/siteHours.ts`, `ui/src/pages/SiteClosed.tsx`).
 - **Email required and verified**: an email address is required at signup,

@@ -65,7 +65,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
         <div className="page-site-closed-emoji">{emoji}</div>
         <h1>{heading}</h1>
         <p>{body}</p>
-        <div className="page-site-closed-hours">Open Monday-Saturday, 6:00 AM - 10:00 PM</div>
+        <div className="page-site-closed-hours">Open Monday-Saturday, 6:00 AM - Midnight</div>
       </div>
 
       {showDigest && !loading && posts.length > 0 && (
