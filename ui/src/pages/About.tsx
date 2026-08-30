@@ -35,7 +35,7 @@ const About = () => {
 
         <h2>Closed nights and Sundays</h2>
 
-        <p>Every night at midnight, the site goes quiet. It doesn't open on Sundays. Good discourse rarely shows up at 1 a.m. — that's a product working exactly as designed, somewhere else. We'd rather you sleep, and we'd rather Sunday be for going outside and actually looking at the thing you're arguing about.</p>
+        <p>Every night at midnight, the site goes quiet. It doesn't open on Sundays. Good discourse rarely shows up at 1 a.m. — that's a product working exactly as designed, somewhere else. We'd rather you sleep, and we'd rather Sunday be for going outside and actually looking at the thing you're proposing.</p>
 
         <h2>No business model</h2>
 
