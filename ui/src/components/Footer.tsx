@@ -77,6 +77,16 @@ const Footer = () => {
               <Link to="/neighborhoods">Add your neighborhood</Link>
             </li>
             <li>
+              <a
+                href="https://ko-fi.com/editraleigh"
+                target="_blank"
+                rel="noopener"
+                className="footer__link-accent"
+              >
+                Fuel the civic engine ☕
+              </a>
+            </li>
+            <li>
               <a href="https://x.com/RaleighWiki" target="_blank" rel="noopener">
                 Contact
               </a>
