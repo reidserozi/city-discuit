@@ -16,7 +16,7 @@ const About = () => {
         />
 
         <p>
-          That gap — between the sign and what gets built — is where a city is actually decided. None of it's secret; the agendas are posted, the maps are public. But knowing isn't the same as having somewhere to <em>do</em> something with what you know. We've mostly had two options: three minutes at a podium on a Tuesday night, or a feed where a broken streetlight gets lost in noise about who belongs here.
+          That gap — between the sign and what gets built — is where a city is actually decided. None of it's secret; the agendas are posted, the maps are public. But knowing isn't the same as having somewhere to <em>do</em> something with what you know. We've mostly had two options: spend three minutes at a podium on a Tuesday night, or attend a community meeting.
         </p>
 
         <p>Edit Raleigh is a third option: one place to research, propose, and sharpen civic ideas, organized by topic, grounded in real locations, built so the results are useful to the people who actually decide.</p>
