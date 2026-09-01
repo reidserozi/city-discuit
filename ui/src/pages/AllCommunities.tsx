@@ -33,9 +33,7 @@ import JoinButton from './Community/JoinButton';
 import { isInfiniteScrollingDisabled } from './Settings/devicePrefs';
 
 const prepareText = () => {
-  return `Edit Raleigh's communities map to what the city is actually deciding — zoning, transit, the budget — not to every subject someone might want a home for. That's deliberate: a community for every idea is just a fragmented feed with more steps.
-
-So before requesting one, check whether your topic already fits somewhere. If it genuinely doesn't — a real, recurring civic subject with nowhere to live — tell us what it is and why it needs its own space. If it holds up, we'll create it and make you its first moderator.`;
+  return `Communities map to real civic subjects — zoning, transit, the budget. Before requesting, check if your topic fits an existing community. If it genuinely doesn't, tell us why it needs its own space. If it holds up, we'll make you its moderator.`;
 };
 
 const AllCommunities = () => {
