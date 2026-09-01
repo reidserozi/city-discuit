@@ -74,6 +74,17 @@ Discuit's core forum functionality:
   structure civic discussion and making it easier for residents to find posts about
   specific subjects (`ui/src/pages/Community/Items.tsx`, `ui/src/pages/NewPost/index.tsx`,
   `core/item.go`, `server/item.go`).
+- **iPhone photo uploads and client-side image compression**: automatic detection and
+  conversion of iPhone HEIC/HEIF photos to JPEG, plus Facebook-style client-side
+  compression that resizes images exceeding 2048px long edge to reduce bandwidth and
+  server load. EXIF orientation is preserved correctly, PNG transparency is maintained
+  on resize, and WEBP/JPEG/HEIC all normalize to JPEG output. Works across all upload
+  paths: posts, user avatars, and community banners. The HEIC conversion library is
+  lazy-loaded only when needed (`ui/src/helper/imageProcessing.ts`, heic2any dependency,
+  edits to `ui/src/pages/NewPost/index.tsx` and `ui/src/components/ImageEditModal.tsx`).
+- **Mobile responsive refinements**: navbar buttons on small screens (iPhone, tablets)
+  now display correctly without text wrapping or overflow, improving usability on
+  mobile devices (`ui/src/scss/_components.scss`).
 
 ## Getting started
 
