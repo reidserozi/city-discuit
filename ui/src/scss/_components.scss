@@ -200,8 +200,20 @@
             display: flex;
             align-items: center;
         }
+        .button-text,
+        .button-main {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
         .button-text {
             font-weight: 400;
+        }
+        @include mixins.mobile() {
+            .button-main {
+                padding-left: var(--gap);
+                padding-right: var(--gap);
+                font-size: 0.95rem;
+            }
         }
     }
     .navbar-profile {
