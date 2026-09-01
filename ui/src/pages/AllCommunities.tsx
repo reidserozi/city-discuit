@@ -32,12 +32,10 @@ import LoginForm from '../views/LoginForm';
 import JoinButton from './Community/JoinButton';
 import { isInfiniteScrollingDisabled } from './Settings/devicePrefs';
 
-const prepareText = (isMobile = false) => {
-  const x = isMobile ? 'by filling out the form below' : 'by clicking on the button below';
-  return `Communities are currently available only on a per request
-    basis. You can request one ${x}, and if you seem
-    reasonable and trustworthy, the requested community will be created and you will
-    be added as a moderator of that community.`;
+const prepareText = () => {
+  return `Edit Raleigh's communities map to what the city is actually deciding — zoning, transit, the budget — not to every subject someone might want a home for. That's deliberate: a community for every idea is just a fragmented feed with more steps.
+
+So before requesting one, check whether your topic already fits somewhere. If it genuinely doesn't — a real, recurring civic subject with nowhere to live — tell us what it is and why it needs its own space. If it holds up, we'll create it and make you its first moderator.`;
 };
 
 const AllCommunities = () => {
@@ -261,7 +259,7 @@ const RequestCommunityButton = ({
             <ButtonClose onClick={handleClose} />
           </div>
           <div className="form modal-card-content flex-column inner-gap-1">
-            <div className="form-field">{isMobile && <p>{prepareText(true)}</p>}</div>
+            <div className="form-field">{isMobile && <p>{prepareText()}</p>}</div>
             <FormField label="Community name" description="Community name cannot be changed.">
               <InputWithCount
                 value={name}
