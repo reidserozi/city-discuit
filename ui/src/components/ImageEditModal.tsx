@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { snackAlert } from '../slices/mainSlice';
+import { processImageForUpload, ImageProcessingError } from '../helper/imageProcessing';
 import { ButtonClose } from './Button';
 import Modal from './Modal';
 
@@ -32,19 +35,33 @@ const ImageEditModal = ({
   isCircular = true,
 }: ImageEditModalProps) => {
   const [altText, setAltText] = useState(initialAltText || '');
-  // const [_file, setFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     setAltText(initialAltText || '');
-    // setFile(null);
   }, [open, initialAltText]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      // setFile(event.target.files[0]);
-      onUpload(event.target.files[0]);
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const inputFile = event.target.files?.[0];
+    if (!inputFile) return;
+    event.target.value = '';
+    setIsProcessing(true);
+    try {
+      const { file } = await processImageForUpload(inputFile);
+      onUpload(file);
+    } catch (error) {
+      dispatch(
+        snackAlert(
+          error instanceof ImageProcessingError
+            ? error.message
+            : `Could not process '${inputFile.name}'.`
+        )
+      );
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -74,16 +91,16 @@ const ImageEditModal = ({
             )}
           </div>
           <div className="image-edit-actions">
-            <button onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-              {uploading ? <>Uploading...</> : 'Upload new'}
+            <button onClick={() => fileInputRef.current?.click()} disabled={uploading || isProcessing}>
+              {isProcessing ? 'Converting…' : uploading ? 'Uploading...' : 'Upload new'}
             </button>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,.heic,.heif"
               style={{ display: 'none' }}
               onChange={handleFileChange}
-              disabled={uploading}
+              disabled={uploading || isProcessing}
             />
             {canDelete && (
               <button onClick={handleDelete} disabled={deleting || !imageUrl}>

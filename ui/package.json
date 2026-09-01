@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "heic2any": "0.0.4",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "pulltorefreshjs": "^0.1.22",

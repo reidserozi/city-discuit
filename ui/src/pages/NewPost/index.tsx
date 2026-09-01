@@ -11,6 +11,7 @@ import PageLoading from '../../components/PageLoading';
 import Spinner from '../../components/Spinner';
 import Textarea from '../../components/Textarea';
 import { APIError, isValidHttpUrl, mfetch, mfetchjson, truncateStringWithDots } from '../../helper';
+import { processImageForUpload, ImageProcessingError } from '../../helper/imageProcessing';
 import { useLoading, useQuery } from '../../hooks';
 import type { Community, Post, Image as ServerImage } from '../../serverTypes';
 import { MainState, snackAlert, snackAlertError } from '../../slices/mainSlice';
@@ -120,6 +121,7 @@ const NewPost = () => {
   }, [editPostId]);
 
   const [isUploading, setIsUploading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const abortController = useRef(new AbortController());
   const handleImagesUpload = async (files?: FileList | null) => {
     if (isUploading || !files) {
@@ -134,9 +136,27 @@ const NewPost = () => {
     }
     setIsUploading(true);
     for (const file of files) {
+      let uploadFile: File;
+      try {
+        setIsProcessing(true);
+        ({ file: uploadFile } = await processImageForUpload(file));
+      } catch (error) {
+        dispatch(
+          snackAlert(
+            error instanceof ImageProcessingError
+              ? error.message
+              : `Could not process '${truncateStringWithDots(file.name, 20)}'.`
+          )
+        );
+        setIsProcessing(false);
+        setIsUploading(false);
+        break;
+      }
+      setIsProcessing(false);
+
       try {
         const data = new FormData();
-        data.append('image', file);
+        data.append('image', uploadFile);
         const res = await mfetch('/api/_uploads', {
           signal: abortController.current.signal,
           method: 'POST',
@@ -628,6 +648,7 @@ const NewPost = () => {
                 {!isEditPost && !(post && post.deletedContent) && (
                   <ImageUploadArea
                     isUploading={isUploading}
+                    isProcessing={isProcessing}
                     onImagesUpload={handleImagesUpload}
                     disabled={!imageSubmitAllowed || images.length >= maxNumOfImages}
                     disabledMessage={
@@ -730,11 +751,13 @@ export default NewPost;
 
 const ImageUploadArea = ({
   isUploading,
+  isProcessing,
   onImagesUpload,
   disabled = false,
   disabledMessage = 'Maximum number of images reached.',
 }: {
   isUploading: boolean;
+  isProcessing: boolean;
   onImagesUpload: (files?: FileList | null) => void;
   disabled?: boolean;
   disabledMessage?: string;
@@ -809,6 +832,7 @@ const ImageUploadArea = ({
               ref={fileInputRef}
               type="file"
               multiple
+              accept="image/*,.heic,.heif"
               name="image"
               style={{ visibility: 'hidden', width: 0, height: 0 }}
               onChange={handleFileChange}
@@ -821,7 +845,7 @@ const ImageUploadArea = ({
         {disabled && <div>{disabledMessage}</div>}
         {isUploading && (
           <div className="flex flex-center page-new-image-uploading">
-            <div className="page-new-uploading-text">Uploading image</div>
+            <div className="page-new-uploading-text">{isProcessing ? 'Processing image…' : 'Uploading image'}</div>
             <Spinner style={{ marginLeft: 5 }} size={25} />
           </div>
         )}
