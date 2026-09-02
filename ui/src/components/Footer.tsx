@@ -45,7 +45,7 @@ const Footer = () => {
           <ul className="footer__links">
             {topCommunities.map((community) => (
               <li key={community.id}>
-                <Link to={`/c/${community.name}`}>{community.name}</Link>
+                <Link to={`/${community.name}`}>{community.name}</Link>
               </li>
             ))}
             <li>
