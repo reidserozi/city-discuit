@@ -559,3 +559,23 @@ func (pg *Program) AddAllUsersToCommunity(community string) error {
 	log.Printf("All users added to %s\n", community)
 	return nil
 }
+
+func (pg *Program) SendDigestNow(username string) error {
+	var emailSvc *email.Service
+	// Only create email service if SMTP is configured
+	if pg.conf.SMTPHost != "" && pg.conf.SMTPPort != 0 {
+		emailSvc = email.New(
+			pg.conf.SMTPHost,
+			pg.conf.SMTPPort,
+			pg.conf.SMTPUser,
+			pg.conf.SMTPPassword,
+			pg.conf.SMTPFromEmail,
+			pg.conf.SMTPFromName,
+		)
+	}
+
+	if err := core.SendDigestTest(pg.ctx, pg.db, pg.conf.HMACSecret, emailSvc, pg.conf.SiteName, username); err != nil {
+		return fmt.Errorf("failed to send digest to %s: %w", username, err)
+	}
+	return nil
+}

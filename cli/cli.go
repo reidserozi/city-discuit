@@ -39,6 +39,7 @@ func RunCLI() {
 			CommandDeleteUnusedCommunities,
 			CommandNewBadge,
 			CommandDeleteUser,
+			CommandSendDigest,
 			CommandInjectConfig,
 			CommandImagePath,
 		},
@@ -274,6 +275,27 @@ var CommandDeleteUser = &cli.Command{
 		}
 
 		return pg.DeleteUser(ctx.String("user"), ctx.Bool("purge"))
+	},
+}
+
+var CommandSendDigest = &cli.Command{
+	Name:  "send-digest",
+	Usage: "Send a digest email to a user (for testing)",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "user",
+			Usage:    "Username",
+			Required: true,
+		},
+	},
+	Action: func(ctx *cli.Context) error {
+		pg, err := program.NewProgram(true)
+		if err != nil {
+			return err
+		}
+		defer pg.Close()
+
+		return pg.SendDigestNow(ctx.String("user"))
 	},
 }
 

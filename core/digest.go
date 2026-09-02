@@ -6,6 +6,8 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"log"
 	"time"
 
@@ -110,6 +112,54 @@ func GetJoinedCommunityActivitySinceForUser(ctx context.Context, db *sql.DB, use
 	return comments, rows.Err()
 }
 
+// sendDigestToUser sends a digest email to a single user. Used by both scheduled and manual sends.
+func sendDigestToUser(ctx context.Context, db *sql.DB, hmacSecret string, emailService *email.Service, siteName string, userID uid.ID, emailAddr string) (username string, err error) {
+	user, err := GetUser(ctx, db, userID, nil)
+	if err != nil {
+		return "", err
+	}
+
+	// Get digest content
+	now := time.Now()
+	since := now.Add(-time.Hour * 24 * 7) // Last 7 days
+	topPosts, _ := GetDigestPosts(ctx, db, 5)
+	repliesSince, _ := GetRepliesSinceForUser(ctx, db, userID, since, 10)
+	activitySince, _ := GetJoinedCommunityActivitySinceForUser(ctx, db, userID, since, 10)
+
+	unsubscribeToken := GenerateDigestUnsubscribeToken(userID, hmacSecret)
+	unsubscribeURL := emailSiteURL + "/api/digest_unsubscribe?token=" + unsubscribeToken + "&user=" + userID.String()
+
+	// Build digest email data
+	digestData := email.DigestEmailData{
+		Username:          user.Username,
+		SiteName:          siteName,
+		TopPostsCount:     len(topPosts),
+		RepliesSinceCount: len(repliesSince),
+		CommunityActivity: len(activitySince),
+		UnsubscribeURL:    unsubscribeURL,
+	}
+
+	// Render email templates
+	htmlBody, err := email.RenderDigestEmailHTML(digestData)
+	if err != nil {
+		return "", err
+	}
+
+	textBody := email.RenderDigestEmailText(digestData)
+
+	// Send email if service is available, otherwise just log
+	if emailService != nil {
+		if err := emailService.SendMultipart(emailAddr, "Your Weekly Digest - "+siteName, htmlBody, textBody); err != nil {
+			return "", err
+		}
+	} else {
+		log.Printf("[DRY RUN] Would send digest to %s (%s): %d posts, %d replies, %d activity\n",
+			user.Username, emailAddr, len(topPosts), len(repliesSince), len(activitySince))
+	}
+
+	return user.Username, nil
+}
+
 // SendWeeklyDigest sends digest emails to users who have opted in.
 // It runs on Saturday evenings and respects the double-send prevention using application_data.
 // If emailService is nil, the function logs intended sends without actually emailing.
@@ -148,7 +198,6 @@ func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string, emailS
 	defer rows.Close()
 
 	// Send digest to each user
-	since := now.Add(-time.Hour * 24 * 7) // Last 7 days
 	successCount := 0
 	failCount := 0
 
@@ -166,51 +215,11 @@ func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string, emailS
 			continue
 		}
 
-		user, err := GetUser(ctx, db, userID, nil)
+		_, err := sendDigestToUser(ctx, db, hmacSecret, emailService, siteName, userID, emailAddr.String)
 		if err != nil {
-			log.Printf("Error fetching user %s: %v\n", userID, err)
+			log.Printf("Error sending digest to user %s: %v\n", userID, err)
 			failCount++
 			continue
-		}
-
-		// Get digest content
-		topPosts, _ := GetDigestPosts(ctx, db, 5)
-		repliesSince, _ := GetRepliesSinceForUser(ctx, db, userID, since, 10)
-		activitySince, _ := GetJoinedCommunityActivitySinceForUser(ctx, db, userID, since, 10)
-
-		unsubscribeToken := GenerateDigestUnsubscribeToken(userID, hmacSecret)
-		unsubscribeURL := "https://example.com/api/digest_unsubscribe?token=" + unsubscribeToken + "&user=" + userID.String()
-
-		// Build digest email data
-		digestData := email.DigestEmailData{
-			Username:          user.Username,
-			SiteName:          siteName,
-			TopPostsCount:     len(topPosts),
-			RepliesSinceCount: len(repliesSince),
-			CommunityActivity: len(activitySince),
-			UnsubscribeURL:    unsubscribeURL,
-		}
-
-		// Render email templates
-		htmlBody, err := email.RenderDigestEmailHTML(digestData)
-		if err != nil {
-			log.Printf("Error rendering HTML for %s: %v\n", user.Username, err)
-			failCount++
-			continue
-		}
-
-		textBody := email.RenderDigestEmailText(digestData)
-
-		// Send email if service is available, otherwise just log
-		if emailService != nil {
-			if err := emailService.SendMultipart(emailAddr.String, "Your Weekly Digest - "+siteName, htmlBody, textBody); err != nil {
-				log.Printf("Error sending digest to %s: %v\n", user.Username, err)
-				failCount++
-				continue
-			}
-		} else {
-			log.Printf("[DRY RUN] Would send digest to %s (%s): %d posts, %d replies, %d activity\n",
-				user.Username, emailAddr.String, len(topPosts), len(repliesSince), len(activitySince))
 		}
 
 		successCount++
@@ -235,9 +244,61 @@ func GenerateDigestUnsubscribeToken(userID uid.ID, secret string) string {
 
 // updateDigestLastSent updates the last digest send time in application_data.
 func updateDigestLastSent(ctx context.Context, db *sql.DB, now time.Time) error {
-	// This uses the same application_data pattern as VAPID keys
-	// Implementation will be similar to saveVAPIDKeys
-	// For now, this is a placeholder that gets the pattern established
+	// Fetch current VAPID keys, update DigestLastSent, and write back
+	keys, err := GetApplicationVAPIDKeys(ctx, db)
+	if err != nil {
+		return err
+	}
+
+	keys.DigestLastSent = &now
+	data, err := json.Marshal(keys)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.ExecContext(ctx, "UPDATE application_data SET `value` = ? WHERE `key` = ?", string(data), vapidKeysDBKey)
+	if err != nil {
+		return err
+	}
+
 	log.Printf("Updated digest_last_sent to %v\n", now)
+	return nil
+}
+
+// SendDigestTest sends a digest email to a specific user immediately for testing.
+// Unlike SendWeeklyDigest, this does not check the time of day or cooldown window.
+// Call this only from manual CLI commands or testing code.
+func SendDigestTest(ctx context.Context, db *sql.DB, hmacSecret string, emailService *email.Service, siteName, username string) error {
+	if emailService == nil {
+		return errors.New("email service is not configured")
+	}
+
+	// Look up user by username
+	user, err := GetUserByUsername(ctx, db, username, nil)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	// Check that user has opted in and has a verified email
+	if !user.DigestEmailOn {
+		return errors.New("digest email is not enabled for this user")
+	}
+	if !user.EmailConfirmedAt.Valid {
+		return errors.New("user email is not verified")
+	}
+	if !user.Email.Valid || user.Email.String == "" {
+		return errors.New("user has no email address")
+	}
+
+	// Send the digest
+	_, err = sendDigestToUser(ctx, db, hmacSecret, emailService, siteName, user.ID, user.Email.String)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Digest email sent successfully to %s (%s)\n", user.Username, user.Email.String)
 	return nil
 }
