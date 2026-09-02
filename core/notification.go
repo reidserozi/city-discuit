@@ -61,8 +61,9 @@ const MaxNotificationsPerUser = 200
 
 // VAPIDKeys is an application server key-pair used by the Web Push API.
 type VAPIDKeys struct {
-	Public  string `json:"public"`
-	Private string `json:"private"`
+	Public         string     `json:"public"`
+	Private        string     `json:"private"`
+	DigestLastSent *time.Time `json:"digestLastSent"`
 }
 
 const vapidKeysDBKey = "vapid_keys" // for the key column of the application_data table

@@ -131,6 +131,7 @@ type User struct {
 	// User preferences.
 	UpvoteNotificationsOff  bool     `json:"upvoteNotificationsOff"`
 	ReplyNotificationsOff   bool     `json:"replyNotificationsOff"`
+	DigestEmailOn           bool     `json:"digestEmailOn"`
 	HomeFeed                FeedType `json:"homeFeed"`
 	RememberFeedSort        bool     `json:"rememberFeedSort"`
 	EmbedsOff               bool     `json:"embedsOff"`
@@ -257,6 +258,7 @@ func buildSelectUserQuery(where string) string {
 		"users.banned_at",
 		"users.upvote_notifications_off",
 		"users.reply_notifications_off",
+		"users.digest_email_on",
 		"users.home_feed",
 		"users.remember_feed_sort",
 		"users.embeds_off",
@@ -390,6 +392,7 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 			&u.BannedAt,
 			&u.UpvoteNotificationsOff,
 			&u.ReplyNotificationsOff,
+			&u.DigestEmailOn,
 			&u.HomeFeed,
 			&u.RememberFeedSort,
 			&u.EmbedsOff,
@@ -725,6 +728,7 @@ func (u *User) Update(ctx context.Context, db *sql.DB) error {
 		display_name = ?,
 		upvote_notifications_off = ?,
 		reply_notifications_off = ?,
+		digest_email_on = ?,
 		home_feed = ?,
 		remember_feed_sort = ?,
 		embeds_off = ?,
@@ -738,6 +742,7 @@ func (u *User) Update(ctx context.Context, db *sql.DB) error {
 		u.DisplayName,
 		u.UpvoteNotificationsOff,
 		u.ReplyNotificationsOff,
+		u.DigestEmailOn,
 		u.HomeFeed,
 		u.RememberFeedSort,
 		u.EmbedsOff,

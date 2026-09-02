@@ -120,6 +120,9 @@ func (pg *Program) startBackgroundTasks(delay time.Duration) {
 		}
 		return nil
 	}, time.Second*100, false)
+	pg.tr.New("Send weekly digest emails", func(ctx context.Context) error {
+		return core.SendWeeklyDigest(ctx, pg.db, pg.conf.HMACSecret)
+	}, time.Minute*30, false)
 
 	go func() {
 		time.Sleep(delay)
