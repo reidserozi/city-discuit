@@ -604,7 +604,11 @@ const Settings = () => {
           </FormField>
           <FormField>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {pushSubscriptions.length > 0 ? (
+              {loadingSubscriptions ? (
+                <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+                  Loading subscriptions...
+                </div>
+              ) : pushSubscriptions.length > 0 ? (
                 <>
                   <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
                     {pushSubscriptions.length} device{pushSubscriptions.length !== 1 ? 's' : ''} subscribed

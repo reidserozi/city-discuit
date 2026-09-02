@@ -25,6 +25,7 @@ export interface User {
   deletedAt: string | null; // A datetime.
   upvoteNotificationsOff: boolean;
   replyNotificationsOff: boolean;
+  digestEmailOn: boolean;
   homeFeed: 'all' | 'subscriptions';
   rememberFeedSort: boolean;
   embedsOff: boolean;
