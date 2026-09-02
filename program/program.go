@@ -572,6 +572,7 @@ func (pg *Program) SendDigestNow(username string) error {
 			pg.conf.SMTPFromEmail,
 			pg.conf.SMTPFromName,
 		)
+		core.EnableEmailNotifications(emailSvc, pg.conf.SiteURL)
 	}
 
 	if err := core.SendDigestTest(pg.ctx, pg.db, pg.conf.HMACSecret, emailSvc, pg.conf.SiteName, username); err != nil {
