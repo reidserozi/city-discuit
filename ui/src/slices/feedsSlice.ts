@@ -40,6 +40,7 @@ export class FeedItem<T = unknown> {
 
 export const typeFeedUpdated = 'feeds/feedUpdated';
 export const typeFeedReloaded = 'feeds/feedReloaded';
+export const typeFeedLoadFailed = 'feeds/feedLoadFailed';
 export const typeFeedItemHeightChanged = 'feeds/feedItemHeightChanged';
 export const typeFeedItemsInViewUpdated = 'feeds/feedItemsInViewUpdated';
 
@@ -99,6 +100,19 @@ export default function feedsReducer(
           [url]: {
             ...state.feeds[url],
             loading: true,
+          },
+        },
+      };
+    }
+    case typeFeedLoadFailed: {
+      const url = action.payload as string;
+      return {
+        ...state,
+        feeds: {
+          ...state.feeds,
+          [url]: {
+            ...state.feeds[url],
+            loading: false,
           },
         },
       };
@@ -171,6 +185,10 @@ export const feedUpdated =
 
 export const feedReloaded = (url: string) => {
   return { type: typeFeedReloaded, payload: url };
+};
+
+export const feedLoadFailed = (url: string) => {
+  return { type: typeFeedLoadFailed, payload: url };
 };
 
 export const feedItemHeightChanged = (key: string, height: number | null) => {

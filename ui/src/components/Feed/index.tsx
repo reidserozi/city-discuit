@@ -7,6 +7,7 @@ import {
   feedInViewItemsUpdated,
   FeedItem,
   feedItemHeightChanged,
+  feedLoadFailed,
   feedUpdated,
   selectFeed,
   selectFeedInViewItems,
@@ -54,10 +55,11 @@ function Feed<FeedItemType>({
   const feed = useSelector(selectFeed<FeedItemType>(feedId));
   const loading = feed ? feed.loading : true;
   const hasMore = feed ? Boolean(feed.next) : false;
-  const [, /*error*/ setError] = useState<unknown>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const [fetching, setFetching] = useState(false);
   const fetchingRef = useRef(false);
+  const dispatch = useDispatch();
   const fetchFeedAndDispatch = async (next: string | null) => {
     if (fetchingRef.current) {
       return;
@@ -65,6 +67,7 @@ function Feed<FeedItemType>({
     try {
       setFetching(true);
       fetchingRef.current = true;
+      setError(null);
       const res = await onFetch(next);
       if (res) {
         dispatch(feedUpdated(feedId, res.items, res.next));
@@ -73,6 +76,7 @@ function Feed<FeedItemType>({
       }
     } catch (error: unknown) {
       setError(error);
+      dispatch(feedLoadFailed(feedId));
       dispatch(snackAlertError(error));
     } finally {
       fetchingRef.current = false;
@@ -106,8 +110,6 @@ function Feed<FeedItemType>({
   const isDesktop = windowWidth >= 1280;
 
   const itemsInitiallyInView = useSelector(selectFeedInViewItems(feedId));
-
-  const dispatch = useDispatch();
   const itemsInView = useRef<string[]>([]);
   useEffect(() => {
     if (!loading) {
@@ -181,6 +183,17 @@ function Feed<FeedItemType>({
             <FeedSkeleton compact={compact} />
           </>
         )}
+      </div>
+    );
+  }
+
+  if (error && items.length === 0) {
+    return (
+      <div className={_className}>
+        <div className="card card-padding feed-none">
+          <div style={{ marginBottom: '1rem' }}>Something went wrong loading this feed.</div>
+          <Button onClick={() => fetchFeedAndDispatch(null)}>Retry</Button>
+        </div>
       </div>
     );
   }
