@@ -154,8 +154,57 @@ const Settings = () => {
     );
   }, [notificationsPermissions]);
 
+  interface WebPushSubscription {
+    id: number;
+    sessionId: string;
+    createdAt: string;
+    userAgent: string | null;
+  }
+
+  const [pushSubscriptions, setPushSubscriptions] = useState<WebPushSubscription[]>([]);
+  const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
+
+  const fetchPushSubscriptions = async () => {
+    setLoadingSubscriptions(true);
+    try {
+      const res = await mfetchjson('/api/push_subscriptions');
+      setPushSubscriptions(res.subscriptions || []);
+    } catch (error) {
+      console.error('Failed to fetch push subscriptions:', error);
+    } finally {
+      setLoadingSubscriptions(false);
+    }
+  };
+
+  useEffect(() => {
+    if (loggedIn) {
+      fetchPushSubscriptions();
+    }
+  }, [loggedIn]);
+
   const handleEnablePushNotifications = async () => {
     await getNotificationsPermissions(loggedIn, applicationServerKey!);
+  };
+
+  const handleRevokePushSubscription = async (subscriptionId: number) => {
+    try {
+      await mfetch(`/api/push_subscriptions/${subscriptionId}`, {
+        method: 'DELETE',
+      });
+      dispatch(snackAlert('Push subscription revoked'));
+      await fetchPushSubscriptions();
+    } catch (error) {
+      dispatch(snackAlertError(error));
+    }
+  };
+
+  const parseUserAgent = (userAgent: string | null): string => {
+    if (!userAgent) return 'Unknown device';
+    if (userAgent.includes('Chrome')) return 'Chrome';
+    if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
+    if (userAgent.includes('Firefox')) return 'Firefox';
+    if (userAgent.includes('Edge')) return 'Edge';
+    return 'Browser';
   };
 
   const deviceStandalone = isDeviceStandalone();
@@ -543,13 +592,55 @@ const Settings = () => {
               onChange={(e) => setNotifsSettings('replyNotifs', e.target.checked)}
             />
           </FormField>
-          {canEnableWebPushNotifications && (
-            <FormField>
-              <button onClick={handleEnablePushNotifications} style={{ alignSelf: 'flex-start' }}>
-                Enable push notifications
-              </button>
-            </FormField>
-          )}
+          <FormField>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {pushSubscriptions.length > 0 ? (
+                <>
+                  <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+                    {pushSubscriptions.length} device{pushSubscriptions.length !== 1 ? 's' : ''} subscribed
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {pushSubscriptions.map((sub) => (
+                      <div
+                        key={sub.id}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '12px',
+                          backgroundColor: 'var(--color-bg)',
+                          borderRadius: '4px',
+                          fontSize: '14px',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 500 }}>{parseUserAgent(sub.userAgent)}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                            {new Date(sub.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleRevokePushSubscription(sub.id)}
+                          style={{ alignSelf: 'center', fontSize: '13px', padding: '6px 12px' }}
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+                  No devices subscribed yet
+                </div>
+              )}
+              {canEnableWebPushNotifications && (
+                <button onClick={handleEnablePushNotifications} style={{ alignSelf: 'flex-start' }}>
+                  Enable on this device
+                </button>
+              )}
+            </div>
+          </FormField>
         </FormSection>
         <FormSection heading="Muted communities">
           <div className="mutes-list">

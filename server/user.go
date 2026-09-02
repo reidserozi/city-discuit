@@ -534,7 +534,48 @@ func (s *Server) pushSubscriptions(w *responseWriter, r *request) error {
 		return err
 	}
 
-	if err := core.SaveWebPushSubscription(r.ctx, s.db, r.ses.ID, *r.viewer, sub); err != nil {
+	userAgent := r.req.Header.Get("User-Agent")
+	var userAgentPtr *string
+	if userAgent != "" {
+		userAgentPtr = &userAgent
+	}
+
+	if err := core.SaveWebPushSubscription(r.ctx, s.db, r.ses.ID, *r.viewer, sub, userAgentPtr); err != nil {
+		return err
+	}
+
+	return w.writeString(`{"success":true}`)
+}
+
+// /api/push_subscriptions [GET]
+func (s *Server) getPushSubscriptions(w *responseWriter, r *request) error {
+	if !r.loggedIn {
+		return errNotLoggedIn
+	}
+
+	subs, err := core.UserWebPushSubscriptions(r.ctx, s.db, *r.viewer)
+	if err != nil {
+		return err
+	}
+
+	return w.writeJSON(map[string]interface{}{
+		"subscriptions": subs,
+	})
+}
+
+// /api/push_subscriptions/{id} [DELETE]
+func (s *Server) deletePushSubscription(w *responseWriter, r *request) error {
+	if !r.loggedIn {
+		return errNotLoggedIn
+	}
+
+	idStr := r.muxVar("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return httperr.NewBadRequest("invalid_id", "Invalid subscription ID.")
+	}
+
+	if err := core.DeleteWebPushSubscriptionByID(r.ctx, s.db, id, *r.viewer); err != nil {
 		return err
 	}
 

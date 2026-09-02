@@ -120,6 +120,7 @@ type WebPushSubscription struct {
 	PushSubscription webpush.Subscription `json:"pushSubscription"`
 	CreatedAt        time.Time            `json:"createdAt"`
 	UpdatedAt        msql.NullTime        `json:"updatedAt"`
+	UserAgent        *string              `json:"userAgent"`
 
 	rawPushSubscription string // raw json string
 }
@@ -127,14 +128,14 @@ type WebPushSubscription struct {
 // SaveWebPushSubscription adds an entry into web_push_notifications table. If
 // there's a collision (a duplicate for sessionID), it updates the matching row.
 // It is safe to call this function repeatedly with the same arguments.
-func SaveWebPushSubscription(ctx context.Context, db *sql.DB, sessionID string, user uid.ID, s webpush.Subscription) error {
+func SaveWebPushSubscription(ctx context.Context, db *sql.DB, sessionID string, user uid.ID, s webpush.Subscription, userAgent *string) error {
 	rawJSON, err := json.Marshal(s)
 	if err != nil {
 		return err
 	}
-	_, err = db.ExecContext(ctx, `INSERT INTO web_push_subscriptions (session_id, user_id, push_subscription) 
-		VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE push_subscription = ?, updated_at = CURRENT_TIMESTAMP()`,
-		sessionID, user, rawJSON, rawJSON)
+	_, err = db.ExecContext(ctx, `INSERT INTO web_push_subscriptions (session_id, user_id, push_subscription, user_agent)
+		VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE push_subscription = ?, user_agent = ?, updated_at = CURRENT_TIMESTAMP()`,
+		sessionID, user, rawJSON, userAgent, rawJSON, userAgent)
 
 	return err
 }
@@ -148,8 +149,15 @@ func DeleteWebPushSubscription(ctx context.Context, db *sql.DB, sessionID string
 	return err
 }
 
-// userWebPushSubscriptions returns all the Web Push Subscriptions of the user.
-func userWebPushSubscriptions(ctx context.Context, db *sql.DB, user uid.ID) ([]*WebPushSubscription, error) {
+// DeleteWebPushSubscriptionByID deletes the Push Subscription object by its ID,
+// with an ownership check to ensure the user owns the subscription.
+func DeleteWebPushSubscriptionByID(ctx context.Context, db *sql.DB, id int64, userID uid.ID) error {
+	_, err := db.ExecContext(ctx, "DELETE FROM web_push_subscriptions WHERE id = ? AND user_id = ?", id, userID)
+	return err
+}
+
+// UserWebPushSubscriptions returns all the Web Push Subscriptions of the user.
+func UserWebPushSubscriptions(ctx context.Context, db *sql.DB, user uid.ID) ([]*WebPushSubscription, error) {
 	s := msql.BuildSelectQuery("web_push_subscriptions", []string{
 		"id",
 		"session_id",
@@ -157,6 +165,7 @@ func userWebPushSubscriptions(ctx context.Context, db *sql.DB, user uid.ID) ([]*
 		"push_subscription",
 		"created_at",
 		"updated_at",
+		"user_agent",
 	}, nil, "WHERE user_id = ?")
 
 	rows, err := db.QueryContext(ctx, s, user)
@@ -168,7 +177,7 @@ func userWebPushSubscriptions(ctx context.Context, db *sql.DB, user uid.ID) ([]*
 	var subs []*WebPushSubscription
 	for rows.Next() {
 		sub := &WebPushSubscription{}
-		if err := rows.Scan(&sub.ID, &sub.SessionID, &sub.UserID, &sub.rawPushSubscription, &sub.CreatedAt, &sub.UpdatedAt); err != nil {
+		if err := rows.Scan(&sub.ID, &sub.SessionID, &sub.UserID, &sub.rawPushSubscription, &sub.CreatedAt, &sub.UpdatedAt, &sub.UserAgent); err != nil {
 			return nil, err
 		}
 		if err := json.Unmarshal([]byte(sub.rawPushSubscription), &sub.PushSubscription); err != nil {
@@ -186,7 +195,7 @@ func userWebPushSubscriptions(ctx context.Context, db *sql.DB, user uid.ID) ([]*
 // SendPushNotification sends the Web Push notification in payload to all
 // sessions of user (that has web notifications enabled).
 func SendPushNotification(ctx context.Context, db *sql.DB, user uid.ID, payload []byte, options *webpush.Options) error {
-	subs, err := userWebPushSubscriptions(ctx, db, user)
+	subs, err := UserWebPushSubscriptions(ctx, db, user)
 	if err != nil {
 		return err
 	}

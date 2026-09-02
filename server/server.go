@@ -209,6 +209,8 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	r.Handle("/api/notifications/{notificationID}", s.withHandler(s.deleteNotification)).Methods("DELETE")
 
 	r.Handle("/api/push_subscriptions", s.withHandler(s.pushSubscriptions)).Methods("POST")
+	r.Handle("/api/push_subscriptions", s.withHandler(s.getPushSubscriptions)).Methods("GET")
+	r.Handle("/api/push_subscriptions/{id}", s.withHandler(s.deletePushSubscription)).Methods("DELETE")
 
 	r.Handle("/api/community_requests", s.withHandler(s.createCommunityRequest)).Methods("POST")
 	r.Handle("/api/community_requests", s.withHandler(s.getCommunityRequests)).Methods("GET")
