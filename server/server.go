@@ -112,7 +112,7 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 
 	if conf.SMTPHost != "" && conf.SMTPFromEmail != "" {
 		emailSvc := email.New(conf.SMTPHost, conf.SMTPPort, conf.SMTPUser, conf.SMTPPassword, conf.SMTPFromEmail, conf.SMTPFromName)
-		core.EnableEmailNotifications(emailSvc, conf.UIProxy)
+		core.EnableEmailNotifications(emailSvc, conf.SiteURL)
 		log.Printf("Email notifications enabled (from: %s)\n", conf.SMTPFromEmail)
 	}
 

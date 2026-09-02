@@ -44,14 +44,27 @@ func RenderNotificationEmail(title, actionURL, actionText, siteName string) stri
 `, title, title, siteName, actionURL, actionText)
 }
 
+// DigestPostItem represents a single post in the digest.
+type DigestPostItem struct {
+	Title string
+	URL   string
+}
+
+// DigestReplyItem represents a single reply/comment in the digest.
+type DigestReplyItem struct {
+	PostTitle string
+	Author    string
+	URL       string
+}
+
 // DigestEmailData represents the data for rendering a digest email.
 type DigestEmailData struct {
-	Username          string
-	SiteName          string
-	TopPostsCount     int
-	RepliesSinceCount int
-	CommunityActivity int
-	UnsubscribeURL    string
+	Username            string
+	SiteName            string
+	TopPosts            []DigestPostItem
+	Replies             []DigestReplyItem
+	CommunityActivity   []DigestReplyItem
+	UnsubscribeURL      string
 }
 
 // RenderDigestEmailHTML renders the HTML version of the weekly digest email.
@@ -67,15 +80,39 @@ func RenderDigestEmailHTML(data DigestEmailData) (string, error) {
   <h1 style="font-size: 28px; margin-bottom: 20px;">Your Weekly Digest</h1>
   <p style="font-size: 16px; margin: 20px 0;">Hi {{.Username}},</p>
 
-  <p style="font-size: 16px; margin: 20px 0;">Here's a summary of what happened on {{.SiteName}} this week.</p>
+  <p style="font-size: 16px; margin: 20px 0;">We go quiet in a few hours, and stay that way all day tomorrow. Here's what got proposed, sharpened, and improved this week — worth a read before we do.</p>
 
   <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-    <h2 style="margin-top: 0; font-size: 18px; color: #000;">This Week's Activity</h2>
+    <h2 style="margin-top: 0; font-size: 18px; color: #000;">Top Posts</h2>
+    {{if .TopPosts}}
     <ul style="margin: 10px 0; padding-left: 20px;">
-      <li><strong>{{.TopPostsCount}}</strong> top posts across communities</li>
-      <li><strong>{{.RepliesSinceCount}}</strong> new replies to your posts</li>
-      <li><strong>{{.CommunityActivity}}</strong> comments in your communities</li>
+      {{range .TopPosts}}<li><a href="{{.URL}}" style="color: #0066cc; text-decoration: none;">{{.Title}}</a></li>{{end}}
     </ul>
+    {{else}}
+    <p style="margin: 10px 0; color: #666;">Nothing this week</p>
+    {{end}}
+  </div>
+
+  <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h2 style="margin-top: 0; font-size: 18px; color: #000;">Replies to Your Posts</h2>
+    {{if .Replies}}
+    <ul style="margin: 10px 0; padding-left: 20px;">
+      {{range .Replies}}<li><a href="{{.URL}}" style="color: #0066cc; text-decoration: none;">{{.PostTitle}}</a> <em>by {{.Author}}</em></li>{{end}}
+    </ul>
+    {{else}}
+    <p style="margin: 10px 0; color: #666;">Nothing this week</p>
+    {{end}}
+  </div>
+
+  <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h2 style="margin-top: 0; font-size: 18px; color: #000;">Activity in Your Communities</h2>
+    {{if .CommunityActivity}}
+    <ul style="margin: 10px 0; padding-left: 20px;">
+      {{range .CommunityActivity}}<li><a href="{{.URL}}" style="color: #0066cc; text-decoration: none;">{{.PostTitle}}</a> <em>by {{.Author}}</em></li>{{end}}
+    </ul>
+    {{else}}
+    <p style="margin: 10px 0; color: #666;">Nothing this week</p>
+    {{end}}
   </div>
 
   <p style="font-size: 14px; margin: 20px 0; text-align: center;">
@@ -109,17 +146,42 @@ func RenderDigestEmailText(data DigestEmailData) string {
 		"",
 		"Hi " + data.Username + ",",
 		"",
-		"Here's a summary of what happened on " + data.SiteName + " this week.",
+		"We go quiet in a few hours, and stay that way all day tomorrow. Here's what got proposed, sharpened, and improved this week — worth a read before we do.",
 		"",
-		"This Week's Activity:",
-		fmt.Sprintf("  • %d top posts across communities", data.TopPostsCount),
-		fmt.Sprintf("  • %d new replies to your posts", data.RepliesSinceCount),
-		fmt.Sprintf("  • %d comments in your communities", data.CommunityActivity),
-		"",
-		"Unsubscribe: " + data.UnsubscribeURL,
+	}
+
+	if len(data.TopPosts) > 0 {
+		lines = append(lines, "Top Posts:")
+		for _, post := range data.TopPosts {
+			lines = append(lines, fmt.Sprintf("  • %s", post.Title))
+			lines = append(lines, fmt.Sprintf("    %s", post.URL))
+		}
+		lines = append(lines, "")
+	}
+
+	if len(data.Replies) > 0 {
+		lines = append(lines, "Replies to Your Posts:")
+		for _, reply := range data.Replies {
+			lines = append(lines, fmt.Sprintf("  • %s (by %s)", reply.PostTitle, reply.Author))
+			lines = append(lines, fmt.Sprintf("    %s", reply.URL))
+		}
+		lines = append(lines, "")
+	}
+
+	if len(data.CommunityActivity) > 0 {
+		lines = append(lines, "Activity in Your Communities:")
+		for _, activity := range data.CommunityActivity {
+			lines = append(lines, fmt.Sprintf("  • %s (by %s)", activity.PostTitle, activity.Author))
+			lines = append(lines, fmt.Sprintf("    %s", activity.URL))
+		}
+		lines = append(lines, "")
+	}
+
+	lines = append(lines,
+		"Unsubscribe: "+data.UnsubscribeURL,
 		"",
 		"You received this email because you have weekly digest emails enabled.",
-		data.SiteName + " is closed Sundays. Catch up and take a break.",
-	}
+		data.SiteName+" is closed Sundays. Catch up and take a break.",
+	)
 	return strings.Join(lines, "\n")
 }

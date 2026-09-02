@@ -75,7 +75,7 @@ func (s *Server) passwordResetStart(w *responseWriter, r *request) error {
 
 	// If user found and has email, send magic link
 	if user != nil && user.Email.Valid && user.Email.String != "" {
-		redirectURL := s.config.UIProxy + "/reset-password?token="
+		redirectURL := s.config.SiteURL + "/reset-password?token="
 		if _, err := s.stytch.SendMagicLink(r.ctx, user.Email.String, redirectURL); err != nil {
 			// Log error but don't fail the request to avoid enumeration
 			s.httpLogger.Printf("Error sending password reset email to user %s: %v\n", user.Username, err)

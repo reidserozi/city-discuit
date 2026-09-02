@@ -42,7 +42,7 @@ func (s *Server) emailVerificationStart(w *responseWriter, r *request) error {
 	}
 
 	// Send magic link (Stytch creates or returns existing user by email)
-	redirectURL := s.config.UIProxy + "/verify-email?token="
+	redirectURL := s.config.SiteURL + "/verify-email?token="
 	stytchUserID, err := s.stytch.SendMagicLink(r.ctx, user.Email.String, redirectURL)
 	if err != nil {
 		s.http500Logger.Printf("Error sending verification email to user %s: %v\n", user.Username, err)
@@ -137,7 +137,7 @@ func (s *Server) sendEmailVerificationBestEffort(user *core.User) {
 	}
 
 	ctx := context.Background()
-	redirectURL := s.config.UIProxy + "/verify-email?token="
+	redirectURL := s.config.SiteURL + "/verify-email?token="
 	stytchUserID, err := s.stytch.SendMagicLink(ctx, user.Email.String, redirectURL)
 	if err != nil {
 		s.httpLogger.Printf("Error sending verification email to new user %s: %v\n", user.Username, err)
@@ -173,7 +173,7 @@ func (s *Server) testEmail(w *responseWriter, r *request) error {
 
 	htmlBody := email.RenderNotificationEmail(
 		"Test email from Edit Raleigh",
-		s.config.UIProxy,
+		s.config.SiteURL,
 		"Visit Edit Raleigh",
 		"Edit Raleigh",
 	)

@@ -17,6 +17,7 @@ type Config struct {
 
 	Addr    string `yaml:"addr"`
 	UIProxy string `yaml:"uiProxy"`
+	SiteURL string `yaml:"siteURL"` // Absolute site URL for outbound emails (e.g. https://example.com)
 
 	SiteName        string `yaml:"siteName"`
 	SiteDescription string `yaml:"siteDescription"` // Used for meta tags.
@@ -133,6 +134,7 @@ func Parse(path string) (*Config, error) {
 
 		"DISCUIT_ADDR":     &c.Addr,
 		"DISCUIT_UI_PROXY": &c.UIProxy,
+		"DISCUIT_SITE_URL": &c.SiteURL,
 
 		"DISCUIT_SITE_NAME":        &c.SiteName,
 		"DISCUIT_SITE_DESCRIPTION": &c.SiteDescription,

@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -29,7 +30,7 @@ type DigestData struct {
 func GetRepliesSinceForUser(ctx context.Context, db *sql.DB, user uid.ID, since time.Time, limit int) ([]*Comment, error) {
 	query := `
 		SELECT
-			c.id, c.post_id, c.author_id, c.body, c.created_at, c.edited_at,
+			c.id, c.post_id, c.post_public_id, c.community_id, c.community_name, c.author_id, c.username, c.body, c.created_at, c.edited_at,
 			c.deleted, c.deleted_at, c.upvotes, c.downvotes, c.parent_id
 		FROM comments c
 		INNER JOIN posts p ON c.post_id = p.id
@@ -50,7 +51,11 @@ func GetRepliesSinceForUser(ctx context.Context, db *sql.DB, user uid.ID, since 
 		if err := rows.Scan(
 			&c.ID,
 			&c.PostID,
+			&c.PostPublicID,
+			&c.CommunityID,
+			&c.CommunityName,
 			&c.AuthorID,
+			&c.AuthorUsername,
 			&c.Body,
 			&c.CreatedAt,
 			&c.EditedAt,
@@ -65,6 +70,10 @@ func GetRepliesSinceForUser(ctx context.Context, db *sql.DB, user uid.ID, since 
 		comments = append(comments, c)
 	}
 
+	if err := getCommentsPostTitles(ctx, db, comments, nil); err != nil {
+		return nil, err
+	}
+
 	return comments, rows.Err()
 }
 
@@ -72,7 +81,7 @@ func GetRepliesSinceForUser(ctx context.Context, db *sql.DB, user uid.ID, since 
 func GetJoinedCommunityActivitySinceForUser(ctx context.Context, db *sql.DB, user uid.ID, since time.Time, limit int) ([]*Comment, error) {
 	query := `
 		SELECT
-			c.id, c.post_id, c.author_id, c.body, c.created_at, c.edited_at,
+			c.id, c.post_id, c.post_public_id, c.community_id, c.community_name, c.author_id, c.username, c.body, c.created_at, c.edited_at,
 			c.deleted, c.deleted_at, c.upvotes, c.downvotes, c.parent_id
 		FROM comments c
 		INNER JOIN posts p ON c.post_id = p.id
@@ -94,7 +103,11 @@ func GetJoinedCommunityActivitySinceForUser(ctx context.Context, db *sql.DB, use
 		if err := rows.Scan(
 			&c.ID,
 			&c.PostID,
+			&c.PostPublicID,
+			&c.CommunityID,
+			&c.CommunityName,
 			&c.AuthorID,
+			&c.AuthorUsername,
 			&c.Body,
 			&c.CreatedAt,
 			&c.EditedAt,
@@ -107,6 +120,10 @@ func GetJoinedCommunityActivitySinceForUser(ctx context.Context, db *sql.DB, use
 			return nil, err
 		}
 		comments = append(comments, c)
+	}
+
+	if err := getCommentsPostTitles(ctx, db, comments, nil); err != nil {
+		return nil, err
 	}
 
 	return comments, rows.Err()
@@ -129,13 +146,45 @@ func sendDigestToUser(ctx context.Context, db *sql.DB, hmacSecret string, emailS
 	unsubscribeToken := GenerateDigestUnsubscribeToken(userID, hmacSecret)
 	unsubscribeURL := emailSiteURL + "/api/digest_unsubscribe?token=" + unsubscribeToken + "&user=" + userID.String()
 
+	// Build top posts items
+	topPostItems := make([]email.DigestPostItem, len(topPosts))
+	for i, post := range topPosts {
+		postURL := emailSiteURL + fmt.Sprintf("/%s/post/%s", post.CommunityName, post.PublicID)
+		topPostItems[i] = email.DigestPostItem{
+			Title: post.Title,
+			URL:   postURL,
+		}
+	}
+
+	// Build replies items
+	replyItems := make([]email.DigestReplyItem, len(repliesSince))
+	for i, comment := range repliesSince {
+		replyURL := emailSiteURL + fmt.Sprintf("/%s/post/%s/%s", comment.CommunityName, comment.PostPublicID, comment.ID)
+		replyItems[i] = email.DigestReplyItem{
+			PostTitle: comment.PostTitle,
+			Author:    comment.AuthorUsername,
+			URL:       replyURL,
+		}
+	}
+
+	// Build community activity items
+	activityItems := make([]email.DigestReplyItem, len(activitySince))
+	for i, comment := range activitySince {
+		activityURL := emailSiteURL + fmt.Sprintf("/%s/post/%s/%s", comment.CommunityName, comment.PostPublicID, comment.ID)
+		activityItems[i] = email.DigestReplyItem{
+			PostTitle: comment.PostTitle,
+			Author:    comment.AuthorUsername,
+			URL:       activityURL,
+		}
+	}
+
 	// Build digest email data
 	digestData := email.DigestEmailData{
 		Username:          user.Username,
 		SiteName:          siteName,
-		TopPostsCount:     len(topPosts),
-		RepliesSinceCount: len(repliesSince),
-		CommunityActivity: len(activitySince),
+		TopPosts:          topPostItems,
+		Replies:           replyItems,
+		CommunityActivity: activityItems,
 		UnsubscribeURL:    unsubscribeURL,
 	}
 
