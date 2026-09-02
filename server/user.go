@@ -1,6 +1,7 @@
 package server
 
 import (
+	"crypto/hmac"
 	"database/sql"
 	"io"
 	"net/http"
@@ -580,6 +581,42 @@ func (s *Server) deletePushSubscription(w *responseWriter, r *request) error {
 	}
 
 	return w.writeString(`{"success":true}`)
+}
+
+// /api/digest_unsubscribe [POST, GET]
+// Public endpoint (no login required) to unsubscribe from digest emails.
+// Verifies HMAC token to ensure the request is legitimate.
+func (s *Server) digestUnsubscribe(w *responseWriter, r *request) error {
+	token := r.urlQueryParams().Get("token")
+	userIDStr := r.urlQueryParams().Get("user")
+
+	if token == "" || userIDStr == "" {
+		return httperr.NewBadRequest("missing_params", "Missing token or user parameter.")
+	}
+
+	userID, err := uid.FromString(userIDStr)
+	if err != nil {
+		return httperr.NewBadRequest("invalid_user", "Invalid user ID.")
+	}
+
+	// Verify HMAC token
+	expectedToken := core.GenerateDigestUnsubscribeToken(userID, s.config.HMACSecret)
+	if !hmac.Equal([]byte(token), []byte(expectedToken)) {
+		return httperr.NewForbidden("invalid_token", "Invalid or expired unsubscribe token.")
+	}
+
+	// Disable digest emails for this user
+	user, err := core.GetUser(r.ctx, s.db, userID, nil)
+	if err != nil {
+		return err
+	}
+
+	user.DigestEmailOn = false
+	if err := user.Update(r.ctx, s.db); err != nil {
+		return err
+	}
+
+	return w.writeString(`{"success":true,"message":"You have been unsubscribed from digest emails."}`)
 }
 
 // /api/_settings [POST]

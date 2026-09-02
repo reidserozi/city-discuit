@@ -16,6 +16,7 @@ import (
 
 	"github.com/discuitnet/discuit/config"
 	"github.com/discuitnet/discuit/core"
+	"github.com/discuitnet/discuit/internal/email"
 	"github.com/discuitnet/discuit/internal/images"
 	"github.com/discuitnet/discuit/internal/taskrunner"
 	"github.com/discuitnet/discuit/internal/uid"
@@ -121,7 +122,19 @@ func (pg *Program) startBackgroundTasks(delay time.Duration) {
 		return nil
 	}, time.Second*100, false)
 	pg.tr.New("Send weekly digest emails", func(ctx context.Context) error {
-		return core.SendWeeklyDigest(ctx, pg.db, pg.conf.HMACSecret)
+		var emailSvc *email.Service
+		// Only create email service if SMTP is configured
+		if pg.conf.SMTPHost != "" && pg.conf.SMTPPort != 0 {
+			emailSvc = email.New(
+				pg.conf.SMTPHost,
+				pg.conf.SMTPPort,
+				pg.conf.SMTPUser,
+				pg.conf.SMTPPassword,
+				pg.conf.SMTPFromEmail,
+				pg.conf.SMTPFromName,
+			)
+		}
+		return core.SendWeeklyDigest(ctx, pg.db, pg.conf.HMACSecret, emailSvc, pg.conf.SiteName)
 	}, time.Minute*30, false)
 
 	go func() {

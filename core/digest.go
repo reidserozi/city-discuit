@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/discuitnet/discuit/internal/email"
 	"github.com/discuitnet/discuit/internal/uid"
 	msql "github.com/discuitnet/discuit/internal/sql"
 )
@@ -111,7 +112,8 @@ func GetJoinedCommunityActivitySinceForUser(ctx context.Context, db *sql.DB, use
 
 // SendWeeklyDigest sends digest emails to users who have opted in.
 // It runs on Saturday evenings and respects the double-send prevention using application_data.
-func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string) error {
+// If emailService is nil, the function logs intended sends without actually emailing.
+func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string, emailService *email.Service, siteName string) error {
 	// Check if we've already sent the digest this week.
 	now := time.Now()
 	if now.Weekday() != time.Saturday || now.Hour() < 18 || now.Hour() >= 19 {
@@ -152,15 +154,15 @@ func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string) error 
 
 	for rows.Next() {
 		var userID uid.ID
-		var email msql.NullString
+		var emailAddr msql.NullString
 
-		if err := rows.Scan(&userID, &email); err != nil {
+		if err := rows.Scan(&userID, &emailAddr); err != nil {
 			log.Printf("Error scanning user: %v\n", err)
 			failCount++
 			continue
 		}
 
-		if !email.Valid || email.String == "" {
+		if !emailAddr.Valid || emailAddr.String == "" {
 			continue
 		}
 
@@ -176,12 +178,40 @@ func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string) error 
 		repliesSince, _ := GetRepliesSinceForUser(ctx, db, userID, since, 10)
 		activitySince, _ := GetJoinedCommunityActivitySinceForUser(ctx, db, userID, since, 10)
 
-		unsubscribeToken := generateUnsubscribeToken(userID, hmacSecret)
+		unsubscribeToken := GenerateDigestUnsubscribeToken(userID, hmacSecret)
+		unsubscribeURL := "https://example.com/api/digest_unsubscribe?token=" + unsubscribeToken + "&user=" + userID.String()
 
-		// Send email (we'll implement template rendering in Phase 4)
-		// For now, just log that we would send it
-		log.Printf("Would send digest to %s (%s): %d posts, %d replies, %d activity items, token: %s\n",
-			user.Username, email.String, len(topPosts), len(repliesSince), len(activitySince), unsubscribeToken)
+		// Build digest email data
+		digestData := email.DigestEmailData{
+			Username:          user.Username,
+			SiteName:          siteName,
+			TopPostsCount:     len(topPosts),
+			RepliesSinceCount: len(repliesSince),
+			CommunityActivity: len(activitySince),
+			UnsubscribeURL:    unsubscribeURL,
+		}
+
+		// Render email templates
+		htmlBody, err := email.RenderDigestEmailHTML(digestData)
+		if err != nil {
+			log.Printf("Error rendering HTML for %s: %v\n", user.Username, err)
+			failCount++
+			continue
+		}
+
+		textBody := email.RenderDigestEmailText(digestData)
+
+		// Send email if service is available, otherwise just log
+		if emailService != nil {
+			if err := emailService.SendMultipart(emailAddr.String, "Your Weekly Digest - "+siteName, htmlBody, textBody); err != nil {
+				log.Printf("Error sending digest to %s: %v\n", user.Username, err)
+				failCount++
+				continue
+			}
+		} else {
+			log.Printf("[DRY RUN] Would send digest to %s (%s): %d posts, %d replies, %d activity\n",
+				user.Username, emailAddr.String, len(topPosts), len(repliesSince), len(activitySince))
+		}
 
 		successCount++
 	}
@@ -196,8 +226,8 @@ func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string) error 
 	return updateDigestLastSent(ctx, db, now)
 }
 
-// generateUnsubscribeToken creates an HMAC token for unsubscribe verification.
-func generateUnsubscribeToken(userID uid.ID, secret string) string {
+// GenerateDigestUnsubscribeToken creates an HMAC token for digest unsubscribe verification.
+func GenerateDigestUnsubscribeToken(userID uid.ID, secret string) string {
 	h := hmac.New(sha256.New, []byte(secret))
 	h.Write(userID[:])
 	return hex.EncodeToString(h.Sum(nil))

@@ -62,6 +62,7 @@ const Settings = () => {
   const [notifsSettings, _setNotifsSettings] = useState({
     upvoteNotifs: !user.upvoteNotificationsOff,
     replyNotifs: !user.replyNotificationsOff,
+    digestEmailOn: user.digestEmailOn || false,
   });
   const setNotifsSettings = (key: string, val: unknown) => {
     _setNotifsSettings((prev) => {
@@ -232,6 +233,7 @@ const Settings = () => {
           displayName: displayName || null,
           upvoteNotificationsOff: !notifsSettings.upvoteNotifs,
           replyNotificationsOff: !notifsSettings.replyNotifs,
+          digestEmailOn: notifsSettings.digestEmailOn,
           homeFeed,
           rememberFeedSort,
           embedsOff: !enableEmbeds,
@@ -590,6 +592,14 @@ const Settings = () => {
               label="Enable reply notifications"
               checked={notifsSettings.replyNotifs}
               onChange={(e) => setNotifsSettings('replyNotifs', e.target.checked)}
+            />
+          </FormField>
+          <FormField className="is-preference is-switch">
+            <Checkbox
+              variant="switch"
+              label="Enable weekly digest emails"
+              checked={notifsSettings.digestEmailOn}
+              onChange={(e) => setNotifsSettings('digestEmailOn', e.target.checked)}
             />
           </FormField>
           <FormField>
