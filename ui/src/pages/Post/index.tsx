@@ -20,6 +20,7 @@ import {
   saveToListModalOpened,
   snackAlert,
   snackAlertError,
+  meaningfulActionTaken,
 } from '../../slices/mainSlice';
 import PageNotLoaded from '../PageNotLoaded';
 import AddComment from './AddComment';
@@ -126,6 +127,7 @@ const Post = () => {
 
   const handleAddCommentSuccess = (comment: Comment) => {
     dispatch(newCommentAdded(post.publicId, comment));
+    dispatch(meaningfulActionTaken());
   };
 
   const [deleteAs, setDeleteAs] = useState('normal');

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"slices"
 	"strconv"
@@ -197,7 +198,12 @@ func SendPushNotification(ctx context.Context, db *sql.DB, user uid.ID, payload 
 			errors = append(errors, err)
 			continue
 		}
-		defer res.Body.Close()
+		res.Body.Close()
+		if res.StatusCode == http.StatusNotFound || res.StatusCode == http.StatusGone {
+			if delErr := DeleteWebPushSubscription(ctx, db, sub.SessionID); delErr != nil {
+				log.Printf("Error deleting stale web push subscription (session %s): %v\n", sub.SessionID, delErr)
+			}
+		}
 	}
 
 	if len(errors) > 0 {

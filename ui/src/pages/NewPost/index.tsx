@@ -14,7 +14,7 @@ import { APIError, isValidHttpUrl, mfetch, mfetchjson, truncateStringWithDots } 
 import { processImageForUpload, ImageProcessingError } from '../../helper/imageProcessing';
 import { useLoading, useQuery } from '../../hooks';
 import type { Community, Post, Image as ServerImage } from '../../serverTypes';
-import { MainState, snackAlert, snackAlertError } from '../../slices/mainSlice';
+import { MainState, snackAlert, snackAlertError, meaningfulActionTaken } from '../../slices/mainSlice';
 import { postAdded } from '../../slices/postsSlice';
 import { RootState } from '../../store';
 import Items from '../Community/Items';
@@ -360,6 +360,7 @@ const NewPost = () => {
           throw new APIError(res.status, await res.json());
         }
         newPost = await res.json();
+        dispatch(meaningfulActionTaken());
       }
       dispatch(postAdded(newPost));
       returnToWhence(newPost);

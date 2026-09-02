@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { ButtonClose } from './components/Button';
 import Modal from './components/Modal';
 import { mfetchjson, urlBase64ToUint8Array } from './helper';
-import { useIsMobile } from './hooks';
 import { MainState } from './slices/mainSlice';
 import { RootState } from './store';
 
@@ -92,19 +91,21 @@ const PushNotifications = () => {
     (state) => state.main.vapidPublicKey
   ) as MainState['vapidPublicKey'];
 
-  const isMobile = useIsMobile(true);
+  const meaningfulActionTaken = useSelector<RootState>(
+    (state) => state.main.meaningfulActionTaken
+  ) as MainState['meaningfulActionTaken'];
 
   const [askModalOpen, setAskModalOpen] = useState(false);
   const handleAskModalClose = () => setAskModalOpen(false);
 
   useEffect(() => {
-    if (isMobile && applicationServerKey) {
+    if (meaningfulActionTaken && applicationServerKey) {
       setAskModalOpen(shouldAskForNotificationsPermissions(loggedIn, applicationServerKey));
       if (window.Notification && Notification.permission === 'granted') {
         updatePushSubscription(loggedIn, applicationServerKey);
       }
     }
-  }, [loggedIn, applicationServerKey, isMobile]);
+  }, [loggedIn, applicationServerKey, meaningfulActionTaken]);
 
   useEffect(() => {
     if (askModalOpen) {

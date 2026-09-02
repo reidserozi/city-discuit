@@ -87,6 +87,7 @@ export interface MainState {
   imagePostSubmitReqPoints: number;
   linkPostSubmitReqPoints: number;
   topNavbarAutohideDisabled: boolean;
+  meaningfulActionTaken: boolean; // Flag to trigger push notification prompt after first post/comment.
 }
 
 const initialNotifications = {
@@ -144,6 +145,7 @@ const initialState: MainState = {
   imagePostSubmitReqPoints: 0,
   linkPostSubmitReqPoints: 0,
   topNavbarAutohideDisabled: getDevicePreference('top_navbar_autohide_disabled') === 'true',
+  meaningfulActionTaken: false,
 };
 
 export default function mainReducer(
@@ -500,6 +502,12 @@ export default function mainReducer(
         topNavbarAutohideDisabled: action.payload as boolean,
       };
     }
+    case 'main/meaningfulActionTaken': {
+      return {
+        ...state,
+        meaningfulActionTaken: true,
+      };
+    }
     default:
       return state;
   }
@@ -837,4 +845,8 @@ export const allCommunitiesSearchQueryChanged = (query: string) => {
 
 export const topNavbarAutohideDisabledChanged = (disabled: boolean) => {
   return { type: 'main/topNavbarAutohideDisabledChanged', payload: disabled };
+};
+
+export const meaningfulActionTaken = () => {
+  return { type: 'main/meaningfulActionTaken' };
 };
