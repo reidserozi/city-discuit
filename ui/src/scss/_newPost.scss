@@ -5,6 +5,9 @@
     width: 100%;
     max-width: max-content;
     max-height: 540px;
+    @include mixins.mobile() {
+        max-width: 100%;
+    }
     img {
         object-fit: contain;
         width: 100%;
@@ -41,6 +44,8 @@
         }
         .page-new-content-post {
             margin-right: var(--gap);
+            overflow-x: hidden;
+            min-width: 0;
             @include mixins.mobile() {
                 margin-right: 0;
             }
@@ -328,6 +333,7 @@
             }
             @include mixins.mobile() {
                 flex-direction: row-reverse;
+                flex-wrap: wrap;
             }
         }
     }
@@ -401,6 +407,8 @@
         }
     }
     .new-page-sidebar {
+        overflow-x: hidden;
+        min-width: 0;
         @include mixins.mobile {
             margin-top: var(--gap);
         }
