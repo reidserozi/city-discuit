@@ -580,3 +580,21 @@ func (pg *Program) SendDigestNow(username string) error {
 	}
 	return nil
 }
+
+func (pg *Program) SetUserEmail(username, email string) error {
+	user, err := core.GetUserByUsername(pg.ctx, pg.db, username, nil)
+	if err != nil {
+		return fmt.Errorf("failed to get user %s: %w", username, err)
+	}
+	if user == nil {
+		return fmt.Errorf("user %s not found", username)
+	}
+
+	_, err = pg.db.ExecContext(pg.ctx, "UPDATE users SET email = ?, email_confirmed_at = NOW() WHERE id = ?", email, user.ID)
+	if err != nil {
+		return fmt.Errorf("failed to set email for %s: %w", username, err)
+	}
+
+	log.Printf("Set email for %s to %s\n", username, email)
+	return nil
+}

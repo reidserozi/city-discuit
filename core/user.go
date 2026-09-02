@@ -986,6 +986,14 @@ func (u *User) Unban(ctx context.Context, db *sql.DB) error {
 	return err
 }
 
+func (u *User) SetDigestEmailOn(ctx context.Context, db *sql.DB, on bool) error {
+	_, err := db.ExecContext(ctx, "UPDATE users SET digest_email_on = ? WHERE id = ?", on, u.ID)
+	if err == nil {
+		u.DigestEmailOn = on
+	}
+	return err
+}
+
 // MakeAdmin makes the user an admin of the site. If isAdmin is false
 // admin is removed as an admin.
 func (u *User) MakeAdmin(ctx context.Context, db *sql.DB, isAdmin bool) error {

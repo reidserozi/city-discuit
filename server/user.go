@@ -611,8 +611,7 @@ func (s *Server) digestUnsubscribe(w *responseWriter, r *request) error {
 		return err
 	}
 
-	user.DigestEmailOn = false
-	if err := user.Update(r.ctx, s.db); err != nil {
+	if err := user.SetDigestEmailOn(r.ctx, s.db, false); err != nil {
 		return err
 	}
 

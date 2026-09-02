@@ -34,6 +34,7 @@ func RunCLI() {
 			CommandMod,
 			CommandHardReset,
 			CommandForcePassChange,
+			CommandSetUserEmail,
 			CommandFixHotness,
 			CommandAddAllUsersToCommunity,
 			CommandDeleteUnusedCommunities,
@@ -233,6 +234,36 @@ var CommandForcePassChange = &cli.Command{
 		}
 
 		return pg.ChangeUserPassword(ctx.String("user"), ctx.String("password"))
+	},
+}
+
+var CommandSetUserEmail = &cli.Command{
+	Name:  "set-user-email",
+	Usage: "Set or restore a user's email address",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "user",
+			Usage:    "Username",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "email",
+			Usage:    "Email address",
+			Required: true,
+		},
+	},
+	Action: func(ctx *cli.Context) error {
+		pg, err := program.NewProgram(true)
+		if err != nil {
+			return err
+		}
+		defer pg.Close()
+
+		if ok := ConfirmCommand("Are you sure?"); !ok {
+			return errors.New("admin's not sure about setting the email")
+		}
+
+		return pg.SetUserEmail(ctx.String("user"), ctx.String("email"))
 	},
 }
 
