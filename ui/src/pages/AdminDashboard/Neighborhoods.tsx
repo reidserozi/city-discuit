@@ -11,6 +11,11 @@ import { useLoading } from '../../hooks';
 import { Neighborhood } from '../../serverTypes';
 import { snackAlert, snackAlertError } from '../../slices/mainSlice';
 
+// Code is short and fixed-width; contact email is the longest field and needs
+// the most room; actions just needs to fit its buttons.
+const NEIGHBORHOOD_GRID_COLUMNS =
+  'minmax(100px, 1fr) minmax(100px, 1fr) minmax(180px, 1.8fr) auto auto';
+
 interface NeighborhoodsState {
   neighborhoods: Neighborhood[] | null;
 }
@@ -190,12 +195,26 @@ export default function Neighborhoods() {
     }
   };
 
+  const handleRenderHead = (): React.ReactNode => {
+    return (
+      <TableRow columns={5} head style={{ gridTemplateColumns: NEIGHBORHOOD_GRID_COLUMNS }}>
+        <div className="table-column">Name</div>
+        <div className="table-column">Contact name</div>
+        <div className="table-column">Contact email</div>
+        <div className="table-column">Code</div>
+        <div className="table-column"></div>
+      </TableRow>
+    );
+  };
+
   const handleRenderItem = (item: Neighborhood): React.ReactNode => {
     return (
-      <TableRow columns={5}>
+      <TableRow columns={5} style={{ gridTemplateColumns: NEIGHBORHOOD_GRID_COLUMNS }}>
         <div className="table-column">{item.name}</div>
         <div className="table-column">{item.contactName || '—'}</div>
-        <div className="table-column">{item.contactEmail || '—'}</div>
+        <div className="table-column" style={{ overflowWrap: 'normal', wordBreak: 'normal' }}>
+          {item.contactEmail || '—'}
+        </div>
         <div className="table-column" style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>
           {item.code || '—'}
         </div>
@@ -329,7 +348,12 @@ export default function Neighborhoods() {
 
       <div style={{ marginTop: '2rem' }}>
         <h2>Neighborhoods</h2>
-        <SimpleFeed className="table" items={feedItems} onRenderItem={handleRenderItem} />
+        <SimpleFeed
+          className="table"
+          items={feedItems}
+          onRenderItem={handleRenderItem}
+          onRenderHead={handleRenderHead}
+        />
       </div>
     </DashboardPage>
   );

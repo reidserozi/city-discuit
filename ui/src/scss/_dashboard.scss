@@ -300,6 +300,11 @@
 
 // Table action buttons
 .table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 12px;
     text-align: right;
 }
 
