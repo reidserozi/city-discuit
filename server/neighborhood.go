@@ -1,6 +1,8 @@
 package server
 
 import (
+	"errors"
+	"fmt"
 	"net/mail"
 	"strings"
 	"time"
@@ -144,6 +146,49 @@ func (s *Server) updateNeighborhood(w *responseWriter, r *request) error {
 
 	neighborhood, _ := core.GetNeighborhoodByID(r.ctx, s.db, neighborhoodID)
 	return w.writeJSON(neighborhood)
+}
+
+// POST /api/admin/neighborhoods/:id/send_code
+//
+// Sends the neighborhood's code to its contact email on demand. Creating a
+// neighborhood already emails the code; this covers the case creation doesn't,
+// such as adding a leader to a neighborhood that already exists.
+func (s *Server) sendNeighborhoodCode(w *responseWriter, r *request) error {
+	if _, err := getLoggedInAdmin(s.db, r); err != nil {
+		return err
+	}
+
+	neighborhoodID := r.muxVar("id")
+
+	// A real person receives this, so guard against a double-click or a stuck
+	// finger mailing them repeatedly.
+	if err := s.rateLimit(r, "send_neighborhood_code_"+neighborhoodID, time.Minute, 2); err != nil {
+		return err
+	}
+
+	neighborhood, err := core.GetNeighborhoodByID(r.ctx, s.db, neighborhoodID)
+	if err != nil {
+		if err.Error() == "neighborhood_not_found" {
+			return httperr.NewNotFound("not_found", "Neighborhood not found")
+		}
+		return err
+	}
+
+	// Sent synchronously, unlike the create path: the admin is waiting on the
+	// result and needs to know whether it actually went out.
+	switch err := core.SendNeighborhoodCodeEmail(neighborhood); {
+	case err == nil:
+		return w.writeJSON(map[string]string{
+			"message": "Code sent to " + neighborhood.ContactEmail.String,
+		})
+	case errors.Is(err, core.ErrNeighborhoodCodeEmailMiss):
+		return httperr.NewBadRequest("missing_fields", "This neighborhood needs both a code and a contact email before its code can be sent.")
+	case errors.Is(err, core.ErrEmailNotEnabled):
+		return httperr.NewBadRequest("email_not_enabled", "Email is not configured on this server.")
+	default:
+		s.http500Logger.Printf("Error sending neighborhood code for %s: %v\n", neighborhood.Name, err)
+		return httperr.NewBadRequest("send_failed", fmt.Sprintf("Failed to send: %v", err))
+	}
 }
 
 // DELETE /api/admin/neighborhoods/:id

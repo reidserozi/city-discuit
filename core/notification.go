@@ -768,25 +768,28 @@ func (n *Notification) SendEmailNotification(ctx context.Context) error {
 	return svc.Send(user.Email.String, view.Title, htmlBody)
 }
 
-// SendNeighborhoodCodeEmailBestEffort sends the neighborhood code to the contact email.
-// If email is not configured or either code or contact email are not set, it silently returns.
-// Errors during render or send are logged but do not propagate (fire-and-forget).
-func SendNeighborhoodCodeEmailBestEffort(n *Neighborhood) {
+// Sentinel errors from SendNeighborhoodCodeEmail, so callers can turn them into
+// specific messages rather than a generic failure.
+var (
+	ErrEmailNotEnabled           = errors.New("email_not_enabled")
+	ErrNeighborhoodCodeEmailMiss = errors.New("missing_code_or_contact_email")
+)
+
+// SendNeighborhoodCodeEmail sends a neighborhood's code to its contact email,
+// returning any error. Use this when someone is waiting on the result — an admin
+// pressing a button, say. For side-effect sends, use the BestEffort wrapper.
+func SendNeighborhoodCodeEmail(n *Neighborhood) error {
 	emailMutex.RLock()
 	enabled := emailNotifsEnabled
 	svc := emailService
 	emailMutex.RUnlock()
 
 	if !enabled || svc == nil {
-		log.Printf("Skipping neighborhood code email for %s: email notifications are not enabled (check SMTP config at startup)\n", n.Name)
-		return
+		return ErrEmailNotEnabled
 	}
 
-	hasCode := n.Code.Valid && n.Code.String != ""
-	hasContactEmail := n.ContactEmail.Valid && n.ContactEmail.String != ""
-	if !hasCode || !hasContactEmail {
-		log.Printf("Skipping neighborhood code email for %s: hasCode=%t hasContactEmail=%t (both are required)\n", n.Name, hasCode, hasContactEmail)
-		return
+	if !n.Code.Valid || n.Code.String == "" || !n.ContactEmail.Valid || n.ContactEmail.String == "" {
+		return ErrNeighborhoodCodeEmailMiss
 	}
 
 	subject, htmlBody, err := email.RenderNeighborhoodCodeEmail(email.NeighborhoodCodeEmailData{
@@ -794,16 +797,30 @@ func SendNeighborhoodCodeEmailBestEffort(n *Neighborhood) {
 		Code:             n.Code.String,
 	})
 	if err != nil {
-		log.Printf("Error rendering neighborhood code email for %s: %v\n", n.Name, err)
-		return
+		return fmt.Errorf("rendering neighborhood code email: %w", err)
 	}
 
 	if err := svc.Send(n.ContactEmail.String, subject, htmlBody); err != nil {
-		log.Printf("Error sending neighborhood code email to %s: %v\n", n.ContactEmail.String, err)
-		return
+		return err
 	}
 
 	log.Printf("Sent neighborhood code email for %s to %s\n", n.Name, n.ContactEmail.String)
+	return nil
+}
+
+// SendNeighborhoodCodeEmailBestEffort sends the code without propagating failures,
+// for use as a side effect of another request. Every outcome is logged, including
+// the skips — a silent no-op here is indistinguishable from a broken mailer.
+func SendNeighborhoodCodeEmailBestEffort(n *Neighborhood) {
+	switch err := SendNeighborhoodCodeEmail(n); {
+	case err == nil: // already logged by SendNeighborhoodCodeEmail
+	case errors.Is(err, ErrEmailNotEnabled):
+		log.Printf("Skipping neighborhood code email for %s: email notifications are not enabled (check SMTP config at startup)\n", n.Name)
+	case errors.Is(err, ErrNeighborhoodCodeEmailMiss):
+		log.Printf("Skipping neighborhood code email for %s: a code and a contact email are both required\n", n.Name)
+	default:
+		log.Printf("Error sending neighborhood code email to %s: %v\n", n.ContactEmail.String, err)
+	}
 }
 
 func (n *Notification) ResetUserNewNotificationsCount(ctx context.Context) error {

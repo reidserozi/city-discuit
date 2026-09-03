@@ -163,6 +163,7 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	r.Handle("/api/admin/neighborhoods", s.withHandler(s.createNeighborhood)).Methods("POST")
 	r.Handle("/api/admin/neighborhoods/{id}", s.withHandler(s.updateNeighborhood)).Methods("PUT")
 	r.Handle("/api/admin/neighborhoods/{id}", s.withHandler(s.deleteNeighborhood)).Methods("DELETE")
+	r.Handle("/api/admin/neighborhoods/{id}/send_code", s.withHandler(s.sendNeighborhoodCode)).Methods("POST")
 
 	r.Handle("/api/posts", s.withHandler(s.feed)).Methods("GET")
 	r.Handle("/api/posts", s.withHandler(s.addPost)).Methods("POST")

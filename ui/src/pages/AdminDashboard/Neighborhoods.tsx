@@ -35,6 +35,7 @@ export default function Neighborhoods() {
   const [editContactEmail, setEditContactEmail] = useState('');
   const [editContactEmailError, setEditContactEmailError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [sendingCodeId, setSendingCodeId] = useState<string | null>(null);
 
   const dispatch = useDispatch();
 
@@ -148,6 +149,28 @@ export default function Neighborhoods() {
     setEditContactEmailError('');
   };
 
+  const handleSendCode = async (neighborhood: Neighborhood) => {
+    if (
+      !window.confirm(
+        `Email the code for ${neighborhood.name} to ${neighborhood.contactEmail}?`
+      )
+    ) {
+      return;
+    }
+
+    setSendingCodeId(neighborhood.id);
+    try {
+      const res = (await mfetchjson(`/api/admin/neighborhoods/${neighborhood.id}/send_code`, {
+        method: 'POST',
+      })) as { message?: string };
+      dispatch(snackAlert(res.message || 'Code sent'));
+    } catch (error) {
+      dispatch(snackAlertError(error));
+    } finally {
+      setSendingCodeId(null);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this neighborhood?')) {
       return;
@@ -177,6 +200,16 @@ export default function Neighborhoods() {
           {item.code || '—'}
         </div>
         <div className="table-column table-actions">
+          {item.code && item.contactEmail && (
+            <button
+              onClick={() => handleSendCode(item)}
+              className="button-clear button-action-edit"
+              disabled={sendingCodeId === item.id}
+              title={`Email the code to ${item.contactEmail}`}
+            >
+              {sendingCodeId === item.id ? 'Sending...' : 'Send code'}
+            </button>
+          )}
           <button
             onClick={() => handleEditStart(item)}
             className="button-clear button-action-edit"
