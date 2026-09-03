@@ -75,10 +75,12 @@ const PostCardHeadingDetails = ({
   return (
     <div className="post-card-heading-details">
       <div className="left">
-        <CommunityLink name={post.communityName} proPic={post.communityProPic} />
-        {post.itemName && (
-          <span className="post-card-heading-item">{post.itemName}</span>
-        )}
+        <div className="post-card-heading-row1">
+          <CommunityLink name={post.communityName} proPic={post.communityProPic} />
+          {post.itemName && (
+            <span className="post-card-heading-item">{post.itemName}</span>
+          )}
+        </div>
         <div className="post-card-heading-by">
           <span>{compact ? null : 'Posted by '}</span>
           <UserLink
@@ -96,22 +98,27 @@ const PostCardHeadingDetails = ({
             )}`}</span>
           )}
           {post.author?.neighborhood && (
-            <span className="post-card-heading-neighborhood" style={{ marginLeft: '0.5rem', opacity: 0.8 }}>
+            <span className="post-card-heading-neighborhood">
               From 📍 {post.author.neighborhood.name}
             </span>
           )}
+          {' '}
           <TimeAgo className="post-card-heading-ago" time={post.createdAt} short={isMobile} />
         </div>
-        {showEditedSign && (
-          <TimeAgo
-            className="post-card-heading-ago"
-            time={post.editedAt!}
-            prefix="Edited "
-            suffix=""
-            short
-          />
+        {(showEditedSign || isPinned) && (
+          <div className="post-card-heading-row3">
+            {showEditedSign && (
+              <TimeAgo
+                className="post-card-heading-ago"
+                time={post.editedAt!}
+                prefix="Edited "
+                suffix=""
+                short
+              />
+            )}
+            {isPinned && <div className="post-card-heading-pinned">Pinned</div>}
+          </div>
         )}
-        {isPinned && <div className="post-card-heading-pinned">Pinned</div>}
       </div>
       <div className="right">
         {loggedIn && (

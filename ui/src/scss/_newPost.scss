@@ -455,6 +455,7 @@ html.theme-dark {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-top: var(--gap);
     margin-bottom: var(--gap);
     font-size: var(--fs-s);
     font-weight: 600;

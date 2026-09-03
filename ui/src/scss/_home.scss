@@ -528,6 +528,11 @@ a {
                 color: var(--color-brand);
                 font-weight: 600;
             }
+            .post-card-heading-neighborhood {
+                margin-left: 0.4em;
+                margin-right: 0.4em;
+                opacity: 0.8;
+            }
         }
         .post-card-heading-pinned {
             color: var(--color-brand);
@@ -728,6 +733,53 @@ html.theme-dark {
         .post-card-card {
             @include mixins.mobile {
                 border-bottom: none;
+            }
+        }
+        @include mixins.mobile {
+            .post-card-heading-details .left {
+                flex-direction: column;
+                align-items: flex-start;
+                flex-wrap: nowrap;
+                > * {
+                    margin-right: 0;
+                }
+            }
+            .post-card-heading-row1 {
+                display: flex;
+                align-items: center;
+                min-width: 0;
+                max-width: 100%;
+                .community-link {
+                    min-width: 0;
+                    span {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        min-width: 0;
+                    }
+                }
+                .post-card-heading-item {
+                    flex-shrink: 0;
+                    white-space: nowrap;
+                    margin-left: 6px;
+                }
+            }
+            .post-card-heading-by {
+                flex-wrap: nowrap;
+                max-width: 100%;
+                .user-link,
+                .post-card-heading-ago {
+                    flex-shrink: 0;
+                    white-space: nowrap;
+                }
+                .post-card-heading-neighborhood {
+                    display: none;
+                }
+            }
+            .post-card-heading-row3 {
+                display: flex;
+                align-items: center;
+                margin-top: 2px;
             }
         }
     }

@@ -709,7 +709,7 @@ const NewPost = () => {
               <AsUser isMod={isUserMod} onChange={(g) => setUserGroup(g)} />
             </div>
           )}
-          <div className="new-page-help is-m">
+          <div className="new-page-help">
             {'Use '}
             <Link to="/markdown_guide" target="_blank">
               Markdown
@@ -737,13 +737,6 @@ const NewPost = () => {
                 initialName={locationName}
               />
             )}
-          </div>
-          <div className="new-page-help is-no-m">
-            {'Use '}
-            <Link to="/markdown_guide" target="_blank">
-              Markdown
-            </Link>
-            {' to format posts.'}
           </div>
           <div className="page-new-buttons is-no-m">
             <button className="button-main" onClick={handleSubmit} disabled={isSubmitDisabled}>
