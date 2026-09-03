@@ -1,3 +1,10 @@
+export interface PublicNeighborhood {
+  id: string;
+  name: string;
+  hasCode: boolean;
+  createdAt: string; // A datetime.
+}
+
 export interface Neighborhood {
   id: string;
   name: string;

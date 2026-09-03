@@ -16,24 +16,21 @@ func (s *Server) getNeighborhoods(w *responseWriter, r *request) error {
 		return err
 	}
 
-	// Return only public fields (exclude sensitive contact info)
+	// Return only public fields (exclude sensitive contact info and codes)
 	type publicNeighborhood struct {
 		ID        string `json:"id"`
 		Name      string `json:"name"`
-		Code      string `json:"code"`
+		HasCode   bool   `json:"hasCode"`
 		CreatedAt string `json:"createdAt"`
 	}
 
 	var publicNeighborhoods []publicNeighborhood
 	for _, n := range neighborhoods {
-		code := ""
-		if n.Code.Valid {
-			code = n.Code.String
-		}
+		hasCode := n.Code.Valid && n.Code.String != ""
 		publicNeighborhoods = append(publicNeighborhoods, publicNeighborhood{
 			ID:        n.ID,
 			Name:      n.Name,
-			Code:      code,
+			HasCode:   hasCode,
 			CreatedAt: n.CreatedAt.Format(time.RFC3339),
 		})
 	}

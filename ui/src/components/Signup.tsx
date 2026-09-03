@@ -14,7 +14,7 @@ import { Form, FormField } from './Form';
 import Input, { InputPassword, InputWithCount } from './Input';
 import Modal from './Modal';
 import TermsGateModal from './TermsGateModal';
-import type { Neighborhood } from '../serverTypes';
+import type { PublicNeighborhood } from '../serverTypes';
 
 const errors = [
   'Username cannot be empty.',
@@ -73,7 +73,7 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     setRepeatPasswordError(null);
   }, [repeatPassword]);
 
-  const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<PublicNeighborhood[]>([]);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('');
   const [neighborhoodError, setNeighborhoodError] = useState<string | null>(null);
 
@@ -131,7 +131,14 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
           termsVersion,
         }),
       });
-      if (!res.ok) throw new APIError(res.status, await res.json());
+      if (!res.ok) {
+        const json = await res.json();
+        if (res.status === 400 && json.code === 'invalid_neighborhood_code') {
+          setNeighborhoodCodeError("That invite code doesn't match this neighborhood.");
+          return;
+        }
+        throw new APIError(res.status, json);
+      }
       window.location.reload();
     } catch (error) {
       dispatch(snackAlertError(error));
@@ -178,18 +185,10 @@ const Signup = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
       errFound = true;
       setNeighborhoodError('Please select a neighborhood');
     }
-    if (neighborhoodCode) {
-      const selectedNhood = neighborhoods.find((n) => n.id === selectedNeighborhood);
-      if (selectedNhood && selectedNhood.code && selectedNhood.code !== neighborhoodCode) {
-        errFound = true;
-        setNeighborhoodCodeError('Incorrect neighborhood code');
-      }
-    } else {
-      const selectedNhood = neighborhoods.find((n) => n.id === selectedNeighborhood);
-      if (selectedNhood && selectedNhood.code) {
-        errFound = true;
-        setNeighborhoodCodeError('Neighborhood code is required for this neighborhood');
-      }
+    const selectedNhood = neighborhoods.find((n) => n.id === selectedNeighborhood);
+    if (selectedNhood && selectedNhood.hasCode && !neighborhoodCode) {
+      errFound = true;
+      setNeighborhoodCodeError('Neighborhood code is required for this neighborhood');
     }
     if (!termsAgreed) {
       errFound = true;
