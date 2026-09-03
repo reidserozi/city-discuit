@@ -310,6 +310,26 @@
     // guaranteed breathing room from whatever sits to its left.
     padding-left: 16px;
     text-align: right;
+    button {
+        // Flex items shrink below their content's natural width by default
+        // (min-width: auto), which is what was breaking words like
+        // "Send code" onto two lines under space pressure. These are short
+        // link-style actions -- they should never wrap, only the row itself
+        // should scroll if it doesn't fit (see .dashboard-page-neighborhoods
+        // .table below).
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
+
+// This table's minimum content width (name + contact name + contact email +
+// a fixed-width code + three action buttons) can exceed a narrow viewport.
+// Scroll the table horizontally in that case rather than letting columns
+// compress and wrap their contents.
+.dashboard-page-neighborhoods {
+    .table {
+        overflow-x: auto;
+    }
 }
 
 .button-action-edit {
