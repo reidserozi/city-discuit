@@ -99,9 +99,11 @@ export type PostsFeedType = 'all' | 'subscriptions' | 'community' | 'moderating'
 const PostsFeed = ({
   feedType = 'all',
   communityId = null,
+  hideItemOnMobile = false,
 }: {
   feedType: PostsFeedType;
   communityId: string | null;
+  hideItemOnMobile?: boolean;
 }) => {
   const dispatch = useDispatch();
 
@@ -148,6 +150,7 @@ const PostsFeed = ({
         compact={compact}
         feedItemKey={item.key}
         canHideFromFeed
+        hideItemOnMobile={hideItemOnMobile}
       />
     );
   };

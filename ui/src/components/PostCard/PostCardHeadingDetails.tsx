@@ -18,6 +18,7 @@ export interface PostCardHeadingDetailsProps {
   showAuthorProPic?: boolean;
   onRemoveFromList?: (postId: string) => void;
   dense?: boolean;
+  hideItemOnMobile?: boolean;
   onHidePost?: () => void;
 }
 
@@ -28,6 +29,7 @@ const PostCardHeadingDetails = ({
   showAuthorProPic = false,
   onRemoveFromList,
   dense = false,
+  hideItemOnMobile = false,
   onHidePost,
 }: PostCardHeadingDetailsProps) => {
   userGroup = userGroup ?? post.userGroup;
@@ -78,7 +80,7 @@ const PostCardHeadingDetails = ({
         <div className="post-card-heading-row1">
           <CommunityLink name={post.communityName} proPic={post.communityProPic} />
           {post.itemName && (
-            <span className="post-card-heading-item">{post.itemName}</span>
+            <span className={`post-card-heading-item${hideItemOnMobile ? ' is-no-m' : ''}`}>{post.itemName}</span>
           )}
         </div>
         <div className="post-card-heading-by">

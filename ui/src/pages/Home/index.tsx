@@ -103,7 +103,7 @@ const Home = () => {
               Create post
             </Link>
           )}
-          <PostsFeed feedType={feedType} communityId={null} />
+          <PostsFeed feedType={feedType} communityId={null} hideItemOnMobile />
         </main>
         <aside className="sidebar-right is-custom-scrollbar is-v2'">
           {!loggedIn && (

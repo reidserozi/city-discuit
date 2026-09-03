@@ -28,6 +28,7 @@ export interface PostCardProps {
   onRemoveFromList?: (postId: string) => void;
   feedItemKey?: string;
   canHideFromFeed?: boolean;
+  hideItemOnMobile?: boolean;
 }
 
 const PostCard = ({
@@ -41,6 +42,7 @@ const PostCard = ({
   onRemoveFromList,
   feedItemKey,
   canHideFromFeed = false,
+  hideItemOnMobile = false,
 }: PostCardProps) => {
   const history = useHistory();
 
@@ -192,6 +194,7 @@ const PostCard = ({
             post={post}
             onRemoveFromList={onRemoveFromList}
             dense={true}
+            hideItemOnMobile={hideItemOnMobile}
             onHidePost={canHideFromFeed ? handleHidePost : undefined}
           />
         </div>
