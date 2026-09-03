@@ -228,12 +228,12 @@ func homeFeedWhereClause(ctx context.Context, db *sql.DB, user uid.ID, where str
 		// User is not subscribed to any communities. Use the sentinel value of
 		// zero-bytes community ID, which no community would have, to return an
 		// empty result set.
-		where = fmt.Sprintf("%s %s community_id = ? ", where, joiner)
+		where = fmt.Sprintf("%s %s posts.community_id = ? ", where, joiner)
 		args = append(args, uid.ID{})
 		return where, args, nil
 	}
 
-	where = fmt.Sprintf("%s %s community_id IN %s ", where, joiner, msql.InClauseQuestionMarks(len(communityIDs)))
+	where = fmt.Sprintf("%s %s posts.community_id IN %s ", where, joiner, msql.InClauseQuestionMarks(len(communityIDs)))
 	args = append(args, communityIDs...)
 
 	return where, args, nil
@@ -268,12 +268,12 @@ func moderatingFeedWhereClause(ctx context.Context, db *sql.DB, user uid.ID, whe
 		// User is not subscribed to any communities. Use the sentinel value of
 		// zero-bytes community ID, which no community would have, to return an
 		// empty result set.
-		where = fmt.Sprintf("%s %s community_id = ? ", where, joiner)
+		where = fmt.Sprintf("%s %s posts.community_id = ? ", where, joiner)
 		args = append(args, uid.ID{})
 		return where, args, nil
 	}
 
-	where = fmt.Sprintf("%s %s community_id IN %s ", where, joiner, msql.InClauseQuestionMarks(len(communityIDs)))
+	where = fmt.Sprintf("%s %s posts.community_id IN %s ", where, joiner, msql.InClauseQuestionMarks(len(communityIDs)))
 	args = append(args, communityIDs...)
 
 	return where, args, nil
