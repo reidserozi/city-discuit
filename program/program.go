@@ -122,17 +122,10 @@ func (pg *Program) startBackgroundTasks(delay time.Duration) {
 		return nil
 	}, time.Second*100, false)
 	pg.tr.New("Send weekly digest emails", func(ctx context.Context) error {
-		var emailSvc *email.Service
-		// Only create email service if SMTP is configured
-		if pg.conf.SMTPHost != "" && pg.conf.SMTPPort != 0 {
-			emailSvc = email.New(
-				pg.conf.SMTPHost,
-				pg.conf.SMTPPort,
-				pg.conf.SMTPUser,
-				pg.conf.SMTPPassword,
-				pg.conf.SMTPFromEmail,
-				pg.conf.SMTPFromName,
-			)
+		// nil emailSvc means SendWeeklyDigest logs intended sends without emailing.
+		emailSvc, err := pg.newEmailService()
+		if err != nil {
+			log.Printf("Weekly digest: %v\n", err)
 		}
 		return core.SendWeeklyDigest(ctx, pg.db, pg.conf.HMACSecret, emailSvc, pg.conf.SiteName)
 	}, time.Minute*30, false)
@@ -141,6 +134,20 @@ func (pg *Program) startBackgroundTasks(delay time.Duration) {
 		time.Sleep(delay)
 		pg.tr.Start()
 	}()
+}
+
+// newEmailService builds the SMTP mailer from config, returning nil and a reason
+// if SMTP isn't usable. Shares its rules with the web server (see server.New) so
+// that both processes agree on whether email is configured.
+func (pg *Program) newEmailService() (*email.Service, error) {
+	return email.NewIfConfigured(
+		pg.conf.SMTPHost,
+		pg.conf.SMTPPort,
+		pg.conf.SMTPUser,
+		pg.conf.SMTPPassword,
+		pg.conf.SMTPFromEmail,
+		pg.conf.SMTPFromName,
+	)
 }
 
 func (pg *Program) stopBackgroundTasks(ctx context.Context) {
@@ -561,17 +568,10 @@ func (pg *Program) AddAllUsersToCommunity(community string) error {
 }
 
 func (pg *Program) SendDigestNow(username string) error {
-	var emailSvc *email.Service
-	// Only create email service if SMTP is configured
-	if pg.conf.SMTPHost != "" && pg.conf.SMTPPort != 0 {
-		emailSvc = email.New(
-			pg.conf.SMTPHost,
-			pg.conf.SMTPPort,
-			pg.conf.SMTPUser,
-			pg.conf.SMTPPassword,
-			pg.conf.SMTPFromEmail,
-			pg.conf.SMTPFromName,
-		)
+	emailSvc, err := pg.newEmailService()
+	if err != nil {
+		log.Printf("Digest test send: %v\n", err)
+	} else {
 		core.EnableEmailNotifications(emailSvc, pg.conf.SiteURL)
 	}
 

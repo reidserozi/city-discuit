@@ -778,10 +778,14 @@ func SendNeighborhoodCodeEmailBestEffort(n *Neighborhood) {
 	emailMutex.RUnlock()
 
 	if !enabled || svc == nil {
+		log.Printf("Skipping neighborhood code email for %s: email notifications are not enabled (check SMTP config at startup)\n", n.Name)
 		return
 	}
 
-	if !n.Code.Valid || n.Code.String == "" || !n.ContactEmail.Valid || n.ContactEmail.String == "" {
+	hasCode := n.Code.Valid && n.Code.String != ""
+	hasContactEmail := n.ContactEmail.Valid && n.ContactEmail.String != ""
+	if !hasCode || !hasContactEmail {
+		log.Printf("Skipping neighborhood code email for %s: hasCode=%t hasContactEmail=%t (both are required)\n", n.Name, hasCode, hasContactEmail)
 		return
 	}
 
@@ -798,6 +802,8 @@ func SendNeighborhoodCodeEmailBestEffort(n *Neighborhood) {
 		log.Printf("Error sending neighborhood code email to %s: %v\n", n.ContactEmail.String, err)
 		return
 	}
+
+	log.Printf("Sent neighborhood code email for %s to %s\n", n.Name, n.ContactEmail.String)
 }
 
 func (n *Notification) ResetUserNewNotificationsCount(ctx context.Context) error {

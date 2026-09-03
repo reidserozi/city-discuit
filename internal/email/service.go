@@ -26,6 +26,30 @@ func New(host string, port int, user, password, from, fromName string) *Service 
 	}
 }
 
+// NewIfConfigured returns a Service if SMTP is usable, or nil and a reason if it
+// isn't. Every caller that needs a mailer should go through this, so that all of
+// them agree on what "SMTP is configured" means; having two call sites apply
+// different rules is how the digest emails kept sending while other emails
+// silently did nothing.
+func NewIfConfigured(host string, port int, user, password, from, fromName string) (*Service, error) {
+	var missing []string
+	if host == "" {
+		missing = append(missing, "host")
+	}
+	if port == 0 {
+		missing = append(missing, "port")
+	}
+	// from is required: it's the SMTP envelope sender passed to smtp.SendMail,
+	// and providers (SES included) reject an empty one.
+	if from == "" {
+		missing = append(missing, "from address")
+	}
+	if len(missing) > 0 {
+		return nil, fmt.Errorf("SMTP not configured, missing: %s", strings.Join(missing, ", "))
+	}
+	return New(host, port, user, password, from, fromName), nil
+}
+
 // Send sends an email via SMTP.
 func (s *Service) Send(to, subject, htmlBody string) error {
 	addr := fmt.Sprintf("%s:%d", s.host, s.port)

@@ -110,8 +110,9 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 		core.EnablePushNotifications(keys, conf.WebPushSubscriberEmail)
 	}
 
-	if conf.SMTPHost != "" && conf.SMTPFromEmail != "" {
-		emailSvc := email.New(conf.SMTPHost, conf.SMTPPort, conf.SMTPUser, conf.SMTPPassword, conf.SMTPFromEmail, conf.SMTPFromName)
+	if emailSvc, err := email.NewIfConfigured(conf.SMTPHost, conf.SMTPPort, conf.SMTPUser, conf.SMTPPassword, conf.SMTPFromEmail, conf.SMTPFromName); err != nil {
+		log.Printf("Email notifications disabled: %v\n", err)
+	} else {
 		core.EnableEmailNotifications(emailSvc, conf.SiteURL)
 		log.Printf("Email notifications enabled (from: %s)\n", conf.SMTPFromEmail)
 	}
