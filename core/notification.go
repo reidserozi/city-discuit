@@ -768,6 +768,38 @@ func (n *Notification) SendEmailNotification(ctx context.Context) error {
 	return svc.Send(user.Email.String, view.Title, htmlBody)
 }
 
+// SendNeighborhoodCodeEmailBestEffort sends the neighborhood code to the contact email.
+// If email is not configured or either code or contact email are not set, it silently returns.
+// Errors during render or send are logged but do not propagate (fire-and-forget).
+func SendNeighborhoodCodeEmailBestEffort(n *Neighborhood) {
+	emailMutex.RLock()
+	enabled := emailNotifsEnabled
+	svc := emailService
+	emailMutex.RUnlock()
+
+	if !enabled || svc == nil {
+		return
+	}
+
+	if !n.Code.Valid || n.Code.String == "" || !n.ContactEmail.Valid || n.ContactEmail.String == "" {
+		return
+	}
+
+	subject, htmlBody, err := email.RenderNeighborhoodCodeEmail(email.NeighborhoodCodeEmailData{
+		NeighborhoodName: n.Name,
+		Code:             n.Code.String,
+	})
+	if err != nil {
+		log.Printf("Error rendering neighborhood code email for %s: %v\n", n.Name, err)
+		return
+	}
+
+	if err := svc.Send(n.ContactEmail.String, subject, htmlBody); err != nil {
+		log.Printf("Error sending neighborhood code email to %s: %v\n", n.ContactEmail.String, err)
+		return
+	}
+}
+
 func (n *Notification) ResetUserNewNotificationsCount(ctx context.Context) error {
 	return updateNewNotificationsCount(ctx, n.db, n.UserID)
 }

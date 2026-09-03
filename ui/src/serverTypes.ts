@@ -1,8 +1,9 @@
 export interface Neighborhood {
   id: string;
   name: string;
-  description: string;
+  contactName: string;
   code: string;
+  contactEmail: string;
   createdAt: string; // A datetime.
 }
 

@@ -270,7 +270,6 @@ func buildSelectUserQuery(where string) string {
 		"users.mfa_enabled",
 		"neighborhoods.id",
 		"neighborhoods.name",
-		"neighborhoods.description",
 		"neighborhoods.created_at",
 	}
 	cols = append(cols, images.ImageColumns("pro_pic")...)
@@ -406,11 +405,10 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 
 		var neighborhoodID msql.NullString
 		var neighborhoodName msql.NullString
-		var neighborhoodDescription msql.NullString
 		var neighborhoodCreatedAt msql.NullTime
 
 		proPic := &images.Image{}
-		dests = append(dests, &neighborhoodID, &neighborhoodName, &neighborhoodDescription, &neighborhoodCreatedAt)
+		dests = append(dests, &neighborhoodID, &neighborhoodName, &neighborhoodCreatedAt)
 		dests = append(dests, proPic.ScanDestinations()...)
 
 		if err := rows.Scan(dests...); err != nil {
@@ -436,10 +434,9 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 
 		if neighborhoodID.Valid {
 			u.Neighborhood = &Neighborhood{
-				ID:          neighborhoodID.String,
-				Name:        neighborhoodName.String,
-				Description: neighborhoodDescription.String,
-				CreatedAt:   neighborhoodCreatedAt.Time,
+				ID:        neighborhoodID.String,
+				Name:      neighborhoodName.String,
+				CreatedAt: neighborhoodCreatedAt.Time,
 			}
 		}
 

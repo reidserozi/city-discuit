@@ -6,7 +6,7 @@ import Input from '../../components/Input';
 import PageLoading from '../../components/PageLoading';
 import SimpleFeed, { SimpleFeedItem } from '../../components/SimpleFeed';
 import { TableRow } from '../../components/Table';
-import { mfetchjson } from '../../helper';
+import { mfetchjson, validEmail } from '../../helper';
 import { useLoading } from '../../hooks';
 import { Neighborhood } from '../../serverTypes';
 import { snackAlert, snackAlertError } from '../../slices/mainSlice';
@@ -22,14 +22,18 @@ export default function Neighborhoods() {
   });
 
   const [newName, setNewName] = useState('');
-  const [newDescription, setNewDescription] = useState('');
+  const [newContactName, setNewContactName] = useState('');
   const [newCode, setNewCode] = useState('');
+  const [newContactEmail, setNewContactEmail] = useState('');
+  const [newContactEmailError, setNewContactEmailError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
-  const [editDescription, setEditDescription] = useState('');
+  const [editContactName, setEditContactName] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [editContactEmail, setEditContactEmail] = useState('');
+  const [editContactEmailError, setEditContactEmailError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   const dispatch = useDispatch();
@@ -41,7 +45,7 @@ export default function Neighborhoods() {
   const fetchNeighborhoods = async () => {
     try {
       setLoading('loading');
-      const res = (await mfetchjson('/api/neighborhoods')) as Neighborhood[];
+      const res = (await mfetchjson('/api/admin/neighborhoods')) as Neighborhood[];
       setNeighborhoodsState({ neighborhoods: res });
       setLoading('loaded');
     } catch (error) {
@@ -56,14 +60,20 @@ export default function Neighborhoods() {
       return;
     }
 
+    if (newContactEmail && !validEmail(newContactEmail)) {
+      setNewContactEmailError('Please enter a valid email address');
+      return;
+    }
+
     setIsCreating(true);
     try {
       const neighborhood = await mfetchjson('/api/admin/neighborhoods', {
         method: 'POST',
         body: JSON.stringify({
           name: newName,
-          description: newDescription,
+          contactName: newContactName,
           code: newCode,
+          contactEmail: newContactEmail,
         }),
       });
       setNeighborhoodsState((prev) => ({
@@ -71,8 +81,10 @@ export default function Neighborhoods() {
         neighborhoods: [...(prev.neighborhoods || []), neighborhood],
       }));
       setNewName('');
-      setNewDescription('');
+      setNewContactName('');
       setNewCode('');
+      setNewContactEmail('');
+      setNewContactEmailError('');
       dispatch(snackAlert('Neighborhood created successfully'));
     } catch (error) {
       dispatch(snackAlertError(error));
@@ -84,13 +96,20 @@ export default function Neighborhoods() {
   const handleEditStart = (neighborhood: Neighborhood) => {
     setEditingId(neighborhood.id);
     setEditName(neighborhood.name);
-    setEditDescription(neighborhood.description || '');
+    setEditContactName(neighborhood.contactName || '');
     setEditCode(neighborhood.code || '');
+    setEditContactEmail(neighborhood.contactEmail || '');
+    setEditContactEmailError('');
   };
 
   const handleEditSave = async () => {
     if (!editName.trim()) {
       dispatch(snackAlert('Neighborhood name is required'));
+      return;
+    }
+
+    if (editContactEmail && !validEmail(editContactEmail)) {
+      setEditContactEmailError('Please enter a valid email address');
       return;
     }
 
@@ -100,8 +119,9 @@ export default function Neighborhoods() {
         method: 'PUT',
         body: JSON.stringify({
           name: editName,
-          description: editDescription,
+          contactName: editContactName,
           code: editCode,
+          contactEmail: editContactEmail,
         }),
       });
       setNeighborhoodsState((prev) => ({
@@ -122,8 +142,10 @@ export default function Neighborhoods() {
   const handleEditCancel = () => {
     setEditingId(null);
     setEditName('');
-    setEditDescription('');
+    setEditContactName('');
     setEditCode('');
+    setEditContactEmail('');
+    setEditContactEmailError('');
   };
 
   const handleDelete = async (id: string) => {
@@ -147,9 +169,10 @@ export default function Neighborhoods() {
 
   const handleRenderItem = (item: Neighborhood): React.ReactNode => {
     return (
-      <TableRow columns={4}>
+      <TableRow columns={5}>
         <div className="table-column">{item.name}</div>
-        <div className="table-column">{item.description || '—'}</div>
+        <div className="table-column">{item.contactName || '—'}</div>
+        <div className="table-column">{item.contactEmail || '—'}</div>
         <div className="table-column" style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>
           {item.code || '—'}
         </div>
@@ -192,15 +215,45 @@ export default function Neighborhoods() {
             disabled={isCreating || isEditing}
           />
         </FormField>
-        <FormField label="Description">
-          <textarea
-            value={editingId ? editDescription : newDescription}
-            onChange={(e) => editingId ? setEditDescription(e.target.value) : setNewDescription(e.target.value)}
-            placeholder="Optional description"
-            rows={3}
+        <FormField label="Contact name">
+          <Input
+            value={editingId ? editContactName : newContactName}
+            onChange={(e) => editingId ? setEditContactName(e.target.value) : setNewContactName(e.target.value)}
+            placeholder="e.g. Martin — the neighborhood leader's name"
             disabled={isCreating || isEditing}
-            style={{ width: '100%' }}
           />
+        </FormField>
+        <FormField label="Contact email">
+          <Input
+            type="email"
+            value={editingId ? editContactEmail : newContactEmail}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (editingId) {
+                setEditContactEmail(value);
+                if (value && !validEmail(value)) {
+                  setEditContactEmailError('Invalid email');
+                } else {
+                  setEditContactEmailError('');
+                }
+              } else {
+                setNewContactEmail(value);
+                if (value && !validEmail(value)) {
+                  setNewContactEmailError('Invalid email');
+                } else {
+                  setNewContactEmailError('');
+                }
+              }
+            }}
+            placeholder="e.g. martin@example.com"
+            disabled={isCreating || isEditing}
+            error={editingId ? !!editContactEmailError : !!newContactEmailError}
+          />
+          {(editingId ? editContactEmailError : newContactEmailError) && (
+            <div style={{ color: '#d32f2f', fontSize: '12px', marginTop: '4px' }}>
+              {editingId ? editContactEmailError : newContactEmailError}
+            </div>
+          )}
         </FormField>
         <FormField label="Code (optional)">
           <Input

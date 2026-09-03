@@ -158,6 +158,7 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	r.Handle("/api/mutes/{muteID}", s.withHandler(s.deleteMute)).Methods("DELETE")
 
 	r.Handle("/api/neighborhoods", s.withHandler(s.getNeighborhoods)).Methods("GET")
+	r.Handle("/api/admin/neighborhoods", s.withHandler(s.getAdminNeighborhoods)).Methods("GET")
 	r.Handle("/api/admin/neighborhoods", s.withHandler(s.createNeighborhood)).Methods("POST")
 	r.Handle("/api/admin/neighborhoods/{id}", s.withHandler(s.updateNeighborhood)).Methods("PUT")
 	r.Handle("/api/admin/neighborhoods/{id}", s.withHandler(s.deleteNeighborhood)).Methods("DELETE")

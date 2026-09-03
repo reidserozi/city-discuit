@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net/mail"
 	"strings"
 	"time"
 
@@ -8,14 +9,14 @@ import (
 	"github.com/discuitnet/discuit/internal/httperr"
 )
 
-// GET /api/neighborhoods
+// GET /api/neighborhoods (public endpoint)
 func (s *Server) getNeighborhoods(w *responseWriter, r *request) error {
 	neighborhoods, err := core.GetNeighborhoods(r.ctx, s.db)
 	if err != nil {
 		return err
 	}
 
-	// Return only public fields (exclude sensitive description)
+	// Return only public fields (exclude sensitive contact info)
 	type publicNeighborhood struct {
 		ID        string `json:"id"`
 		Name      string `json:"name"`
@@ -40,6 +41,20 @@ func (s *Server) getNeighborhoods(w *responseWriter, r *request) error {
 	return w.writeJSON(publicNeighborhoods)
 }
 
+// GET /api/admin/neighborhoods (admin-only endpoint)
+func (s *Server) getAdminNeighborhoods(w *responseWriter, r *request) error {
+	if _, err := getLoggedInAdmin(s.db, r); err != nil {
+		return err
+	}
+
+	neighborhoods, err := core.GetNeighborhoods(r.ctx, s.db)
+	if err != nil {
+		return err
+	}
+
+	return w.writeJSON(neighborhoods)
+}
+
 // POST /api/admin/neighborhoods
 func (s *Server) createNeighborhood(w *responseWriter, r *request) error {
 	if _, err := getLoggedInAdmin(s.db, r); err != nil {
@@ -47,29 +62,39 @@ func (s *Server) createNeighborhood(w *responseWriter, r *request) error {
 	}
 
 	var req struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Code        string `json:"code"`
+		Name         string `json:"name"`
+		ContactName  string `json:"contactName"`
+		Code         string `json:"code"`
+		ContactEmail string `json:"contactEmail"`
 	}
 	if err := r.unmarshalJSONBody(&req); err != nil {
 		return err
 	}
 
 	req.Name = strings.TrimSpace(req.Name)
-	req.Description = strings.TrimSpace(req.Description)
+	req.ContactName = strings.TrimSpace(req.ContactName)
 	req.Code = strings.TrimSpace(req.Code)
+	req.ContactEmail = strings.TrimSpace(req.ContactEmail)
 
 	if req.Name == "" {
 		return httperr.NewBadRequest("invalid_name", "Neighborhood name is required")
 	}
 
-	neighborhood, err := core.CreateNeighborhood(r.ctx, s.db, req.Name, req.Description, req.Code)
+	if req.ContactEmail != "" {
+		if _, err := mail.ParseAddress(req.ContactEmail); err != nil {
+			return httperr.NewBadRequest("invalid_contact_email", "Please enter a valid email address")
+		}
+	}
+
+	neighborhood, err := core.CreateNeighborhood(r.ctx, s.db, req.Name, req.ContactName, req.Code, req.ContactEmail)
 	if err != nil {
 		if err.Error() == "neighborhood_already_exists" {
 			return httperr.NewBadRequest("already_exists", "Neighborhood with this name already exists")
 		}
 		return err
 	}
+
+	go core.SendNeighborhoodCodeEmailBestEffort(neighborhood)
 
 	return w.writeJSON(neighborhood)
 }
@@ -83,20 +108,28 @@ func (s *Server) updateNeighborhood(w *responseWriter, r *request) error {
 	neighborhoodID := r.muxVar("id")
 
 	var req struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Code        string `json:"code"`
+		Name         string `json:"name"`
+		ContactName  string `json:"contactName"`
+		Code         string `json:"code"`
+		ContactEmail string `json:"contactEmail"`
 	}
 	if err := r.unmarshalJSONBody(&req); err != nil {
 		return err
 	}
 
 	req.Name = strings.TrimSpace(req.Name)
-	req.Description = strings.TrimSpace(req.Description)
+	req.ContactName = strings.TrimSpace(req.ContactName)
 	req.Code = strings.TrimSpace(req.Code)
+	req.ContactEmail = strings.TrimSpace(req.ContactEmail)
 
 	if req.Name == "" {
 		return httperr.NewBadRequest("invalid_name", "Neighborhood name is required")
+	}
+
+	if req.ContactEmail != "" {
+		if _, err := mail.ParseAddress(req.ContactEmail); err != nil {
+			return httperr.NewBadRequest("invalid_contact_email", "Please enter a valid email address")
+		}
 	}
 
 	// Verify neighborhood exists
@@ -108,7 +141,7 @@ func (s *Server) updateNeighborhood(w *responseWriter, r *request) error {
 		return err
 	}
 
-	if err := core.UpdateNeighborhood(r.ctx, s.db, neighborhoodID, req.Name, req.Description, req.Code); err != nil {
+	if err := core.UpdateNeighborhood(r.ctx, s.db, neighborhoodID, req.Name, req.ContactName, req.Code, req.ContactEmail); err != nil {
 		return err
 	}
 

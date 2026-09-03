@@ -11,11 +11,12 @@ import (
 )
 
 type Neighborhood struct {
-	ID          string         `json:"id"`
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	Code        sql.NullString `json:"-"`
-	CreatedAt   time.Time      `json:"createdAt"`
+	ID           string         `json:"id"`
+	Name         string         `json:"name"`
+	ContactName  string         `json:"contactName"`
+	Code         sql.NullString `json:"-"`
+	ContactEmail sql.NullString `json:"-"`
+	CreatedAt    time.Time      `json:"createdAt"`
 }
 
 // MarshalJSON customizes JSON marshaling for Neighborhood
@@ -25,19 +26,25 @@ func (n Neighborhood) MarshalJSON() ([]byte, error) {
 	if n.Code.Valid {
 		code = n.Code.String
 	}
+	contactEmail := ""
+	if n.ContactEmail.Valid {
+		contactEmail = n.ContactEmail.String
+	}
 	return json.Marshal(&struct {
-		Code string `json:"code"`
+		Code         string `json:"code"`
+		ContactEmail string `json:"contactEmail"`
 		*Alias
 	}{
-		Code:  code,
-		Alias: (*Alias)(&n),
+		Code:         code,
+		ContactEmail: contactEmail,
+		Alias:        (*Alias)(&n),
 	})
 }
 
 // GetNeighborhoods returns all neighborhoods
 func GetNeighborhoods(ctx context.Context, db *sql.DB) ([]Neighborhood, error) {
 	rows, err := db.QueryContext(ctx, `
-		SELECT id, name, description, code, created_at
+		SELECT id, name, contact_name, code, contact_email, created_at
 		FROM neighborhoods
 		ORDER BY name ASC
 	`)
@@ -49,7 +56,7 @@ func GetNeighborhoods(ctx context.Context, db *sql.DB) ([]Neighborhood, error) {
 	var neighborhoods []Neighborhood
 	for rows.Next() {
 		var n Neighborhood
-		if err := rows.Scan(&n.ID, &n.Name, &n.Description, &n.Code, &n.CreatedAt); err != nil {
+		if err := rows.Scan(&n.ID, &n.Name, &n.ContactName, &n.Code, &n.ContactEmail, &n.CreatedAt); err != nil {
 			return nil, err
 		}
 		neighborhoods = append(neighborhoods, n)
@@ -61,10 +68,10 @@ func GetNeighborhoods(ctx context.Context, db *sql.DB) ([]Neighborhood, error) {
 func GetNeighborhoodByID(ctx context.Context, db *sql.DB, id string) (*Neighborhood, error) {
 	var n Neighborhood
 	err := db.QueryRowContext(ctx, `
-		SELECT id, name, description, code, created_at
+		SELECT id, name, contact_name, code, contact_email, created_at
 		FROM neighborhoods
 		WHERE id = ?
-	`, id).Scan(&n.ID, &n.Name, &n.Description, &n.Code, &n.CreatedAt)
+	`, id).Scan(&n.ID, &n.Name, &n.ContactName, &n.Code, &n.ContactEmail, &n.CreatedAt)
 
 	if err == sql.ErrNoRows {
 		return nil, errors.New("neighborhood_not_found")
@@ -76,7 +83,7 @@ func GetNeighborhoodByID(ctx context.Context, db *sql.DB, id string) (*Neighborh
 }
 
 // CreateNeighborhood creates a new neighborhood
-func CreateNeighborhood(ctx context.Context, db *sql.DB, name string, description string, code string) (*Neighborhood, error) {
+func CreateNeighborhood(ctx context.Context, db *sql.DB, name string, contactName string, code string, contactEmail string) (*Neighborhood, error) {
 	// Check if neighborhood with this name already exists
 	var existingID string
 	err := db.QueryRowContext(ctx, `SELECT id FROM neighborhoods WHERE name = ?`, name).Scan(&existingID)
@@ -90,19 +97,21 @@ func CreateNeighborhood(ctx context.Context, db *sql.DB, name string, descriptio
 
 	id := uid.New()
 	codeNullString := sql.NullString{String: code, Valid: code != ""}
+	contactEmailNullString := sql.NullString{String: contactEmail, Valid: contactEmail != ""}
 
 	n := Neighborhood{
-		ID:          id.String(),
-		Name:        name,
-		Description: description,
-		Code:        codeNullString,
-		CreatedAt:   time.Now().UTC(),
+		ID:           id.String(),
+		Name:         name,
+		ContactName:  contactName,
+		Code:         codeNullString,
+		ContactEmail: contactEmailNullString,
+		CreatedAt:    time.Now().UTC(),
 	}
 
 	_, err = db.ExecContext(ctx, `
-		INSERT INTO neighborhoods (id, name, description, code, created_at)
-		VALUES (?, ?, ?, ?, ?)
-	`, n.ID, n.Name, n.Description, codeNullString, n.CreatedAt)
+		INSERT INTO neighborhoods (id, name, contact_name, code, contact_email, created_at)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, n.ID, n.Name, n.ContactName, codeNullString, contactEmailNullString, n.CreatedAt)
 
 	if err != nil {
 		return nil, err
@@ -111,14 +120,15 @@ func CreateNeighborhood(ctx context.Context, db *sql.DB, name string, descriptio
 }
 
 // UpdateNeighborhood updates a neighborhood
-func UpdateNeighborhood(ctx context.Context, db *sql.DB, id string, name string, description string, code string) error {
+func UpdateNeighborhood(ctx context.Context, db *sql.DB, id string, name string, contactName string, code string, contactEmail string) error {
 	codeNullString := sql.NullString{String: code, Valid: code != ""}
+	contactEmailNullString := sql.NullString{String: contactEmail, Valid: contactEmail != ""}
 
 	_, err := db.ExecContext(ctx, `
 		UPDATE neighborhoods
-		SET name = ?, description = ?, code = ?
+		SET name = ?, contact_name = ?, code = ?, contact_email = ?
 		WHERE id = ?
-	`, name, description, codeNullString, id)
+	`, name, contactName, codeNullString, contactEmailNullString, id)
 	return err
 }
 
