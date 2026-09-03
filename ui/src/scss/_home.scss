@@ -554,6 +554,56 @@ a {
         .dropdown-target {
             transform: scale(0.92);
         }
+        &.is-dense {
+            .left {
+                flex-direction: column;
+                align-items: stretch;
+                flex-wrap: nowrap;
+                min-width: 0;
+            }
+            .post-card-heading-row1 {
+                display: flex;
+                align-items: center;
+                min-width: 0;
+                a {
+                    min-width: 0;
+                    flex-shrink: 1;
+                    span {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        min-width: 0;
+                    }
+                }
+            }
+            .post-card-heading-item {
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+            .post-card-heading-by {
+                flex-wrap: nowrap;
+                min-width: 0;
+                overflow: hidden;
+                > span,
+                a,
+                .post-card-heading-user-group,
+                .post-card-heading-ago {
+                    flex-shrink: 0;
+                    white-space: nowrap;
+                }
+                .post-card-heading-neighborhood {
+                    flex-shrink: 1;
+                    min-width: 0;
+                    overflow: hidden;
+                }
+                .post-card-heading-neighborhood-name {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    min-width: 0;
+                }
+            }
+        }
     }
     .post-card-bottom {
         // border-bottom-left-radius: var(--border-radius);
@@ -725,63 +775,6 @@ a {
     background-color: rgb(var(--color-fg), 0.01);
     @include mixins.not-mobile {
         margin-left: var(--post-card-votes-margin);
-    }
-}
-
-html.theme-dark {
-    .post-card.is-compact {
-        .post-card-card {
-            @include mixins.mobile {
-                border-bottom: none;
-            }
-        }
-        @include mixins.mobile {
-            .post-card-heading-details .left {
-                flex-direction: column;
-                align-items: flex-start;
-                flex-wrap: nowrap;
-                > * {
-                    margin-right: 0;
-                }
-            }
-            .post-card-heading-row1 {
-                display: flex;
-                align-items: center;
-                min-width: 0;
-                max-width: 100%;
-                .community-link {
-                    min-width: 0;
-                    span {
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        min-width: 0;
-                    }
-                }
-                .post-card-heading-item {
-                    flex-shrink: 0;
-                    white-space: nowrap;
-                    margin-left: 6px;
-                }
-            }
-            .post-card-heading-by {
-                flex-wrap: nowrap;
-                max-width: 100%;
-                .user-link,
-                .post-card-heading-ago {
-                    flex-shrink: 0;
-                    white-space: nowrap;
-                }
-                .post-card-heading-neighborhood {
-                    display: none;
-                }
-            }
-            .post-card-heading-row3 {
-                display: flex;
-                align-items: center;
-                margin-top: 2px;
-            }
-        }
     }
 }
 

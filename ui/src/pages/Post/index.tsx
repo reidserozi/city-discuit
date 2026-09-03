@@ -618,6 +618,15 @@ const Post = () => {
               )}
             </div>
           </article>
+          {post.latitude && post.longitude && (
+            <div className="post-map-mobile is-m">
+              <MapDisplay
+                latitude={post.latitude}
+                longitude={post.longitude}
+                locationName={post.locationName || undefined}
+              />
+            </div>
+          )}
         </div>
       </main>
       <aside className="right">
@@ -628,11 +637,13 @@ const Post = () => {
             <CommunitySkeleton />
           )}
           {post.latitude && post.longitude && (
-            <MapDisplay
-              latitude={post.latitude}
-              longitude={post.longitude}
-              locationName={post.locationName || undefined}
-            />
+            <div className="is-no-m">
+              <MapDisplay
+                latitude={post.latitude}
+                longitude={post.longitude}
+                locationName={post.locationName || undefined}
+              />
+            </div>
           )}
         </div>
       </aside>

@@ -17,7 +17,7 @@ export interface PostCardHeadingDetailsProps {
   showEdited?: boolean;
   showAuthorProPic?: boolean;
   onRemoveFromList?: (postId: string) => void;
-  compact?: boolean;
+  dense?: boolean;
   onHidePost?: () => void;
 }
 
@@ -27,7 +27,7 @@ const PostCardHeadingDetails = ({
   showEdited = false,
   showAuthorProPic = false,
   onRemoveFromList,
-  compact = false,
+  dense = false,
   onHidePost,
 }: PostCardHeadingDetailsProps) => {
   userGroup = userGroup ?? post.userGroup;
@@ -73,7 +73,7 @@ const PostCardHeadingDetails = ({
   const isUsernameGhost = post.userDeleted && !viewerAdmin;
 
   return (
-    <div className="post-card-heading-details">
+    <div className={`post-card-heading-details ${dense ? 'is-dense' : ''}`}>
       <div className="left">
         <div className="post-card-heading-row1">
           <CommunityLink name={post.communityName} proPic={post.communityProPic} />
@@ -82,7 +82,7 @@ const PostCardHeadingDetails = ({
           )}
         </div>
         <div className="post-card-heading-by">
-          <span>{compact ? null : 'Posted by '}</span>
+          <span>{dense ? null : 'Posted by '}</span>
           <UserLink
             className={post.userDeleted && viewerAdmin ? 'is-red' : ''}
             username={isUsernameGhost ? 'Ghost' : post.username}
@@ -99,7 +99,8 @@ const PostCardHeadingDetails = ({
           )}
           {post.author?.neighborhood && (
             <span className="post-card-heading-neighborhood">
-              From 📍 {post.author.neighborhood.name}
+              From 📍{' '}
+              <span className="post-card-heading-neighborhood-name">{post.author.neighborhood.name}</span>
             </span>
           )}
           {' '}

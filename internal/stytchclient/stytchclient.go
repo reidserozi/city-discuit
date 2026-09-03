@@ -89,7 +89,8 @@ func (c *Client) do(ctx context.Context, method, path string, body interface{}) 
 }
 
 type sendMagicLinkReq struct {
-	Email string `json:"email"`
+	Email             string `json:"email"`
+	LoginMagicLinkURL string `json:"login_magic_link_url"`
 }
 
 type sendMagicLinkResp struct {
@@ -98,10 +99,10 @@ type sendMagicLinkResp struct {
 
 // SendMagicLink sends a magic link to the given email address.
 // The redirectURL is where the user will be sent after clicking the link.
-// Note: Stytch handles the redirect URL configuration in the dashboard, not per-request.
 func (c *Client) SendMagicLink(ctx context.Context, email, redirectURL string) (stytchUserID string, err error) {
 	respBody, err := c.do(ctx, "POST", "/v1/magic_links/email/login_or_create", sendMagicLinkReq{
-		Email: email,
+		Email:             email,
+		LoginMagicLinkURL: redirectURL,
 	})
 	if err != nil {
 		return "", err

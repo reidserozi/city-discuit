@@ -191,7 +191,7 @@ const PostCard = ({
           <PostCardHeadingDetails
             post={post}
             onRemoveFromList={onRemoveFromList}
-            compact={compact}
+            dense={true}
             onHidePost={canHideFromFeed ? handleHidePost : undefined}
           />
         </div>
