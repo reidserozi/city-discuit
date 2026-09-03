@@ -305,6 +305,10 @@
     justify-content: flex-end;
     flex-wrap: nowrap;
     gap: 12px;
+    // .table-row has no column-gap (see _base.scss), so adjacent grid tracks
+    // butt up with zero space by default; this padding is this column's own
+    // guaranteed breathing room from whatever sits to its left.
+    padding-left: 16px;
     text-align: right;
 }
 

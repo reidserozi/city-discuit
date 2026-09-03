@@ -11,10 +11,15 @@ import { useLoading } from '../../hooks';
 import { Neighborhood } from '../../serverTypes';
 import { snackAlert, snackAlertError } from '../../slices/mainSlice';
 
-// Code is short and fixed-width; contact email is the longest field and needs
-// the most room; actions just needs to fit its buttons.
+// Each .table-row is its own independent CSS grid (see Table.tsx), so an `auto`
+// column's width is computed from that row's own content only -- it does NOT
+// stay in sync with the same column in other rows. A row with no "Send code"
+// button ends up with a narrower actions column than one with it, and the
+// header row (empty cell) collapses to near zero, so column boundaries drift
+// between rows. Fixed pixel widths for Code/Actions keep every row identical
+// regardless of what that row happens to render.
 const NEIGHBORHOOD_GRID_COLUMNS =
-  'minmax(100px, 1fr) minmax(100px, 1fr) minmax(180px, 1.8fr) auto auto';
+  'minmax(100px, 1fr) minmax(100px, 1fr) minmax(180px, 1.8fr) 110px 230px';
 
 interface NeighborhoodsState {
   neighborhoods: Neighborhood[] | null;
