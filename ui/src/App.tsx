@@ -152,7 +152,7 @@ const App = () => {
     f();
   }, [isOnline]);
 
-  // Check if there're new notifications every 5 secs.
+  // Check if there're new notifications every 30 secs.
   const user = useSelector<RootState>((state) => state.main.user) as MainState['user'];
   const loggedIn = user !== null;
   useEffect(() => {
@@ -164,7 +164,7 @@ const App = () => {
         } catch (error) {
           console.error(error);
         }
-      }, 5000);
+      }, 30000);
       return () => clearInterval(timerId);
     }
   }, [loggedIn, dispatch]);
