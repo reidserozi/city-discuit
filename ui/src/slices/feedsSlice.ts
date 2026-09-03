@@ -99,6 +99,9 @@ export default function feedsReducer(
           ...state.feeds,
           [url]: {
             ...state.feeds[url],
+            keys: state.feeds[url]?.keys ?? [],
+            next: state.feeds[url]?.next ?? null,
+            inView: state.feeds[url]?.inView ?? [],
             loading: true,
           },
         },
@@ -112,6 +115,9 @@ export default function feedsReducer(
           ...state.feeds,
           [url]: {
             ...state.feeds[url],
+            keys: state.feeds[url]?.keys ?? [],
+            next: state.feeds[url]?.next ?? null,
+            inView: state.feeds[url]?.inView ?? [],
             loading: false,
           },
         },
