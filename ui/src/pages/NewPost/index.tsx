@@ -481,12 +481,20 @@ const NewPost = () => {
       </Helmet>
       <div className="page-new-content">
         <div className="page-new-content-post">
+          <div className="page-new-step-label is-m">
+            <span className="page-new-step-number">1</span>
+            <span>Choose a community</span>
+          </div>
           <div className="form-description">Choose the community you'd like to post in.</div>
           <SelectCommunity
             onChange={handleCommunityChange}
             disabled={isEditPost}
             initial={community ? community.name : ''}
           />
+          <div className="page-new-step-label is-m">
+            <span className="page-new-step-number">2</span>
+            <span>Select an item</span>
+          </div>
           <div className="page-new-item">
             <div className="page-new-item-header">
               <label htmlFor="post-item">Item <span className="is-required">*</span></label>
@@ -504,6 +512,10 @@ const NewPost = () => {
                 <option key={item.id} value={item.id}>{item.item}</option>
               ))}
             </select>
+          </div>
+          <div className="page-new-step-label is-m">
+            <span className="page-new-step-number">3</span>
+            <span>Write your post</span>
           </div>
           <div className="card page-new-form">
             {isPostingDisabled && (
@@ -697,6 +709,17 @@ const NewPost = () => {
               <AsUser isMod={isUserMod} onChange={(g) => setUserGroup(g)} />
             </div>
           )}
+          <div className="new-page-help is-m">
+            {'Use '}
+            <Link to="/markdown_guide" target="_blank">
+              Markdown
+            </Link>
+            {' to format posts.'}
+          </div>
+          <div className="page-new-step-label is-m">
+            <span className="page-new-step-number">4</span>
+            <span>Add a location (optional)</span>
+          </div>
           <div className="page-new-location">
             <div className="form-description">Optional — add a location if this post is about a specific place.</div>
             <button
@@ -715,7 +738,7 @@ const NewPost = () => {
               />
             )}
           </div>
-          <div className="new-page-help">
+          <div className="new-page-help is-no-m">
             {'Use '}
             <Link to="/markdown_guide" target="_blank">
               Markdown
@@ -729,6 +752,12 @@ const NewPost = () => {
             <button onClick={handleCancel}>Cancel</button>
           </div>
         </div>
+        <div className="page-new-buttons is-m">
+          <button className="button-main" onClick={handleSubmit} disabled={isSubmitDisabled}>
+            Submit
+          </button>
+          <button onClick={handleCancel}>Cancel</button>
+        </div>
         <div className="new-page-sidebar">
           {community && (
             <>
@@ -736,12 +765,6 @@ const NewPost = () => {
               <Items items={community.items || []} unordered />
             </>
           )}
-        </div>
-        <div className="page-new-buttons is-m">
-          <button className="button-main" onClick={handleSubmit} disabled={isSubmitDisabled}>
-            Submit
-          </button>
-          <button onClick={handleCancel}>Cancel</button>
         </div>
       </div>
     </div>

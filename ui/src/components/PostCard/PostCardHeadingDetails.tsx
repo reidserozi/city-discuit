@@ -100,8 +100,8 @@ const PostCardHeadingDetails = ({
               From 📍 {post.author.neighborhood.name}
             </span>
           )}
+          <TimeAgo className="post-card-heading-ago" time={post.createdAt} short={isMobile} />
         </div>
-        <TimeAgo className="post-card-heading-ago" time={post.createdAt} short={isMobile} />
         {showEditedSign && (
           <TimeAgo
             className="post-card-heading-ago"

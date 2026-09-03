@@ -505,7 +505,9 @@ a {
             }
             @include mixins.mobile() {
                 align-items: flex-start;
-                font-size: var(--fs-s);
+                > * {
+                    margin-right: 4px;
+                }
             }
             @include mixins.tablet() {
                 > * {

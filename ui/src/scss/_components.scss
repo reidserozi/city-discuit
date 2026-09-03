@@ -209,10 +209,13 @@
             font-weight: 400;
         }
         @include mixins.mobile() {
+            .button-text,
+            .button-main {
+                font-size: 0.95rem;
+            }
             .button-main {
                 padding-left: var(--gap);
                 padding-right: var(--gap);
-                font-size: 0.95rem;
             }
         }
     }
