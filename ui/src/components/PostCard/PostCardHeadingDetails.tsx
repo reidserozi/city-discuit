@@ -77,37 +77,89 @@ const PostCardHeadingDetails = ({
   return (
     <div className={`post-card-heading-details ${dense ? 'is-dense' : ''}`}>
       <div className="left">
-        <div className="post-card-heading-row1">
-          <CommunityLink name={post.communityName} proPic={post.communityProPic} />
-          {post.itemName && (
-            <span className={`post-card-heading-item${hideItemOnMobile ? ' is-no-m' : ''}`}>{post.itemName}</span>
-          )}
-        </div>
-        <div className="post-card-heading-by">
-          <span>{dense ? null : 'Posted by '}</span>
-          <UserLink
-            className={post.userDeleted && viewerAdmin ? 'is-red' : ''}
-            username={isUsernameGhost ? 'Ghost' : post.username}
-            proPic={post.author ? post.author.proPic : null}
-            showProPic={showAuthorProPic}
-            isSupporter={isAuthorSupporter}
-            noLink={isUsernameGhost}
-            proPicGhost={post.userDeleted}
-          />
-          {userGroup !== 'normal' && (
-            <span className="post-card-heading-user-group">{` ${toTitleCase(
-              userGroupSingular(userGroup)
-            )}`}</span>
-          )}
-          {post.author?.neighborhood && (
-            <span className="post-card-heading-neighborhood">
-              From 📍{' '}
-              <span className="post-card-heading-neighborhood-name">{post.author.neighborhood.name}</span>
-            </span>
-          )}
-          {' '}
-          <TimeAgo className="post-card-heading-ago" time={post.createdAt} short={isMobile} />
-        </div>
+        {dense ? (
+          // Feed rendering: one wrapping line, community · topic · user · neighborhood · time.
+          <div className="post-card-heading-line">
+            <div className="post-card-heading-row1">
+              <CommunityLink name={post.communityName} proPic={post.communityProPic} />
+              {post.itemName && (
+                <>
+                  <span className="post-card-heading-sep">·</span>
+                  <span
+                    className={`post-card-heading-item${hideItemOnMobile ? ' is-no-m' : ''}`}
+                  >
+                    {post.itemName}
+                  </span>
+                </>
+              )}
+            </div>
+            <span className="post-card-heading-sep">·</span>
+            <div className="post-card-heading-by">
+              <UserLink
+                className={post.userDeleted && viewerAdmin ? 'is-red' : ''}
+                username={isUsernameGhost ? 'Ghost' : post.username}
+                proPic={post.author ? post.author.proPic : null}
+                showProPic={showAuthorProPic}
+                isSupporter={isAuthorSupporter}
+                noLink={isUsernameGhost}
+                proPicGhost={post.userDeleted}
+              />
+              {userGroup !== 'normal' && (
+                <span className="post-card-heading-user-group">{` ${toTitleCase(
+                  userGroupSingular(userGroup)
+                )}`}</span>
+              )}
+              {post.author?.neighborhood && (
+                <>
+                  <span className="post-card-heading-sep">·</span>
+                  <span className="post-card-heading-neighborhood">
+                    📍{' '}
+                    <span className="post-card-heading-neighborhood-name">
+                      {post.author.neighborhood.name}
+                    </span>
+                  </span>
+                </>
+              )}
+              <span className="post-card-heading-sep">·</span>
+              <TimeAgo className="post-card-heading-ago" time={post.createdAt} short />
+            </div>
+          </div>
+        ) : (
+          // Non-feed rendering (post detail page): unchanged two-row layout.
+          <>
+            <div className="post-card-heading-row1">
+              <CommunityLink name={post.communityName} proPic={post.communityProPic} />
+              {post.itemName && (
+                <span className={`post-card-heading-item${hideItemOnMobile ? ' is-no-m' : ''}`}>{post.itemName}</span>
+              )}
+            </div>
+            <div className="post-card-heading-by">
+              <span>Posted by </span>
+              <UserLink
+                className={post.userDeleted && viewerAdmin ? 'is-red' : ''}
+                username={isUsernameGhost ? 'Ghost' : post.username}
+                proPic={post.author ? post.author.proPic : null}
+                showProPic={showAuthorProPic}
+                isSupporter={isAuthorSupporter}
+                noLink={isUsernameGhost}
+                proPicGhost={post.userDeleted}
+              />
+              {userGroup !== 'normal' && (
+                <span className="post-card-heading-user-group">{` ${toTitleCase(
+                  userGroupSingular(userGroup)
+                )}`}</span>
+              )}
+              {post.author?.neighborhood && (
+                <span className="post-card-heading-neighborhood">
+                  From 📍{' '}
+                  <span className="post-card-heading-neighborhood-name">{post.author.neighborhood.name}</span>
+                </span>
+              )}
+              {' '}
+              <TimeAgo className="post-card-heading-ago" time={post.createdAt} short={isMobile} />
+            </div>
+          </>
+        )}
         {(showEditedSign || isPinned) && (
           <div className="post-card-heading-row3">
             {showEditedSign && (

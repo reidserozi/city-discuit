@@ -555,11 +555,27 @@ a {
             transform: scale(0.92);
         }
         &.is-dense {
+            // Feed rendering: one wrapping line -- community · topic · user ·
+            // neighborhood · time. Priority when space runs out: community name
+            // and timestamp never shrink (they anchor the line); topic badge,
+            // username, and neighborhood can truncate with an ellipsis.
             .left {
                 flex-direction: column;
                 align-items: stretch;
                 flex-wrap: nowrap;
                 min-width: 0;
+            }
+            .post-card-heading-line {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                row-gap: 2px;
+                min-width: 0;
+            }
+            .post-card-heading-sep {
+                flex-shrink: 0;
+                opacity: 0.6;
+                margin: 0 2px;
             }
             .post-card-heading-row1 {
                 display: flex;
@@ -567,27 +583,33 @@ a {
                 min-width: 0;
                 a {
                     min-width: 0;
-                    flex-shrink: 1;
-                    span {
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        min-width: 0;
-                    }
+                    flex-shrink: 0; // community name: never truncate
                 }
             }
             .post-card-heading-item {
-                flex-shrink: 0;
+                flex-shrink: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 white-space: nowrap;
             }
             .post-card-heading-by {
+                display: flex;
+                align-items: center;
                 flex-wrap: nowrap;
                 min-width: 0;
                 overflow: hidden;
-                > span,
-                a,
-                .post-card-heading-user-group,
-                .post-card-heading-ago {
+                .user-link {
+                    flex-shrink: 1;
+                    min-width: 0;
+                    overflow: hidden;
+                    .user-link-name {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                }
+                .post-card-heading-user-group {
                     flex-shrink: 0;
                     white-space: nowrap;
                 }
@@ -595,12 +617,17 @@ a {
                     flex-shrink: 1;
                     min-width: 0;
                     overflow: hidden;
+                    white-space: nowrap;
                 }
                 .post-card-heading-neighborhood-name {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
                     min-width: 0;
+                }
+                .post-card-heading-ago {
+                    flex-shrink: 0; // timestamp: never truncate
+                    white-space: nowrap;
                 }
             }
         }
@@ -898,6 +925,42 @@ a {
 }
 
 .posts-feed {
+    // Feed-scoped density tokens. Deliberately independent of --fs-*/--gap
+    // (see body's own local --fs-normal override under mixins.tablet(), which
+    // makes those global tokens viewport-dependent in a confusing way) so
+    // these stay stable regardless of viewport width. Tune here.
+    --post-fs-title: 19px;
+    --post-fs-body: 15px;
+    --post-fs-meta: 13px;
+    --post-fs-action: 13px;
+    --post-lh-body: 1.55;
+    --post-gap: 8px;
+
+    .post-card {
+        // .post-card already exposes these two as local custom properties
+        // (see .post-card's own declaration) -- overriding them here, scoped
+        // to .posts-feed, leaves the post detail page's .post-card untouched.
+        --padding-hor: 14px;
+        --margin-bottom: 8px;
+    }
+    .feed > * {
+        margin-bottom: var(--post-gap);
+    }
+    .post-card-title-main {
+        font-size: var(--post-fs-title);
+    }
+    .post-card-text {
+        font-size: var(--post-fs-body);
+        line-height: var(--post-lh-body);
+    }
+    .post-card-bottom,
+    .post-card-bottom * {
+        font-size: var(--post-fs-action);
+    }
+    .post-card-heading-details .left {
+        font-size: var(--post-fs-meta);
+    }
+
     .feed-skeleton {
         .skeleton {
             margin-left: var(--post-card-votes-margin);
