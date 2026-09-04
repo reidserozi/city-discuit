@@ -960,6 +960,13 @@ a {
     .post-card-heading-details .left {
         font-size: var(--post-fs-meta);
     }
+    // .post-card-heading-item has its own hardcoded font-size (var(--fs-xs))
+    // that otherwise overrides the inherited --post-fs-meta above -- align it
+    // with the rest of the metadata line, keep everything else (background,
+    // padding, border-radius) as-is.
+    .post-card-heading-item {
+        font-size: var(--post-fs-meta);
+    }
 
     .feed-skeleton {
         .skeleton {
