@@ -946,7 +946,15 @@ a {
     .feed > * {
         margin-bottom: var(--post-gap);
     }
-    .post-card-title-main {
+    // .post-card-title-main and .post-card-heading-item both had their
+    // override silently lose to the original rule: the original is nested 3
+    // class-selectors deep (.post-card .post-card-title .post-card-title-main,
+    // .post-card .post-card-heading-details .post-card-heading-item), while a
+    // flat `.posts-feed .post-card-title-main` is only 2 -- CSS specificity is
+    // decided by selector structure, not by which rule is more purpose-built
+    // or declared later. Matching the same nesting depth here makes it a
+    // genuine tie, which then correctly resolves in favor of this later block.
+    .post-card-title .post-card-title-main {
         font-size: var(--post-fs-title);
     }
     .post-card-text {
@@ -960,11 +968,7 @@ a {
     .post-card-heading-details .left {
         font-size: var(--post-fs-meta);
     }
-    // .post-card-heading-item has its own hardcoded font-size (var(--fs-xs))
-    // that otherwise overrides the inherited --post-fs-meta above -- align it
-    // with the rest of the metadata line, keep everything else (background,
-    // padding, border-radius) as-is.
-    .post-card-heading-item {
+    .post-card-heading-details .post-card-heading-item {
         font-size: var(--post-fs-meta);
     }
 
