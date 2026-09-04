@@ -41,8 +41,12 @@ func (s *Server) emailVerificationStart(w *responseWriter, r *request) error {
 		return httperr.NewBadRequest("no_email", "User does not have an email address.")
 	}
 
-	// Send magic link (Stytch creates or returns existing user by email)
-	redirectURL := s.config.SiteURL + "/verify-email?token="
+	// Send magic link (Stytch creates or returns existing user by email).
+	// The redirect URL must exactly match one registered in the Stytch dashboard
+	// (including query string, or lack of one) -- Stytch appends its own
+	// `?token=...` when it builds the actual emailed link, so we must send the
+	// bare URL here, not pre-append an empty token param ourselves.
+	redirectURL := s.config.SiteURL + "/verify-email"
 	stytchUserID, err := s.stytch.SendMagicLink(r.ctx, user.Email.String, redirectURL)
 	if err != nil {
 		s.http500Logger.Printf("Error sending verification email to user %s: %v\n", user.Username, err)
@@ -137,7 +141,8 @@ func (s *Server) sendEmailVerificationBestEffort(user *core.User) {
 	}
 
 	ctx := context.Background()
-	redirectURL := s.config.SiteURL + "/verify-email?token="
+	// Bare URL -- see the comment in emailVerificationStart above.
+	redirectURL := s.config.SiteURL + "/verify-email"
 	stytchUserID, err := s.stytch.SendMagicLink(ctx, user.Email.String, redirectURL)
 	if err != nil {
 		s.httpLogger.Printf("Error sending verification email to new user %s: %v\n", user.Username, err)
