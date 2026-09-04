@@ -96,6 +96,16 @@ func (u *UserGroup) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// NeighborhoodBrief is the subset of a neighborhood's fields safe to attach to
+// any user-facing response, including public, unauthenticated ones. It must
+// never grow a contact-info field -- that data belongs only on core.Neighborhood,
+// which is reserved for admin-gated endpoints.
+type NeighborhoodBrief struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 type User struct {
 	ID                uid.ID `json:"id"`
 	UserIndex         int    `json:"-"`
@@ -152,9 +162,14 @@ type User struct {
 	// The list of communities the user moderates.
 	ModdingList []*Community `json:"moddingList"`
 
-	// User's neighborhood
-	NeighborhoodID   *string       `json:"neighborhoodId"`
-	Neighborhood     *Neighborhood `json:"neighborhood"`
+	// User's neighborhood. Deliberately a minimal type distinct from
+	// core.Neighborhood -- that type's MarshalJSON always emits `code` and
+	// `contactEmail`, and ContactName has a plain json tag, so ANY value of
+	// that type leaks those field names (and, if the query ever changes to
+	// select them, their real values) into every public profile response.
+	// NeighborhoodBrief structurally cannot carry them.
+	NeighborhoodID *string            `json:"neighborhoodId"`
+	Neighborhood   *NeighborhoodBrief `json:"neighborhood"`
 
 	// Stytch authentication
 	StytchUserID msql.NullString `json:"-"`
@@ -433,7 +448,7 @@ func scanUsers(ctx context.Context, db *sql.DB, rows *sql.Rows, viewer *uid.ID) 
 		}
 
 		if neighborhoodID.Valid {
-			u.Neighborhood = &Neighborhood{
+			u.Neighborhood = &NeighborhoodBrief{
 				ID:        neighborhoodID.String,
 				Name:      neighborhoodName.String,
 				CreatedAt: neighborhoodCreatedAt.Time,

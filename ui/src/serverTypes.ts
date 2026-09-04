@@ -5,6 +5,16 @@ export interface PublicNeighborhood {
   createdAt: string; // A datetime.
 }
 
+// The shape actually returned as User.neighborhood by the Go backend
+// (core.NeighborhoodBrief) -- deliberately minimal, mirroring the backend's own
+// separation of this from the admin-only `Neighborhood` type. Never add
+// code/contactName/contactEmail here; that data must stay admin-only.
+export interface NeighborhoodBrief {
+  id: string;
+  name: string;
+  createdAt: string; // A datetime.
+}
+
 export interface Neighborhood {
   id: string;
   name: string;
@@ -46,7 +56,7 @@ export interface User {
   createdIP: string | null;
   lastSeenIP: string | null;
   neighborhoodId?: string; // Neighborhood ID if user belongs to one
-  neighborhood?: Neighborhood; // Full neighborhood object if loaded
+  neighborhood?: NeighborhoodBrief; // Brief neighborhood info if user belongs to one
 }
 
 export type UserGroup = 'normal' | 'admins' | 'mods';
