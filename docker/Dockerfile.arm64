@@ -54,6 +54,7 @@ COPY --from=frontend-builder /app/ui/dist /app/ui/dist
 COPY --from=frontend-builder /app/ui/package*.json /app/ui/
 COPY --from=backend-builder /app/discuit /app/discuit
 COPY config.default.yaml /app/config.yaml
+COPY robots.txt /app/robots.txt
 COPY migrations /app/migrations
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
