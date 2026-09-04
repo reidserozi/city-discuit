@@ -13,13 +13,16 @@ import { snackAlert, snackAlertError } from '../../slices/mainSlice';
 
 // Each .table-row is its own independent CSS grid (see Table.tsx), so an `auto`
 // column's width is computed from that row's own content only -- it does NOT
-// stay in sync with the same column in other rows. A row with no "Send code"
+// stay in sync with the same column in other rows. A row with no "Notify"
 // button ends up with a narrower actions column than one with it, and the
 // header row (empty cell) collapses to near zero, so column boundaries drift
 // between rows. Fixed pixel widths for Code/Actions keep every row identical
-// regardless of what that row happens to render.
+// regardless of what that row happens to render. The page is fullWidth (see
+// <DashboardPage> below), so there's real room now -- Contact name/email are
+// also ellipsis-truncated with a title tooltip, so these widths only need to
+// be reasonable, not exactly right for every possible value.
 const NEIGHBORHOOD_GRID_COLUMNS =
-  'minmax(100px, 1fr) minmax(100px, 1fr) minmax(180px, 1.8fr) 110px 230px';
+  'minmax(160px, 1fr) minmax(160px, 1fr) minmax(260px, 2fr) 130px 220px';
 
 interface NeighborhoodsState {
   neighborhoods: Neighborhood[] | null;
@@ -216,8 +219,18 @@ export default function Neighborhoods() {
     return (
       <TableRow columns={5} style={{ gridTemplateColumns: NEIGHBORHOOD_GRID_COLUMNS }}>
         <div className="table-column">{item.name}</div>
-        <div className="table-column">{item.contactName || '—'}</div>
-        <div className="table-column" style={{ overflowWrap: 'normal', wordBreak: 'normal' }}>
+        <div
+          className="table-column"
+          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          title={item.contactName || undefined}
+        >
+          {item.contactName || '—'}
+        </div>
+        <div
+          className="table-column"
+          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          title={item.contactEmail || undefined}
+        >
           {item.contactEmail || '—'}
         </div>
         <div className="table-column" style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>
@@ -229,9 +242,9 @@ export default function Neighborhoods() {
               onClick={() => handleSendCode(item)}
               className="button-clear button-action-edit"
               disabled={sendingCodeId === item.id}
-              title={`Email the code to ${item.contactEmail}`}
+              title={`Notify the leader by email: ${item.contactEmail}`}
             >
-              {sendingCodeId === item.id ? 'Sending...' : 'Send code'}
+              {sendingCodeId === item.id ? 'Sending...' : 'Notify'}
             </button>
           )}
           <button
@@ -262,7 +275,7 @@ export default function Neighborhoods() {
   );
 
   return (
-    <DashboardPage className="dashboard-page-neighborhoods document" title="Neighborhoods">
+    <DashboardPage className="dashboard-page-neighborhoods document" title="Neighborhoods" fullWidth>
       <FormSection heading={editingId ? 'Edit Neighborhood' : 'Create Neighborhood'}>
         <FormField label="Name">
           <Input
