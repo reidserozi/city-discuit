@@ -485,6 +485,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/robots.txt":
 		http.ServeFile(w, r, "./robots.txt")
+	case "/sitemap.xml":
+		s.serveSitemap(w, r)
 	case "/manifest.json":
 		w.Header().Add("Cache-Control", "no-cache")
 		http.ServeFile(w, r, "./ui/dist/manifest.json")

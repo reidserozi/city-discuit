@@ -2,3 +2,5 @@ User-agent: *
 Disallow: /search?q=*
 Disallow: /*/modtools/*
 
+Sitemap: https://editraleigh.com/sitemap.xml
+
