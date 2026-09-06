@@ -233,11 +233,20 @@ const App = () => {
     return <AppLoading />;
   }
 
+  // Individual posts stay reachable even while the site otherwise shows as
+  // closed -- e.g. clicking through from the Sunday "Posts to explore" banner
+  // (SiteClosed.tsx). Matches the route registered below at '/:name/post/:id'
+  // and '/:name/post/:id/:commentId'. Nothing server-side gates posting/
+  // commenting/voting by day or hour, so once this route is let through the
+  // page behaves completely normally.
+  const isPostDetailPage = /^\/[^/]+\/post\/[^/]+/.test(location.pathname);
+
   if (
     siteStatus.closed &&
     siteStatus.reason &&
     !(user && user.isAdmin) &&
-    location.pathname !== '/login'
+    location.pathname !== '/login' &&
+    !isPostDetailPage
   ) {
     return <SiteClosed reason={siteStatus.reason} />;
   }
