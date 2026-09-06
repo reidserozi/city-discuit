@@ -139,7 +139,7 @@ func sendDigestToUser(ctx context.Context, db *sql.DB, hmacSecret string, emailS
 	// Get digest content
 	now := time.Now()
 	since := now.Add(-time.Hour * 24 * 7) // Last 7 days
-	topPosts, _ := GetDigestPosts(ctx, db, 5)
+	topPosts, _ := GetDigestPosts(ctx, db, 5, false)
 	repliesSince, _ := GetRepliesSinceForUser(ctx, db, userID, since, 10)
 	activitySince, _ := GetJoinedCommunityActivitySinceForUser(ctx, db, userID, since, 10)
 

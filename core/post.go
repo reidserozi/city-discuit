@@ -2039,7 +2039,11 @@ func getPinnedPosts(ctx context.Context, db *sql.DB, viewer, community *uid.ID) 
 }
 
 // GetDigestPosts returns the top 5 most recent posts, ranked by comment engagement.
-func GetDigestPosts(ctx context.Context, db *sql.DB, limit int) ([]*Post, error) {
+// If prioritizeLocation is true, posts with a set latitude/longitude are ordered
+// first; posts without one still fill any remaining slots up to limit rather than
+// being excluded, so the result is never sparser than a plain call would be, even
+// when few posts have a location set (as is currently the case).
+func GetDigestPosts(ctx context.Context, db *sql.DB, limit int, prioritizeLocation bool) ([]*Post, error) {
 	if limit <= 0 {
 		limit = 5
 	}
@@ -2047,9 +2051,14 @@ func GetDigestPosts(ctx context.Context, db *sql.DB, limit int) ([]*Post, error)
 		limit = 10
 	}
 
+	orderBy := "posts.created_at DESC, posts.no_comments DESC"
+	if prioritizeLocation {
+		orderBy = "(posts.latitude IS NOT NULL) DESC, " + orderBy
+	}
+
 	query := buildSelectPostQuery(false,
 		`WHERE posts.deleted = FALSE
-		ORDER BY posts.created_at DESC, posts.no_comments DESC
+		ORDER BY `+orderBy+`
 		LIMIT ?`)
 
 	rows, err := db.QueryContext(ctx, query, limit)

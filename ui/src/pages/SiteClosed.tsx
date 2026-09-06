@@ -38,7 +38,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
       }
 
       try {
-        const response = await mfetchjson('/api/posts/digest?limit=5');
+        const response = await mfetchjson('/api/posts/digest?limit=5&prioritizeLocation=true');
         if (response && response.posts) {
           setPosts(response.posts);
         }
