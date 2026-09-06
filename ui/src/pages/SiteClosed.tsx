@@ -4,6 +4,9 @@ import { mfetchjson, omitWWWFromHostname } from '../helper';
 import CommunityLink from '../components/PostCard/CommunityLink';
 import LinkImage from '../components/PostCard/LinkImage';
 import PostCardImage from '../components/PostCard/PostCardImage';
+import Link from '../components/Link';
+import MarkdownBody from '../components/MarkdownBody';
+import ShowMoreBox from '../components/ShowMoreBox';
 import { useIsMobile } from '../hooks';
 import type { Post } from '../serverTypes';
 
@@ -19,16 +22,6 @@ const copy: Record<SiteClosedReason, { emoji: string; heading: string; body: str
     body: 'We\'re closed on Sundays. Raleigh isn\'t.\nBelow are a few things people are working on, each pinned to a real spot. If you pass one today, it\'s worth a look — a post reads differently when you\'re standing in it. We\'ll be back tomorrow at 6:00 AM.',
   },
 };
-
-function extractExcerpt(text: string): string {
-  if (!text) return '';
-  // Strip basic markdown: **bold**, *italic*, [link](url), etc.
-  return text
-    .replace(/\*\*(.+?)\*\*/g, '$1') // **bold**
-    .replace(/\*(.+?)\*/g, '$1')     // *italic*
-    .replace(/\[(.+?)\]\(.+?\)/g, '$1') // [text](url)
-    .replace(/^#+\s+/gm, '');        // # Headings
-}
 
 const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
   const { emoji, heading, body } = copy[reason];
@@ -76,6 +69,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
               const showImage = post.type === 'image' && post.image;
               const linkImage = post.type === 'link' && post.link?.image;
               const hasLocation = post.latitude !== null && post.longitude !== null && post.latitude !== undefined && post.longitude !== undefined;
+              const postURL = `/${post.communityName}/post/${post.publicId}`;
 
               return (
                 <div key={post.id} className="post-card">
@@ -90,7 +84,9 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
                     <div className="post-card-body">
                       <div className="post-card-title">
                         <div className="post-card-title-text">
-                          <span className="post-card-title-main">{post.title}</span>
+                          <Link className="post-card-title-main" to={postURL}>
+                            {post.title}
+                          </Link>
                           {post.type === 'link' && post.link && (
                             <a
                               className="post-card-link-domain"
@@ -120,7 +116,11 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
                       {showImage && post.image && <PostCardImage image={post.image} isMobile={isMobile} loading="lazy" />}
                       {!showImage && !linkImage && post.body && (
                         <div className="post-card-text">
-                          <div className="digest-excerpt">{extractExcerpt(post.body)}</div>
+                          <ShowMoreBox maxHeight="120px" childrenHash={post.id}>
+                            <MarkdownBody noLinks veryBasic>
+                              {post.body}
+                            </MarkdownBody>
+                          </ShowMoreBox>
                         </div>
                       )}
                     </div>
