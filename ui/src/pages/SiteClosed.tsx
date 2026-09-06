@@ -4,7 +4,6 @@ import { mfetchjson, omitWWWFromHostname } from '../helper';
 import CommunityLink from '../components/PostCard/CommunityLink';
 import LinkImage from '../components/PostCard/LinkImage';
 import PostCardImage from '../components/PostCard/PostCardImage';
-import Link from '../components/Link';
 import MarkdownBody from '../components/MarkdownBody';
 import ShowMoreBox from '../components/ShowMoreBox';
 import { useIsMobile } from '../hooks';
@@ -38,7 +37,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
       }
 
       try {
-        const response = await mfetchjson('/api/posts/digest?limit=5&prioritizeLocation=true');
+        const response = await mfetchjson('/api/posts/digest?limit=5&requireLocation=true');
         if (response && response.posts) {
           setPosts(response.posts);
         }
@@ -69,7 +68,6 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
               const showImage = post.type === 'image' && post.image;
               const linkImage = post.type === 'link' && post.link?.image;
               const hasLocation = post.latitude !== null && post.longitude !== null && post.latitude !== undefined && post.longitude !== undefined;
-              const postURL = `/${post.communityName}/post/${post.publicId}`;
 
               return (
                 <div key={post.id} className="post-card">
@@ -84,9 +82,7 @@ const SiteClosed = ({ reason }: { reason: SiteClosedReason }) => {
                     <div className="post-card-body">
                       <div className="post-card-title">
                         <div className="post-card-title-text">
-                          <Link className="post-card-title-main" to={postURL}>
-                            {post.title}
-                          </Link>
+                          <span className="post-card-title-main">{post.title}</span>
                           {post.type === 'link' && post.link && (
                             <a
                               className="post-card-link-domain"

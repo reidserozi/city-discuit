@@ -221,9 +221,9 @@ func (s *Server) digest(w *responseWriter, r *request) error {
 			limit = l
 		}
 	}
-	prioritizeLocation := query.Get("prioritizeLocation") == "true"
+	requireLocation := query.Get("requireLocation") == "true"
 
-	posts, err := core.GetDigestPosts(r.ctx, s.db, limit, prioritizeLocation)
+	posts, err := core.GetDigestPosts(r.ctx, s.db, limit, requireLocation)
 	if err != nil {
 		return err
 	}
