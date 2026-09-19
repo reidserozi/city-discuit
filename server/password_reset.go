@@ -137,8 +137,15 @@ func (s *Server) passwordResetConfirm(w *responseWriter, r *request) error {
 		return err
 	}
 
-	// Verify email hasn't changed since reset was initiated
-	if !user.Email.Valid || user.Email.String != email {
+	// Verify email hasn't changed since reset was initiated (case-insensitive,
+	// trimmed comparison -- Stytch may return the email in a different case
+	// than what's stored; see the same pattern in email_verification.go).
+	if !user.Email.Valid {
+		return httperr.NewBadRequest("email_mismatch", "User has no email on file.")
+	}
+	storedEmail := strings.ToLower(strings.TrimSpace(user.Email.String))
+	stytchEmail := strings.ToLower(strings.TrimSpace(email))
+	if storedEmail != stytchEmail {
 		return httperr.NewBadRequest("email_mismatch", "Email has changed since reset was requested.")
 	}
 

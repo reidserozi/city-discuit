@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -105,7 +103,7 @@ func (s *Server) emailVerificationConfirm(w *responseWriter, r *request) error {
 	user, err := core.GetUserByStytchUserID(r.ctx, s.db, stytchUserID, nil)
 	if err != nil {
 		s.http500Logger.Printf("GetUserByStytchUserID failed: %v\n", err)
-		if errors.Is(err, sql.ErrNoRows) {
+		if httperr.IsNotFound(err) {
 			return httperr.NewBadRequest("invalid_token", "User not found.")
 		}
 		return err
