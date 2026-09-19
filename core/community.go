@@ -89,7 +89,7 @@ func getCommunities(ctx context.Context, db *sql.DB, viewer *uid.ID, where strin
 // GetCommunityByName returns a not-found httperr.Error if no community is found.
 func GetCommunityByName(ctx context.Context, db *sql.DB, name string, viewer *uid.ID) (*Community, error) {
 	name = strings.ToLower(name)
-	comms, err := getCommunities(ctx, db, viewer, "WHERE name_lc = ?", name)
+	comms, err := getCommunities(ctx, db, viewer, "WHERE name_lc = ? AND communities.deleted_at IS NULL", name)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func GetCommunityByName(ctx context.Context, db *sql.DB, name string, viewer *ui
 
 // GetCommunityByID returns a not-found httperr.Error if no community is found.
 func GetCommunityByID(ctx context.Context, db *sql.DB, id uid.ID, viewer *uid.ID) (*Community, error) {
-	comms, err := getCommunities(ctx, db, viewer, "where communities.id = ?", id)
+	comms, err := getCommunities(ctx, db, viewer, "where communities.id = ? and communities.deleted_at is null", id)
 	if err != nil {
 		return nil, err
 	}
@@ -1259,6 +1259,38 @@ func AddAllUsersToCommunity(ctx context.Context, db *sql.DB, community string) e
 		}
 		return nil
 	})
+}
+
+// Delete permanently removes the community from public view. Unlike
+// DeleteUnusedCommunities, which hard-deletes zero-post communities, this is
+// for communities that may already have content: posts.community_id has no
+// ON DELETE CASCADE (see migrations/0001_initial.up.sql), so a physical
+// DELETE FROM communities would fail with a foreign key error once any posts
+// exist. Instead, every post in the community is soft-deleted the same way
+// Post.Delete already does for an individual post (wiping content, cleaning
+// up images), and the community row itself is marked deleted via the
+// existing deleted_at/deleted_by columns, which GetCommunityByID and
+// GetCommunityByName now exclude.
+func (c *Community) Delete(ctx context.Context, db *sql.DB, deletedBy uid.ID) error {
+	query := buildSelectPostQuery(false, "WHERE posts.community_id = ?")
+	rows, err := db.QueryContext(ctx, query, c.ID)
+	if err != nil {
+		return err
+	}
+	posts, err := scanPosts(ctx, db, rows, nil)
+	if err != nil && err != errPostNotFound {
+		return err
+	}
+	for _, post := range posts {
+		if !(post.Deleted && post.DeletedContent) {
+			if err := post.Delete(ctx, db, deletedBy, UserGroupAdmins, true, false); err != nil {
+				return err
+			}
+		}
+	}
+
+	_, err = db.ExecContext(ctx, "UPDATE communities SET deleted_at = ?, deleted_by = ? WHERE id = ?", time.Now(), deletedBy, c.ID)
+	return err
 }
 
 // DeleteUnusedCommunities deletes communities older than n days with 0 posts in

@@ -886,3 +886,30 @@ func (s *Server) deleteCommunityRequest(w *responseWriter, r *request) error {
 	w.WriteHeader(http.StatusOK)
 	return nil
 }
+
+// /api/communities/{communityID} [DELETE]
+//
+// Permanently deletes a community and all of its posts. Site-admin only.
+func (s *Server) deleteCommunity(w *responseWriter, r *request) error {
+	admin, err := getLoggedInAdmin(s.db, r)
+	if err != nil {
+		return err
+	}
+
+	id, err := strToID(r.muxVar("communityID"))
+	if err != nil {
+		return err
+	}
+
+	community, err := core.GetCommunityByID(r.ctx, s.db, id, nil)
+	if err != nil {
+		return err
+	}
+
+	if err := community.Delete(r.ctx, s.db, admin.ID); err != nil {
+		return err
+	}
+
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

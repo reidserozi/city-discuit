@@ -13,6 +13,7 @@ import { communityAdded } from '../../slices/communitiesSlice';
 import { MainState, snackAlert, snackAlertError } from '../../slices/mainSlice';
 import { RootState } from '../../store';
 import Banner from '../Community/Banner';
+import DeleteCommunity from './DeleteCommunity';
 
 const descriptionMaxLength = 2000;
 
@@ -252,6 +253,11 @@ const Settings = ({ community }: { community: Community }) => {
             <button onClick={handleChangeDefault}>
               {community.isDefault ? 'Remove as default community' : 'Set as default community'}
             </button>
+          </FormField>
+        )}
+        {user && user.isAdmin && (
+          <FormField label="Danger zone">
+            <DeleteCommunity community={community} />
           </FormField>
         )}
         <FormField>

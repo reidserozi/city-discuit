@@ -187,6 +187,7 @@ func New(db *sql.DB, conf *config.Config) (*Server, error) {
 	r.Handle("/api/_joinCommunity", s.withHandler(s.joinCommunity)).Methods("POST")
 	r.Handle("/api/communities/{communityID}", s.withHandler(s.getCommunity)).Methods("GET")
 	r.Handle("/api/communities/{communityID}", s.withHandler(s.updateCommunity)).Methods("PUT")
+	r.Handle("/api/communities/{communityID}", s.withHandler(s.deleteCommunity)).Methods("DELETE")
 
 	r.Handle("/api/communities/{communityID}/items", s.withHandler(s.getCommunityItems)).Methods("GET")
 	r.Handle("/api/communities/{communityID}/items", s.withHandler(s.addCommunityItem)).Methods("POST")
