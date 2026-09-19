@@ -1804,10 +1804,14 @@ func IsPostLocked(ctx context.Context, db *sql.DB, post uid.ID) (bool, error) {
 	return is, err
 }
 
-// PostHotness calculates the hotness score of a post.
-func PostHotness(upvotes, downvotes int, date time.Time) int {
+// voteScore converts a raw vote count into a diminishing-returns score: the
+// first few votes count fully, and each successive batch of votes is worth
+// progressively less. Applied identically to upvotes and downvotes so the
+// two are directly comparable and can be netted against each other (see
+// PostHotness).
+func voteScore(n int) int {
 	s := 0
-	for i := 1; i < upvotes+1; i++ {
+	for i := 1; i < n+1; i++ {
 		if i <= 3 {
 			s += 1
 		} else if i <= 6 {
@@ -1822,6 +1826,23 @@ func PostHotness(upvotes, downvotes int, date time.Time) int {
 			s += 6
 		}
 	}
+	return s
+}
+
+// hotnessDecayInterval controls, in seconds, how strongly a post's age counts
+// against its net vote score in PostHotness. One order of magnitude of net
+// vote-score advantage buys roughly this many seconds of standing against a
+// fresher, less-voted post. A week fits a forum where posts arrive days
+// apart; the original 45000s (~12.5h) meant age alone decided almost every
+// comparison.
+const hotnessDecayInterval = 60 * 60 * 24 * 7 // 604800 seconds = 1 week
+
+// PostHotness calculates the hotness score of a post. Downvotes are handled
+// symmetrically with upvotes: both pass through the same diminishing-returns
+// curve (voteScore) and are netted against each other, so a downvote
+// actually pulls the score down instead of being ignored.
+func PostHotness(upvotes, downvotes int, date time.Time) int {
+	s := voteScore(upvotes) - voteScore(downvotes)
 
 	order := math.Log10(math.Max(math.Abs(float64(s)), 1))
 	var sign float64
@@ -1831,9 +1852,8 @@ func PostHotness(upvotes, downvotes int, date time.Time) int {
 		sign = -1
 	}
 
-	interval := float64(45000) // float64(69000)
 	seconds := float64(date.Unix())
-	hotness := order + float64(sign*seconds)/interval
+	hotness := order + sign*seconds/hotnessDecayInterval
 	return int(math.Round(hotness * 10000000))
 }
 
