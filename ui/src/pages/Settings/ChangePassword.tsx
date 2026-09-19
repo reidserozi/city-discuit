@@ -75,15 +75,24 @@ const ChangePassword = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoFocus
+                name="current-password"
+                autoComplete="current-password"
               />
             </FormField>
             <FormField label="New password">
-              <InputPassword value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <InputPassword
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                name="new-password"
+                autoComplete="new-password"
+              />
             </FormField>
             <FormField label="Repeat password">
               <InputPassword
                 value={repeatPassword}
                 onChange={(e) => setRepeatPassword(e.target.value)}
+                name="new-password-confirm"
+                autoComplete="new-password"
               />
             </FormField>
           </div>
