@@ -120,33 +120,46 @@ type authenticateMagicLinkReq struct {
 	Token string `json:"token"`
 }
 
+type stytchEmail struct {
+	Email   string `json:"email"`
+	EmailID string `json:"email_id"`
+}
+
+type stytchUser struct {
+	Emails []stytchEmail `json:"emails"`
+}
+
 type authenticateMagicLinkResp struct {
-	UserID string `json:"user_id"`
-	Email  string `json:"email"`
+	UserID   string     `json:"user_id"`
+	MethodID string     `json:"method_id"`
+	User     stytchUser `json:"user"`
 }
 
 // AuthenticateMagicLink validates a magic link token and returns the user ID and email.
 func (c *Client) AuthenticateMagicLink(ctx context.Context, token string) (stytchUserID, email string, err error) {
-	if len(token) > 20 {
-		fmt.Printf("DEBUG: Authenticating magic link token (first 20 chars): %s...\n", token[:20])
-	} else {
-		fmt.Printf("DEBUG: Authenticating magic link token: %s\n", token)
-	}
 	respBody, err := c.do(ctx, "POST", "/v1/magic_links/authenticate", authenticateMagicLinkReq{
 		Token: token,
 	})
 	if err != nil {
-		fmt.Printf("DEBUG: Stytch rejected token: %v\n", err)
 		return "", "", err
 	}
-	fmt.Printf("DEBUG: Stytch accepted token, response: %s\n", string(respBody))
 
 	var resp authenticateMagicLinkResp
 	if err := json.Unmarshal(respBody, &resp); err != nil {
 		return "", "", fmt.Errorf("unmarshal response: %w", err)
 	}
 
-	return resp.UserID, resp.Email, nil
+	// The response has no top-level email field -- the authenticated email
+	// is nested under user.emails, matched by email_id against the
+	// top-level method_id (a user can have more than one email on file).
+	for _, e := range resp.User.Emails {
+		if e.EmailID == resp.MethodID {
+			email = e.Email
+			break
+		}
+	}
+
+	return resp.UserID, email, nil
 }
 
 type sendEmailOTPReq struct {

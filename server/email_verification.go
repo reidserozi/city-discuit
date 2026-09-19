@@ -94,21 +94,17 @@ func (s *Server) emailVerificationConfirm(w *responseWriter, r *request) error {
 	// Authenticate the magic link token
 	stytchUserID, email, err := s.stytch.AuthenticateMagicLink(r.ctx, body.Token)
 	if err != nil {
-		s.http500Logger.Printf("AuthenticateMagicLink failed: %v\n", err)
 		return httperr.NewBadRequest("invalid_token", "Invalid or expired verification link.")
 	}
-	s.http500Logger.Printf("Stytch authenticated: stytchUserID=%s email=%q\n", stytchUserID, email)
 
 	// Look up user by Stytch user ID
 	user, err := core.GetUserByStytchUserID(r.ctx, s.db, stytchUserID, nil)
 	if err != nil {
-		s.http500Logger.Printf("GetUserByStytchUserID failed: %v\n", err)
 		if httperr.IsNotFound(err) {
 			return httperr.NewBadRequest("invalid_token", "User not found.")
 		}
 		return err
 	}
-	s.http500Logger.Printf("Found user: uid=%s username=%s email=%q\n", user.ID, user.Username, user.Email.String)
 
 	// Verify email matches if Stytch returned one (case-insensitive, trimmed comparison)
 	// If Stytch didn't return an email, trust the token as proof of identity
