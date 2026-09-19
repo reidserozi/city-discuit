@@ -1,8 +1,6 @@
 package server
 
 import (
-	"database/sql"
-	"errors"
 	"net"
 	"strings"
 	"time"
@@ -61,14 +59,14 @@ func (s *Server) passwordResetStart(w *responseWriter, r *request) error {
 	var err error
 
 	user, err = core.GetUserByUsername(r.ctx, s.db, body.Identifier, nil)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !httperr.IsNotFound(err) {
 		return err
 	}
 
-	if user == nil || errors.Is(err, sql.ErrNoRows) {
+	if user == nil {
 		// Try by email
 		user, err = core.GetUserByEmail(r.ctx, s.db, body.Identifier, nil)
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		if err != nil && !httperr.IsNotFound(err) {
 			return err
 		}
 	}
@@ -128,7 +126,7 @@ func (s *Server) passwordResetConfirm(w *responseWriter, r *request) error {
 	// Look up user by Stytch user ID
 	user, err := core.GetUserByStytchUserID(r.ctx, s.db, stytchUserID, nil)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if httperr.IsNotFound(err) {
 			return httperr.NewBadRequest("invalid_token", "User not found.")
 		}
 		return err
