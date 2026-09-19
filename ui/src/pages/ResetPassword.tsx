@@ -12,11 +12,6 @@ const ResetPassword = () => {
   const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
 
-  // Redirect if already logged in
-  if (user !== null) {
-    return <Redirect to="/" />;
-  }
-
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +26,14 @@ const ResetPassword = () => {
       setError('Invalid or missing reset token. Please request a new password reset link.');
     }
   }, [token]);
+
+  // Redirect if already logged in. Must come after all hooks above so every
+  // hook still runs on the render where a successful reset flips `user` from
+  // null to non-null -- returning early before them changes the hook count
+  // between renders, which crashes with "Rendered fewer hooks than expected."
+  if (user !== null) {
+    return <Redirect to="/" />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
