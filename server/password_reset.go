@@ -137,6 +137,11 @@ func (s *Server) passwordResetConfirm(w *responseWriter, r *request) error {
 		return err
 	}
 
+	// TEMPORARY diagnostic logging -- remove once the "Email has changed"
+	// mismatch reported against production is root-caused.
+	s.http500Logger.Printf("passwordResetConfirm: stytchUserID=%s stytchEmail=%q matched uid=%s username=%s dbEmail=%q\n",
+		stytchUserID, email, user.ID, user.Username, user.Email.String)
+
 	// Verify email hasn't changed since reset was initiated (case-insensitive,
 	// trimmed comparison -- Stytch may return the email in a different case
 	// than what's stored; see the same pattern in email_verification.go).
