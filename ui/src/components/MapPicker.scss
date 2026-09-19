@@ -39,6 +39,47 @@
     padding: 8px 0;
   }
 
+  &__locate-button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1000; // above Leaflet's own panes
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg);
+    color: var(--color-brand);
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: var(--color-button-main-hover);
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.7;
+    }
+  }
+
+  &__locate-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-brand);
+    border-radius: 50%;
+    animation: map-picker-spin 0.8s linear infinite;
+  }
+
+  &__locate-error {
+    font-size: 12px;
+    color: var(--color-red);
+  }
+
   &__button {
     padding: 10px 16px;
     background: var(--color-brand);
@@ -57,5 +98,11 @@
     &:active {
       transform: scale(0.98);
     }
+  }
+}
+
+@keyframes map-picker-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
