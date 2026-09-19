@@ -73,7 +73,12 @@ func (s *Server) passwordResetStart(w *responseWriter, r *request) error {
 
 	// If user found and has email, send magic link
 	if user != nil && user.Email.Valid && user.Email.String != "" {
-		redirectURL := s.config.SiteURL + "/reset-password?token="
+		// The redirect URL must exactly match one registered in the Stytch dashboard
+		// (including query string, or lack of one) -- Stytch appends its own
+		// `?token=...` when it builds the actual emailed link, so we must send the
+		// bare URL here, not pre-append an empty token param ourselves. (See the
+		// same fix/comment in email_verification.go.)
+		redirectURL := s.config.SiteURL + "/reset-password"
 		if _, err := s.stytch.SendMagicLink(r.ctx, user.Email.String, redirectURL); err != nil {
 			// Log error but don't fail the request to avoid enumeration
 			s.httpLogger.Printf("Error sending password reset email to user %s: %v\n", user.Username, err)
