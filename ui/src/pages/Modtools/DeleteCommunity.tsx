@@ -16,14 +16,18 @@ const DeleteCommunity = ({ community }: { community: Community }) => {
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
   const [confirm, setConfirm] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleOnDelete = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
     try {
       await mfetchjson(`/api/communities/${community.id}`, { method: 'DELETE' });
       dispatch(snackAlert(`${community.name} has been deleted.`));
       history.push('/');
     } catch (error) {
       dispatch(snackAlertError(error));
+      setIsDeleting(false);
     }
   };
 
@@ -50,7 +54,11 @@ const DeleteCommunity = ({ community }: { community: Community }) => {
             </FormField>
           </div>
           <div className="modal-card-actions">
-            <button className="button-red" onClick={handleOnDelete} disabled={confirm !== 'delete'}>
+            <button
+              className="button-red"
+              onClick={handleOnDelete}
+              disabled={confirm !== 'delete' || isDeleting}
+            >
               Delete
             </button>
             <button onClick={handleClose}>Cancel</button>
