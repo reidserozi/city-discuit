@@ -255,11 +255,6 @@ const Settings = ({ community }: { community: Community }) => {
             </button>
           </FormField>
         )}
-        {user && user.isAdmin && (
-          <FormField label="Danger zone">
-            <DeleteCommunity community={community} />
-          </FormField>
-        )}
         <FormField>
           <button
             className="button-main"
@@ -270,6 +265,11 @@ const Settings = ({ community }: { community: Community }) => {
             Save {changed}
           </button>
         </FormField>
+        {user && user.isAdmin && (
+          <FormField label="Danger zone" style={{ marginTop: 'var(--gap)' }}>
+            <DeleteCommunity community={community} />
+          </FormField>
+        )}
       </div>
 
       <ImageEditModal
