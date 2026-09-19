@@ -38,6 +38,7 @@ func RunCLI() {
 			CommandFixHotness,
 			CommandAddAllUsersToCommunity,
 			CommandDeleteUnusedCommunities,
+			CommandRenameCommunity,
 			CommandNewBadge,
 			CommandDeleteUser,
 			CommandSendDigest,
@@ -264,6 +265,36 @@ var CommandSetUserEmail = &cli.Command{
 		}
 
 		return pg.SetUserEmail(ctx.String("user"), ctx.String("email"))
+	},
+}
+
+var CommandRenameCommunity = &cli.Command{
+	Name:  "rename-community",
+	Usage: "Rename a community",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "old",
+			Usage:    "Current community name",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "new",
+			Usage:    "New community name",
+			Required: true,
+		},
+	},
+	Action: func(ctx *cli.Context) error {
+		pg, err := program.NewProgram(true)
+		if err != nil {
+			return err
+		}
+		defer pg.Close()
+
+		if ok := ConfirmCommand(fmt.Sprintf("Rename %s to %s?", ctx.String("old"), ctx.String("new"))); !ok {
+			return errors.New("admin's not sure about renaming the community")
+		}
+
+		return pg.RenameCommunity(ctx.String("old"), ctx.String("new"))
 	},
 }
 

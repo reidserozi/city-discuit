@@ -305,6 +305,38 @@ func CommunityExists(ctx context.Context, db *sql.DB, name string) (bool, *Commu
 	return true, comm, err
 }
 
+// RenameCommunity renames the community currently named oldName to newName.
+// comments.community_name is a denormalized copy of the community's name
+// (see migrations/0001_initial.up.sql) that isn't covered by any foreign
+// key, so it's updated in the same transaction to avoid stale names on
+// existing comments. default_communities.name_lc cascades automatically via
+// its ON UPDATE CASCADE foreign key.
+func RenameCommunity(ctx context.Context, db *sql.DB, oldName, newName string) error {
+	if err := IsUsernameValid(newName); err != nil {
+		return httperr.NewBadRequest("invalid-community-name", fmt.Sprintf("Community name invalid. It %s.", err.Error()))
+	}
+
+	community, err := GetCommunityByName(ctx, db, oldName, nil)
+	if err != nil {
+		return err
+	}
+
+	if exists, _, err := CommunityExists(ctx, db, newName); err != nil {
+		return err
+	} else if exists {
+		return &httperr.Error{HTTPStatus: http.StatusConflict, Code: "community-exists", Message: fmt.Sprintf("A community with name %s already exists.", newName)}
+	}
+
+	newNameLC := strings.ToLower(newName)
+	return msql.Transact(ctx, db, func(tx *sql.Tx) error {
+		if _, err := tx.ExecContext(ctx, "UPDATE communities SET name = ?, name_lc = ? WHERE id = ?", newName, newNameLC, community.ID); err != nil {
+			return err
+		}
+		_, err := tx.ExecContext(ctx, "UPDATE comments SET community_name = ? WHERE community_id = ?", newName, community.ID)
+		return err
+	})
+}
+
 type CommunitiesSort string
 
 const (

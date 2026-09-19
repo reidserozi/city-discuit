@@ -598,3 +598,11 @@ func (pg *Program) SetUserEmail(username, email string) error {
 	log.Printf("Set email for %s to %s\n", username, email)
 	return nil
 }
+
+func (pg *Program) RenameCommunity(oldName, newName string) error {
+	if err := core.RenameCommunity(pg.ctx, pg.db, oldName, newName); err != nil {
+		return fmt.Errorf("failed to rename community %s to %s: %w", oldName, newName, err)
+	}
+	log.Printf("Renamed community %s to %s\n", oldName, newName)
+	return nil
+}
