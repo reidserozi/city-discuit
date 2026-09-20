@@ -80,7 +80,7 @@ func RenderDigestEmailHTML(data DigestEmailData) (string, error) {
   <h1 style="font-size: 28px; margin-bottom: 20px;">Your Weekly Digest</h1>
   <p style="font-size: 16px; margin: 20px 0;">Hi {{.Username}},</p>
 
-  <p style="font-size: 16px; margin: 20px 0;">We go quiet in a few hours, and stay that way all day tomorrow. Here's what got proposed, sharpened, and improved this week — worth a read before we do.</p>
+  <p style="font-size: 16px; margin: 20px 0;">We open at six, close at midnight, and go dark on Sundays — worth catching up now. Here's what got researched, proposed, and sharpened on {{.SiteName}} this week: the kind of thing we'd hand to a council member or a city planner without flinching.</p>
 
   <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
     <h2 style="margin-top: 0; font-size: 18px; color: #000;">Top Posts</h2>
@@ -146,7 +146,7 @@ func RenderDigestEmailText(data DigestEmailData) string {
 		"",
 		"Hi " + data.Username + ",",
 		"",
-		"We go quiet in a few hours, and stay that way all day tomorrow. Here's what got proposed, sharpened, and improved this week — worth a read before we do.",
+		"We open at six, close at midnight, and go dark on Sundays — worth catching up now. Here's what got researched, proposed, and sharpened on " + data.SiteName + " this week: the kind of thing we'd hand to a council member or a city planner without flinching.",
 		"",
 	}
 

@@ -198,7 +198,7 @@ func sendDigestToUser(ctx context.Context, db *sql.DB, hmacSecret string, emailS
 
 	// Send email if service is available, otherwise just log
 	if emailService != nil {
-		if err := emailService.SendMultipart(emailAddr, "Your Weekly Digest - "+siteName, htmlBody, textBody); err != nil {
+		if err := emailService.SendMultipart(emailAddr, "This Week, Edit Your City", htmlBody, textBody); err != nil {
 			return "", err
 		}
 	} else {
@@ -210,7 +210,7 @@ func sendDigestToUser(ctx context.Context, db *sql.DB, hmacSecret string, emailS
 }
 
 // SendWeeklyDigest sends digest emails to users who have opted in.
-// It runs Saturdays at 9:30-10:29 PM Eastern and respects the double-send
+// It runs Saturdays at 6:00-6:59 AM Eastern and respects the double-send
 // prevention using application_data.
 // If emailService is nil, the function logs intended sends without actually emailing.
 func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string, emailService *email.Service, siteName string) error {
@@ -222,9 +222,8 @@ func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string, emailS
 		return err
 	}
 	now := time.Now().In(loc)
-	inWindow := (now.Hour() == 21 && now.Minute() >= 30) || (now.Hour() == 22 && now.Minute() < 30)
-	if now.Weekday() != time.Saturday || !inWindow {
-		// Not Saturday 9:30-10:29 PM Eastern, don't send
+	if now.Weekday() != time.Saturday || now.Hour() != 6 {
+		// Not Saturday 6:00-6:59 AM Eastern, don't send
 		return nil
 	}
 
