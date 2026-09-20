@@ -210,13 +210,21 @@ func sendDigestToUser(ctx context.Context, db *sql.DB, hmacSecret string, emailS
 }
 
 // SendWeeklyDigest sends digest emails to users who have opted in.
-// It runs on Saturday evenings and respects the double-send prevention using application_data.
+// It runs Saturdays at 9:30-10:29 PM Eastern and respects the double-send
+// prevention using application_data.
 // If emailService is nil, the function logs intended sends without actually emailing.
 func SendWeeklyDigest(ctx context.Context, db *sql.DB, hmacSecret string, emailService *email.Service, siteName string) error {
-	// Check if we've already sent the digest this week.
-	now := time.Now()
-	if now.Weekday() != time.Saturday || now.Hour() < 18 || now.Hour() >= 19 {
-		// Not Saturday evening (6:00-7:00 PM), don't send
+	// Check if we've already sent the digest this week. Convert to
+	// America/New_York (rather than hardcoding a UTC offset) so this stays
+	// correct across the EDT/EST daylight-saving transition.
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return err
+	}
+	now := time.Now().In(loc)
+	inWindow := (now.Hour() == 21 && now.Minute() >= 30) || (now.Hour() == 22 && now.Minute() < 30)
+	if now.Weekday() != time.Saturday || !inWindow {
+		// Not Saturday 9:30-10:29 PM Eastern, don't send
 		return nil
 	}
 
