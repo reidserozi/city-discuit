@@ -43,6 +43,11 @@ const About = () => {
 
         <p>Go edit your city. We open at six, close at midnight, and on Sunday, go explore Raleigh.</p>
 
+        <img
+          src="/edityourcity.jpg"
+          alt="Three people at a bus shelter holding a hand-painted sign that reads “Edit your city”"
+        />
+
         <p style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.8, marginTop: '3rem' }}>
           Edit Raleigh is an independent, volunteer-run civic platform for Raleigh, North Carolina. It is not affiliated with the City of Raleigh or Wake County. Built on{' '}
           <a href="https://discuit.org/" target="_blank" rel="noopener">
